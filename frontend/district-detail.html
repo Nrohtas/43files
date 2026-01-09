@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDC 43 Files Dashboard</title>
+
+    <!-- Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons: Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Page Specific Styles */
+        .district-filter-container {
+            padding: 0 30px;
+            margin-top: 30px;
+            overflow-x: auto;
+            white-space: nowrap;
+            /* Hide scrollbar */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        .district-filter-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .district-tabs {
+            display: inline-flex;
+            gap: 10px;
+            background: #fff;
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .district-tab {
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .district-tab:hover {
+            background: #F8FAFC;
+            color: var(--primary-blue);
+        }
+
+        .district-tab.active {
+            background: var(--primary-blue);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(64, 196, 255, 0.3);
+        }
+
+        .hdc-content {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .table-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #F1F5F9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            font-size: 16px;
+            color: var(--text-heading);
+        }
+
+        .hdc-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .hdc-table th,
+        .hdc-table td {
+            padding: 15px 20px;
+            text-align: left;
+            font-size: 13px;
+            border-bottom: 1px solid #F8FAFC;
+        }
+
+        .hdc-table th {
+            background: #F8FAFC;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .hdc-table td {
+            color: var(--text-main);
+        }
+
+        .status-icon {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .status-icon.success {
+            color: #10B981;
+            background: #D1FAE5;
+        }
+
+        .status-icon.error {
+            color: #EF4444;
+            background: #FEE2E2;
+        }
+
+        .status-icon.pending {
+            color: #CBD5E1;
+            background: #F1F5F9;
+        }
+
+        /* District Dropdown Styles */
+        .district-option:hover {
+            background-color: #F8FAFC !important;
+            color: var(--primary-blue);
+        }
+
+        .district-option.selected {
+            background-color: #E0F2FE !important;
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        /* Responsive overrides */
+        @media (max-width: 768px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <div class="logo">
+                        <h2>สำนักงานสาธารณสุขจังหวัดพิษณุโลก <span>การจัดส่งข้อมูล 43 แฟ้ม</span></h2>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Sub Header (Navigation) -->
+            <div class="sub-header">
+                <nav class="header-nav">
+                    <div class="nav-item-group">
+                        <a href="hdc.html" class="nav-link">43 แฟ้ม HDC</a>
+                    </div>
+                    <a href="#" class="nav-link">43 แฟ้ม OPPP</a>
+                </nav>
+            </div>
+
+            <!-- District Filter (Moved to Sidebar) -->
+            <!-- <div class="district-filter-container"> ... </div> -->
+
+            <div class="hdc-content">
+                <!-- District Selector -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 24px; font-weight: 700; color: var(--text-heading);">43 แฟ้ม HDC</h2>
+
+                    <!-- Dropdowns Container -->
+                    <div style="display: flex; gap: 12px;">
+                        <!-- District Dropdown -->
+                        <div class="district-dropdown-container" style="position: relative;">
+                            <div class="district-dropdown-trigger" id="districtDropdownTrigger"
+                                style="cursor: pointer; padding: 12px 20px; background: #fff; border-radius: 8px; box-shadow: var(--shadow-card); display: flex; align-items: center; gap: 10px; min-width: 200px; justify-content: space-between;">
+                                <span id="selectedDistrict"
+                                    style="font-weight: 600; color: var(--text-heading);">เลือกอำเภอ</span>
+                                <i class="ph ph-caret-down" style="color: var(--text-light);"></i>
+                            </div>
+                            <div class="district-dropdown-menu" id="districtDropdownMenu"
+                                style="position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px; background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); z-index: 1000; max-height: 400px; overflow-y: auto; display: none;">
+                                <!-- District options will be populated by JavaScript from API -->
+                            </div>
+                        </div>
+                        <!-- Hostype dropdown will be injected here by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="card info-card">
+                        <div class="card-header">
+                            <h4>หน่วยบริการ</h4>
+                        </div>
+                        <div class="card-value" id="totalUnits">0</div>
+                    </div>
+                    <div class="card info-card">
+                        <div class="card-header">
+                            <h4>ส่งแล้ว (พ.ย.)</h4>
+                        </div>
+                        <div class="card-value" style="color: #10B981" id="totalSubmitted">0</div>
+                    </div>
+                    <div class="card info-card">
+                        <div class="card-header">
+                            <h4>ไม่ได้ส่ง (พ.ย.)</h4>
+                        </div>
+                        <div class="card-value" style="color: #EF4444" id="totalMissing">0</div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3 id="currentDistrictTitle">District Name</h3>
+                        <div style="font-size: 12px; color: #aaa;">Last updated: Today</div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="hdc-table">
+                            <thead>
+                                <tr>
+                                    <th>รหัส</th>
+                                    <th>หน่วยบริการ</th>
+                                    <th style="text-align: center">ต.ค. 68</th>
+                                    <th style="text-align: center">พ.ย. 68</th>
+                                    <th style="text-align: center">ธ.ค. 68</th>
+                                    <th style="text-align: center">ม.ค. 69</th>
+                                    <th style="text-align: center">ก.พ. 69</th>
+                                    <th style="text-align: center">มี.ค. 69</th>
+                                    <th style="text-align: center">เม.ย. 69</th>
+                                    <th style="text-align: center">พ.ค. 69</th>
+                                    <th style="text-align: center">มิ.ย. 69</th>
+                                    <th style="text-align: center">ก.ค. 69</th>
+                                    <th style="text-align: center">ส.ค. 69</th>
+                                    <th style="text-align: center">ก.ย. 69</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hdcTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="district-script.ts"></script>
+</body>
+
+</html>

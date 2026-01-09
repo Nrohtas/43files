@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>43 แฟ้ม HDC - Dashboard</title>
+
+    <!-- Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons: Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Dashboard specific styles */
+        .dashboard-header {
+            padding: 30px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .dashboard-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-bottom: 8px;
+        }
+
+        .dashboard-header p {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .dashboard-content {
+            padding: 30px;
+        }
+
+        .districts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .district-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .district-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-blue);
+        }
+
+        .district-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .district-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-bottom: 4px;
+        }
+
+        .district-code {
+            font-size: 12px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .district-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #2CD3E1 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .district-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 12px;
+            background: #F8FAFC;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-value.total {
+            color: var(--text-heading);
+        }
+
+        .stat-value.submitted {
+            color: #10B981;
+        }
+
+        .stat-value.missing {
+            color: #EF4444;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: #CBD5E1;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <div class="logo">
+                        <h2>สำนักงานสาธารณสุขจังหวัดพิษณุโลก <span>การจัดส่งข้อมูล 43 แฟ้ม</span></h2>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Sub Header (Navigation) -->
+            <div class="sub-header">
+                <nav class="header-nav">
+                    <div class="nav-item-group">
+                        <a href="hdc.html" class="nav-link active">43 แฟ้ม HDC</a>
+                    </div>
+                    <a href="#" class="nav-link">43 แฟ้ม OPPP</a>
+                </nav>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-header">
+                <h1>สรุปภาพรวมการจัดส่งข้อมูล 43 แฟ้ม HDC</h1>
+                <p>แสดงข้อมูลสรุปการจัดส่งแยกตามอำเภอ</p>
+            </div>
+
+            <div class="dashboard-content">
+                <div id="districtsContainer" class="districts-grid">
+                    <!-- Loading state -->
+                    <div class="loading">
+                        <p>กำลังโหลดข้อมูล...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="hdc-script.ts"></script>
+</body>
+
+</html>
