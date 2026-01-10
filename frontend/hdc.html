@@ -149,6 +149,254 @@
             color: #CBD5E1;
             margin-bottom: 16px;
         }
+
+        /* Province Summary Card */
+        .province-summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 24px 30px;
+            margin: 30px;
+            margin-bottom: 0;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+
+        .province-summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .province-summary-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        .month-selector {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .month-selector:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .month-selector:focus {
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        .month-selector option {
+            background: #667eea;
+            color: white;
+        }
+
+        .province-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .province-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .province-stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .province-stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .province-stat.clickable {
+            cursor: pointer;
+            transition: transform 0.2s;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .province-stat.clickable:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Expandable Missing Section */
+        .province-missing-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            margin: 0 30px 20px 30px;
+        }
+
+        .province-missing-section.expanded {
+            max-height: 1200px;
+        }
+
+        .missing-section-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: var(--shadow-card);
+            margin-top: 16px;
+            border-left: 4px solid #EF4444;
+        }
+
+        .missing-section-header-province {
+            padding: 20px;
+            border-bottom: 1px solid #F1F5F9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .missing-section-header-province h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #EF4444;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .missing-section-body-province {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .district-group {
+            margin-bottom: 24px;
+        }
+
+        .district-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .district-group-header {
+            background: #F8FAFC;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .district-group-header h4 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-heading);
+            flex: 1;
+        }
+
+        .district-group-count {
+            background: #EF4444;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .district-units-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 10px;
+            padding-left: 16px;
+        }
+
+        .missing-unit-item-small {
+            background: #FEF2F2;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid #FEE2E2;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .missing-unit-item-small:hover {
+            background: #FEE2E2;
+            border-color: #FECACA;
+            transform: translateX(4px);
+        }
+
+        .missing-unit-item-small .unit-code {
+            font-family: monospace;
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .missing-unit-item-small .unit-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-heading);
+            flex: 1;
+        }
+
+        .collapse-btn-province {
+            background: #FEF2F2;
+            border: 1px solid #FEE2E2;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #EF4444;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .collapse-btn-province:hover {
+            background: #FEE2E2;
+        }
+
+        .empty-missing-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-missing-state i {
+            font-size: 48px;
+            color: #10B981;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .province-stats {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .district-units-list {
+                grid-template-columns: 1fr;
+                padding-left: 0;
+            }
+        }
     </style>
 </head>
 
@@ -159,8 +407,16 @@
             <!-- Header -->
             <header class="top-header">
                 <div class="header-left">
-                    <div class="logo">
-                        <h2>สำนักงานสาธารณสุขจังหวัดพิษณุโลก <span>การจัดส่งข้อมูล 43 แฟ้ม</span></h2>
+                    <div class="logo" style="display: flex; align-items: center; gap: 20px;">
+                        <img src="assets/logo_digital_health.png" alt="Logo"
+                            style="height: 85px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+                        <div style="display: flex; flex-direction: column; justify-content: center; line-height: 1.2;">
+                            <h2
+                                style="font-size: 20px; font-weight: 800; color: #1e293b; margin: 0; letter-spacing: -0.5px;">
+                                สำนักงานสาธารณสุขจังหวัดพิษณุโลก</h2>
+                            <span style="font-size: 15px; color: #64748b; font-weight: 500;">กลุ่มงานสุขภาพดิจิทัล
+                                การจัดส่งข้อมูล 43 แฟ้ม</span>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -176,9 +432,68 @@
             </div>
 
             <!-- Dashboard Content -->
-            <div class="dashboard-header">
-                <h1>สรุปภาพรวมการจัดส่งข้อมูล 43 แฟ้ม HDC</h1>
-                <p>แสดงข้อมูลสรุปการจัดส่งแยกตามอำเภอ</p>
+
+
+            <div class="province-summary-card">
+                <div class="province-summary-header">
+                    <h2>📊 Dashboard การจัดส่งข้อมูล 43 แฟ้ม รายเดือน HDC</h2>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a href="district-detail.html" style="
+                            display: flex; 
+                            align-items: center; 
+                            gap: 6px; 
+                            background: rgba(255, 255, 255, 0.2); 
+                            border: 1px solid rgba(255, 255, 255, 0.3);
+                            color: white; 
+                            padding: 8px 12px; 
+                            border-radius: 8px; 
+                            text-decoration: none; 
+                            font-weight: 600; 
+                            font-size: 14px; 
+                            transition: all 0.2s;">
+                            <i class="ph-fill ph-chart-bar"></i>
+                            Dashboard รายเดือน
+                        </a>
+                        <select class="month-selector" id="yearSelector">
+                            <!-- Will be populated by JavaScript -->
+                        </select>
+                        <select class="month-selector" id="monthSelector">
+                            <!-- Will be populated by JavaScript -->
+                        </select>
+                    </div>
+                </div>
+                <div class="province-stats">
+                    <div class="province-stat">
+                        <div class="province-stat-label">หน่วยบริการทั้งหมด</div>
+                        <div class="province-stat-value" id="provinceTotalUnits">-</div>
+                    </div>
+                    <div class="province-stat">
+                        <div class="province-stat-label">ส่งข้อมูลแล้ว</div>
+                        <div class="province-stat-value" id="provinceSubmitted">-</div>
+                    </div>
+                    <div class="province-stat clickable" id="provinceMissingCard">
+                        <div class="province-stat-label">⚠️ ยังไม่ได้ส่งข้อมูล</div>
+                        <div class="province-stat-value" id="provinceMissing">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expandable Missing Units Section -->
+            <div class="province-missing-section" id="provinceMissingSection">
+                <div class="missing-section-card">
+                    <div class="missing-section-header-province">
+                        <h3>
+                            <i class="ph-fill ph-warning-circle"></i>
+                            รายชื่อหน่วยบริการที่ยังไม่ได้ส่งข้อมูล
+                        </h3>
+                        <button class="collapse-btn-province" id="collapseProvinceBtn">
+                            ซ่อน
+                        </button>
+                    </div>
+                    <div class="missing-section-body-province" id="provinceMissingSectionBody">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
             </div>
 
             <div class="dashboard-content">
@@ -189,6 +504,10 @@
                     </div>
                 </div>
             </div>
+            <footer
+                style="text-align: center; padding: 20px; color: #8D99AE; font-size: 12px; border-top: 1px solid #F1F5F9; margin-top: auto; background: #fff;">
+                Copyright ©2026 Digital Health Group of Phitsanulok Provincial Public Health Office
+            </footer>
         </main>
     </div>
 

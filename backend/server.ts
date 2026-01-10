@@ -127,41 +127,60 @@ app.get('/api/districts', (req: Request, res: Response) => {
 });
 
 // API endpoint for HDC monthly submission data
+// Now uses hdc table with year_th, month, and sentdata columns
 app.get('/api/hdc/:district', (req: Request, res: Response) => {
     const district = req.params.district;
     const hostype = req.query.hostype as string | undefined;
+    const year = req.query.year as string || '2568'; // Default to 2568
+
+    // Fiscal Year Logic:
+    // User selects Year X (e.g., 2569).
+    // - Months 10, 11, 12 come from Previous Year (X - 1) -> 2568
+    // - Months 01 - 09 come from Current Year (X) -> 2569
+
+    const currentYearInt = parseInt(year);
+    const prevYearInt = currentYearInt - 1;
+    const prevYear = prevYearInt.toString();
 
     let sql = `
         SELECT 
             h.hospcode,
             h.hospname,
-            hdc.october,
-            hdc.november,
-            hdc.december,
-            hdc.january,
-            hdc.february,
-            hdc.march,
-            hdc.april,
-            hdc.may,
-            hdc.june,
-            hdc.july,
-            hdc.august,
-            hdc.september
+            MAX(CASE WHEN hdc.month_no = '10' THEN hdc.sentdata END) as month_10,
+            MAX(CASE WHEN hdc.month_no = '11' THEN hdc.sentdata END) as month_11,
+            MAX(CASE WHEN hdc.month_no = '12' THEN hdc.sentdata END) as month_12,
+            MAX(CASE WHEN hdc.month_no = '01' THEN hdc.sentdata END) as month_13,
+            MAX(CASE WHEN hdc.month_no = '02' THEN hdc.sentdata END) as month_14,
+            MAX(CASE WHEN hdc.month_no = '03' THEN hdc.sentdata END) as month_15,
+            MAX(CASE WHEN hdc.month_no = '04' THEN hdc.sentdata END) as month_16,
+            MAX(CASE WHEN hdc.month_no = '05' THEN hdc.sentdata END) as month_17,
+            MAX(CASE WHEN hdc.month_no = '06' THEN hdc.sentdata END) as month_18,
+            MAX(CASE WHEN hdc.month_no = '07' THEN hdc.sentdata END) as month_19,
+            MAX(CASE WHEN hdc.month_no = '08' THEN hdc.sentdata END) as month_20,
+            MAX(CASE WHEN hdc.month_no = '09' THEN hdc.sentdata END) as month_21
         FROM hospital h
-        LEFT JOIN hdc ON h.hospcode = hdc.hospcode
+        LEFT JOIN hdc ON h.hospcode = hdc.hospcode AND (
+            (hdc.year_th = ? AND hdc.month_no IN ('01', '02', '03', '04', '05', '06', '07', '08', '09'))
+            OR
+            (hdc.year_th = ? AND hdc.month_no IN ('10', '11', '12'))
+        )
         LEFT JOIN hostype ht ON h.hostype_new = ht.hostype_new
         WHERE h.amp_code = ?
     `;
 
-    const params: any[] = [district];
+    const params: any[] = [year, prevYear, district];
 
-    // Add hostype filter if provided (filter by NAME to handle multiple codes)
+    // Add hostype filter if provided
     if (hostype) {
         sql += ' AND ht.hostype_name = ?';
         params.push(hostype);
     }
 
-    sql += ' ORDER BY h.hospcode ASC';
+    sql += ' GROUP BY h.hospcode, h.hospname ORDER BY h.hospcode ASC';
+
+    console.log('--- Executing Fiscal Query ---');
+    console.log('Params:', params);
+    // console.log('SQL:', sql); // Uncomment if needed
 
     pool.query(sql, params, (err, results: any) => {
         if (err) {
@@ -171,20 +190,19 @@ app.get('/api/hdc/:district', (req: Request, res: Response) => {
         }
 
         const units = results.map((row: any) => {
-            // Convert y/n to boolean, december is date type so handle differently
             const months = [
-                row.october === 'y',       // ต.ค.
-                row.november === 'y',      // พ.ย.
-                row.december !== null,     // ธ.ค. (date type)
-                row.january === 'y',       // ม.ค.
-                row.february === 'y',      // ก.พ.
-                row.march === 'y',         // มี.ค.
-                row.april === 'y',         // เม.ย.
-                row.may === 'y',           // พ.ค.
-                row.june === 'y',          // มิ.ย.
-                row.july === 'y',          // ก.ค.
-                row.august === 'y',        // ส.ค.
-                row.september === 'y'      // ก.ย.
+                row.month_10,  // ต.ค.
+                row.month_11,  // พ.ย.
+                row.month_12,  // ธ.ค.
+                row.month_13,  // ม.ค.
+                row.month_14,  // ก.พ.
+                row.month_15,  // มี.ค.
+                row.month_16,  // เม.ย.
+                row.month_17,  // พ.ค.
+                row.month_18,  // มิ.ย.
+                row.month_19,  // ก.ค.
+                row.month_20,  // ส.ค.
+                row.month_21   // ก.ย.
             ];
 
             return {
@@ -228,20 +246,29 @@ app.get('/api/hostypes', (req: Request, res: Response) => {
     });
 });
 
+
 // API endpoint for district summary - shows total units for each district
 app.get('/api/districts/summary', (req: Request, res: Response) => {
+    const year = req.query.year as string || '2568';
+    const month = req.query.month as string || '11'; // Default to November
+
     const sql = `
         SELECT 
-            a.amp_code,
+            h.amp_code,
             a.amp_name,
-            COUNT(h.hospcode) as total_units
-        FROM ampur a
-        LEFT JOIN hospital h ON a.amp_code = h.amp_code
-        GROUP BY a.amp_code, a.amp_name
-        ORDER BY a.amp_code ASC
+            COUNT(DISTINCT h.hospcode) as total_units,
+            SUM(CASE WHEN hdc.sentdata = 'y' THEN 1 ELSE 0 END) as submitted,
+            SUM(CASE WHEN IFNULL(hdc.sentdata, 'n') != 'y' THEN 1 ELSE 0 END) as missing
+        FROM hospital h
+        LEFT JOIN ampur a ON h.amp_code = a.amp_code
+        LEFT JOIN hdc ON h.hospcode = hdc.hospcode 
+            AND hdc.year_th = ? 
+            AND hdc.month_no = ?
+        GROUP BY h.amp_code, a.amp_name
+        ORDER BY h.amp_code ASC
     `;
 
-    pool.query(sql, (err, results: any) => {
+    pool.query(sql, [year, month], (err, results: any) => {
         if (err) {
             console.error('Error executing query:', err);
             res.status(500).json({ error: 'Database error' });
@@ -251,14 +278,111 @@ app.get('/api/districts/summary', (req: Request, res: Response) => {
         const summary = results.map((row: any) => ({
             code: row.amp_code,
             name: row.amp_name,
-            totalUnits: row.total_units,
-            submitted: 0,  // Will be calculated from actual data later
-            missing: 0     // Will be calculated from actual data later
+            totalUnits: parseInt(row.total_units) || 0,
+            submitted: parseInt(row.submitted) || 0,
+            missing: parseInt(row.missing) || 0
         }));
 
         res.json(summary);
     });
 });
+
+
+// API endpoint for all missing units across the province (grouped by district)
+app.get('/api/missing-units/all', (req: Request, res: Response) => {
+    const year = req.query.year as string || '2568';
+    const month = req.query.month as string || '11';
+
+    const sql = `
+        SELECT 
+            h.amp_code,
+            a.amp_name,
+            h.hospcode,
+            h.hospname
+        FROM hospital h
+        LEFT JOIN ampur a ON h.amp_code = a.amp_code
+        LEFT JOIN hdc ON h.hospcode = hdc.hospcode 
+            AND hdc.year_th = ? 
+            AND hdc.month_no = ?
+        WHERE IFNULL(hdc.sentdata, 'n') != 'y'
+        ORDER BY h.amp_code ASC, h.hospcode ASC
+    `;
+
+    pool.query(sql, [year, month], (err, results: any) => {
+        if (err) {
+            console.error('Error executing query:', err);
+            res.status(500).json({ error: 'Database error' });
+            return;
+        }
+
+        // Group by district
+        const groupedByDistrict: { [key: string]: any } = {};
+
+        results.forEach((row: any) => {
+            const districtKey = row.amp_code;
+
+            if (!groupedByDistrict[districtKey]) {
+                groupedByDistrict[districtKey] = {
+                    districtCode: row.amp_code,
+                    districtName: row.amp_name,
+                    units: []
+                };
+            }
+
+            groupedByDistrict[districtKey].units.push({
+                code: row.hospcode,
+                name: row.hospname
+            });
+        });
+
+        // Convert to array
+        const response = Object.values(groupedByDistrict);
+
+        res.json(response);
+    });
+});
+
+// API endpoint to get list of available years
+app.get('/api/years', (req: Request, res: Response) => {
+    const sql = 'SELECT DISTINCT year_th FROM hdc ORDER BY year_th DESC';
+
+    pool.query(sql, (err, results: any) => {
+        if (err) {
+            console.error('Error executing query:', err);
+            res.status(500).json({ error: 'Database error' });
+            return;
+        }
+
+        const years = results.map((row: any) => row.year_th);
+        res.json(years);
+    });
+});
+
+// API endpoint to get list of months with Thai names
+app.get('/api/months', (req: Request, res: Response) => {
+    pool.query(
+        'SELECT month_no, month_name, month_th FROM `month` ORDER BY month_no',
+        (error: any, rows: any) => {
+            if (error) {
+                console.error('Error fetching months:', error);
+                return res.status(500).json({ error: 'Failed to fetch months' });
+            }
+
+            // console.log('Database rows sample:', rows[0]); 
+
+            const months = rows.map((row: any) => ({
+                value: row.month_no, // ใช้ month_no
+                name: row.month_name,
+                nameEng: '',
+                abbr: row.month_th  // ใช้ month_th
+            }));
+
+            res.json(months);
+        }
+    );
+});
+
+
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

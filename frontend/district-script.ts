@@ -15,7 +15,7 @@ interface ApiUnit {
 interface Unit {
     code: string;
     name: string;
-    months: boolean[];
+    months: (string | null)[];
 }
 
 interface Hostype {
@@ -23,13 +23,54 @@ interface Hostype {
     name: string;
 }
 
+interface MissingUnit {
+    code: string;
+    name: string;
+}
+
+interface Month {
+    value: string;
+    name: string;
+    nameEng: string;
+    abbr: string;  // ชื่อย่อจาก month_th
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
 
-    // --- Districts List (will be loaded from API) ---
+    // --- Get year and month from URL parameters ---
+    // --- Get year and month from URL parameters ---
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Calculate default fiscal year (Previous Month Logic)
+    const today = new Date();
+    const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const defaultFiscalYear = (prevMonthDate.getMonth() >= 9) ? prevMonthDate.getFullYear() + 544 : prevMonthDate.getFullYear() + 543;
+
+    const currentYear = urlParams.get('year') || defaultFiscalYear.toString();
+    const currentMonth = urlParams.get('month') || '11';
+
+    // --- State Variables ---
     let districts: District[] = [];
     let hostypes: Hostype[] = [];
-    let selectedHostypeCode: string | null = null;  // null means "ทั้งหมด"
-    let currentSelectedDistrict: { code: string, name: string } | null = null;  // Track selected district
+    let selectedHostypeCode: string | null = null;
+    let currentSelectedDistrict: { code: string, name: string } | null = null;
+    let missingUnits: MissingUnit[] = [];
+
+    // --- DOM Elements ---
+    const tableBody = document.getElementById('hdcTableBody') as HTMLTableSectionElement | null;
+    const districtTitle = document.getElementById('currentDistrictTitle') as HTMLHeadingElement | null;
+    const statTotal = document.getElementById('totalUnits') as HTMLDivElement | null;
+    const statSubmitted = document.getElementById('totalSubmitted') as HTMLDivElement | null;
+    const statMissing = document.getElementById('totalMissing') as HTMLDivElement | null;
+
+    // Custom dropdown elements
+    const yearDropdownTrigger = document.getElementById('yearDropdownTrigger');
+    const yearDropdownMenu = document.getElementById('yearDropdownMenu');
+    const selectedYearSpan = document.getElementById('selectedYear');
+
+    const dropdownTrigger = document.getElementById('districtDropdownTrigger');
+    const dropdownMenu = document.getElementById('districtDropdownMenu');
+    const selectedDistrictSpan = document.getElementById('selectedDistrict');
 
     // --- Inject Hostype Dropdown HTML ---
     const injectHostypeDropdown = (): void => {
@@ -49,7 +90,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `;
 
-        // Wrap both dropdowns in a flex container
         const parent = districtDropdownContainer.parentElement;
         if (!parent.style.display) {
             parent.style.display = 'flex';
@@ -59,34 +99,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         districtDropdownContainer.insertAdjacentHTML('afterend', hostypeHTML);
     };
 
-    // Inject the dropdown on load
     injectHostypeDropdown();
 
-    // --- DOM Elements ---
-    const tableBody = document.getElementById('hdcTableBody') as HTMLTableSectionElement | null;
-    const districtTitle = document.getElementById('currentDistrictTitle') as HTMLHeadingElement | null;
-    const statTotal = document.getElementById('totalUnits') as HTMLDivElement | null;
-    const statSubmitted = document.getElementById('totalSubmitted') as HTMLDivElement | null;
-    const statMissing = document.getElementById('totalMissing') as HTMLDivElement | null;
-
-    // --- Function to Load District ---
+    // --- Function to Load District Data ---
     const loadDistrict = async (districtCode: string, districtName: string, hostypeCode: string | null = null): Promise<void> => {
-        // Update Title with "อำเภอ" prefix
         if (districtTitle) {
-            districtTitle.textContent = `อำเภอ${districtName}`;
+            districtTitle.textContent = `อำเภอ${districtName} `;
         }
 
         try {
-            // Fetch from API using district code and optional hostype
-            let url = `${API_BASE_URL}/api/hdc/${encodeURIComponent(districtCode)}`;
+            let url = `${API_BASE_URL}/api/hdc/${encodeURIComponent(districtCode)}?year=${currentYear}`;
             if (hostypeCode) {
-                url += `?hostype=${encodeURIComponent(hostypeCode)}`;
+                url += `&hostype=${encodeURIComponent(hostypeCode)}`;
             }
 
             const response = await fetch(url);
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP error! status: ${response.status} `);
             }
 
             const units: Unit[] = await response.json();
@@ -94,20 +124,64 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Update Stats
             if (statTotal) statTotal.textContent = units.length.toString();
 
-            // Count submitted for November (index 1)
-            const currentMonthIndex = 1;  // พ.ย.
-            const submittedCount = units.filter((u) => u.months[currentMonthIndex]).length;
-            if (statSubmitted) statSubmitted.textContent = submittedCount.toString();
-            if (statMissing) statMissing.textContent = (units.length - submittedCount).toString();
+            // Count submitted for the selected month
+            // --- Determine "Required" months for completeness check ---
+            // Completeness means: submitted='y' for ALL months that are due.
+            // Due rule: Month M is due when we are in Month M+1.
+
+            const today = new Date();
+            // Calculate current fiscal year from today's date (Thai Year)
+            const realFiscalYear = (today.getMonth() >= 9) ? today.getFullYear() + 544 : today.getFullYear() + 543;
+
+            // Calculate current fiscal month index (0=Oct, 11=Sep) based on today
+            const realFiscalMonthIndex = (today.getMonth() + 3) % 12;
+
+            const selectedYearInt = parseInt(currentYear);
+
+            let cutoffIndex = 0; // Number of months to check (0 to 12)
+
+            if (selectedYearInt < realFiscalYear) {
+                // Past year: check all 12 months
+                cutoffIndex = 12;
+            } else if (selectedYearInt > realFiscalYear) {
+                // Future year: nothing due yet
+                cutoffIndex = 0;
+            } else {
+                // Current year: check months strictly before current month
+                // e.g. If today is Jan (Idx 3), check Oct(0), Nov(1), Dec(2).
+                cutoffIndex = realFiscalMonthIndex;
+            }
+
+            // Filter units
+            // Complete = u.months[i] === 'y' for all i < cutoffIndex
+            const completeUnits = units.filter(u => {
+                for (let i = 0; i < cutoffIndex; i++) {
+                    if (u.months[i] !== 'y') return false;
+                }
+                return true;
+            });
+
+            const incompleteUnits = units.filter(u => !completeUnits.includes(u));
+
+            if (statSubmitted) statSubmitted.textContent = completeUnits.length.toString();
+            if (statMissing) statMissing.textContent = incompleteUnits.length.toString();
+
+            // Update stat labels with current month/year
+            updateStatLabels();
+
+            // Track missing units (Incomplete ones)
+            missingUnits = incompleteUnits.map((u) => ({
+                code: u.code,
+                name: u.name
+            }));
 
             // Render Table
             if (!tableBody) return;
-
             tableBody.innerHTML = '';
 
             if (units.length === 0) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td colspan="14" style="text-align:center; padding:40px; color:#94A3B8;">ไม่พบข้อมูลหน่วยบริการในอำเภอนี้</td>`;
+                tr.innerHTML = `< td colspan = "14" style = "text-align:center; padding:40px; color:#94A3B8;" > ไม่พบข้อมูลหน่วยบริการในอำเภอนี้ </td>`;
                 tableBody.appendChild(tr);
                 return;
             }
@@ -115,21 +189,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             units.forEach((u) => {
                 const tr = document.createElement('tr');
 
-                const renderStatus = (status: boolean, monthIndex: number): string => {
-                    // For months 0-1 (Oct-Nov): show checkmark/X based on data
-                    // For months 2-11 (Dec-Sep): show dash since no data yet
-                    if (monthIndex >= 2) {
-                        // December onwards - no data yet, show dash
+                const renderStatus = (status: string | null, _monthIndex: number): string => {
+                    if (!status) {
                         return `<div style="color: #94A3B8; font-size: 20px;">-</div>`;
                     }
-
-                    // October/November - show based on y/n
-                    return status
-                        ? `<div class="status-icon success"><i class="ph-fill ph-check-circle"></i></div>`
-                        : `<div class="status-icon error"><i class="ph-fill ph-x-circle"></i></div>`;
+                    if (status === 'y') {
+                        return `<div class="status-icon success"><i class="ph-fill ph-check-circle"></i></div>`;
+                    }
+                    return `<div class="status-icon error"><i class="ph-fill ph-x-circle"></i></div>`;
                 };
 
-                // Generate TD for each month
                 let monthsHtml = '';
                 u.months.forEach((status, index) => {
                     monthsHtml += `<td style="text-align:center">${renderStatus(status, index)}</td>`;
@@ -146,7 +215,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             console.error('Error loading district data:', error);
 
-            // Show error message in table
             if (tableBody) {
                 tableBody.innerHTML = '';
                 const tr = document.createElement('tr');
@@ -154,24 +222,126 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tableBody.appendChild(tr);
             }
 
-            // Reset stats
             if (statTotal) statTotal.textContent = '0';
             if (statSubmitted) statSubmitted.textContent = '0';
             if (statMissing) statMissing.textContent = '0';
         }
     };
 
+    // --- Load Years and populate dropdown ---
+    const loadYearsFromAPI = async (): Promise<void> => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/years`);
+            if (!response.ok) throw new Error('Failed to load years');
+            const years: string[] = await response.json();
+
+            if (yearDropdownMenu) {
+                yearDropdownMenu.innerHTML = '';
+                // Filter out 2568 as requested
+                years.filter(y => y !== '2568').forEach(year => {
+                    const option = document.createElement('div');
+                    option.className = 'year-option';
+                    option.dataset.year = year;
+                    option.style.cssText = 'padding: 12px 20px; cursor: pointer; transition: all 0.2s; border-bottom: 1px solid #F1F5F9;';
+                    option.textContent = `ปีงบประมาณ ${year}`;
+                    if (year === currentYear) {
+                        option.classList.add('selected');
+                        if (selectedYearSpan) selectedYearSpan.textContent = `ปีงบประมาณ ${year}`;
+                    }
+                    yearDropdownMenu.appendChild(option);
+                });
+
+                bindYearDropdownOptions();
+            }
+        } catch (error) {
+            console.error('Error loading years:', error);
+        }
+    };
+
+    // --- Update stat card labels with current month/year ---
+    const updateStatLabels = async (): Promise<void> => {
+        // Validation: Logic disabled to preserve icons in HTML headers.
+        // The headers are now static with icons, no need to overwrite them.
+    };
+
+    // --- Year Dropdown Handlers ---
+    if (yearDropdownTrigger && yearDropdownMenu) {
+        yearDropdownTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const menu = yearDropdownMenu as HTMLElement;
+            if (menu.style.display === 'none' || !menu.style.display) {
+                // Close others
+                const hostypeMenu = document.getElementById('hostypeDropdownMenu');
+                if (hostypeMenu) hostypeMenu.style.display = 'none';
+
+                if (dropdownMenu) (dropdownMenu as HTMLElement).style.display = 'none';
+
+                menu.style.display = 'block';
+            } else {
+                menu.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            const target = e.target as Node;
+            if (!yearDropdownTrigger.contains(target) && !yearDropdownMenu.contains(target)) {
+                (yearDropdownMenu as HTMLElement).style.display = 'none';
+            }
+        });
+    }
+
+    const bindYearDropdownOptions = (): void => {
+        const options = document.querySelectorAll('.year-option');
+        options.forEach((option) => {
+            option.addEventListener('click', () => {
+                const year = (option as HTMLElement).dataset.year;
+                if (!year) return;
+
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('year', year);
+                // Keep current month or default
+                newUrl.searchParams.set('month', currentMonth);
+
+                if (currentSelectedDistrict) {
+                    newUrl.searchParams.set('district', currentSelectedDistrict.code);
+                }
+
+                // Add hostype param if exists
+                if (selectedHostypeCode) {
+                    newUrl.searchParams.set('hostype', selectedHostypeCode);
+                }
+
+                window.location.href = newUrl.toString();
+            });
+        });
+    };
+
+    const bindMonthDropdownOptions = (): void => {
+        const options = document.querySelectorAll('.month-option');
+        options.forEach((option) => {
+            option.addEventListener('click', () => {
+                const monthValue = (option as HTMLElement).dataset.monthValue;
+                if (!monthValue) return;
+
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('year', currentYear);
+                newUrl.searchParams.set('month', monthValue);
+                if (currentSelectedDistrict) {
+                    newUrl.searchParams.set('district', currentSelectedDistrict.code);
+                }
+                window.location.href = newUrl.toString();
+            });
+        });
+    };
+
     // --- Load Districts from API ---
     const loadDistrictsFromAPI = async (): Promise<void> => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/districts`);
-            if (!response.ok) {
-                throw new Error('Failed to load districts');
-            }
+            if (!response.ok) throw new Error('Failed to load districts');
             const apiDistricts: District[] = await response.json();
             districts = apiDistricts;
 
-            const dropdownMenu = document.getElementById('districtDropdownMenu');
             if (dropdownMenu) {
                 dropdownMenu.innerHTML = '';
                 districts.forEach(district => {
@@ -186,34 +356,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 bindDropdownOptions();
             }
-
-            // Keep default text as "เลือกอำเภอ" without loading data automatically
-            // User must select a district to view data
         } catch (error) {
             console.error('Error loading districts:', error);
         }
-    };
-
-    // --- Load Hostypes from API ---
+    }; // --- Load Hostypes from API ---
     const loadHostypesFromAPI = async (): Promise<void> => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/hostypes`);
-            if (!response.ok) {
-                throw new Error('Failed to load hostypes');
-            }
+            if (!response.ok) throw new Error('Failed to load hostypes');
             const apiHostypes: Hostype[] = await response.json();
             hostypes = apiHostypes;
 
             const hostypeDropdownMenu = document.getElementById('hostypeDropdownMenu');
             if (hostypeDropdownMenu) {
-                // Add "ทั้งหมด" option first
                 let optionsHTML = `
                     <div class="hostype-option selected" data-hostype-code="" style="padding: 12px 20px; cursor: pointer; transition: all 0.2s; border-bottom: 1px solid #F1F5F9;">
                         ทั้งหมด
                     </div>
                 `;
 
-                // Add hostype options
                 hostypes.forEach(hostype => {
                     optionsHTML += `
                         <div class="hostype-option" data-hostype-name="${hostype.name}" style="padding: 12px 20px; cursor: pointer; transition: all 0.2s; border-bottom: 1px solid #F1F5F9;">
@@ -230,13 +391,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // --- Bind Sidebar Events ---
-    // Dropdown Logic
-    const dropdownTrigger = document.getElementById('districtDropdownTrigger');
-    const dropdownMenu = document.getElementById('districtDropdownMenu');
-    const selectedDistrictSpan = document.getElementById('selectedDistrict');
-
-    // Toggle Dropdown (Inner)
+    // --- District Dropdown Handlers ---
     if (dropdownTrigger && dropdownMenu) {
         dropdownTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -255,7 +410,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Handle Option Click
     const bindDropdownOptions = (): void => {
         const options = document.querySelectorAll('.district-option');
         options.forEach((option) => {
@@ -264,7 +418,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const districtName = (option as HTMLElement).dataset.districtName;
                 if (!districtCode || !districtName) return;
 
-                // Store selected district
                 currentSelectedDistrict = { code: districtCode, name: districtName };
 
                 if (selectedDistrictSpan) {
@@ -313,7 +466,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const name = (option as HTMLElement).dataset.hostypeName || null;
                 const displayName = (option as HTMLElement).textContent?.trim() || 'ทั้งหมด';
 
-                selectedHostypeCode = name; // Now storing name instead of code
+                selectedHostypeCode = name;
 
                 if (selectedHostypeSpan) {
                     selectedHostypeSpan.textContent = `สังกัด: ${displayName}`;
@@ -326,7 +479,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     hostypeDropdownMenu.style.display = 'none';
                 }
 
-                // Reload district data with hostype filter using the stored district selection
                 if (currentSelectedDistrict) {
                     loadDistrict(currentSelectedDistrict.code, currentSelectedDistrict.name, selectedHostypeCode);
                 }
@@ -335,36 +487,103 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // --- Initial Load ---
+    await loadYearsFromAPI();
+    // await loadMonthsFromAPI(); REMOVED
     await loadDistrictsFromAPI();
     await loadHostypesFromAPI();
 
     // Check URL parameter for district code
-    const urlParams = new URLSearchParams(window.location.search);
     const districtParam = urlParams.get('district');
 
-    if (districtParam && districts.length > 0) {
-        // Find the district by code
-        const district = districts.find(d => d.code === districtParam);
-        if (district) {
-            // Store the initial district from URL
-            currentSelectedDistrict = { code: district.code, name: district.name };
+    if (districtParam) {
+        setTimeout(() => {
+            const district = districts.find(d => d.code === districtParam);
+            if (district) {
+                currentSelectedDistrict = { code: district.code, name: district.name };
 
-            // Update dropdown display
-            if (selectedDistrictSpan) {
-                selectedDistrictSpan.textContent = district.name;
-            }
-
-            // Mark as selected in dropdown
-            const options = document.querySelectorAll('.district-option');
-            options.forEach((opt) => {
-                if ((opt as HTMLElement).dataset.districtCode === district.code) {
-                    opt.classList.add('selected');
+                if (selectedDistrictSpan) {
+                    selectedDistrictSpan.textContent = district.name;
                 }
-            });
 
-            // Load the district data
-            await loadDistrict(district.code, district.name);
+                const options = document.querySelectorAll('.district-option');
+                options.forEach((opt) => {
+                    if ((opt as HTMLElement).dataset.districtCode === district.code) {
+                        opt.classList.add('selected');
+                    }
+                });
+
+                loadDistrict(district.code, district.name);
+            }
+        }, 100);
+    }
+
+    // --- Expandable Section Functions ---
+    const missingSection = document.getElementById('missingSection');
+    const missingSectionBody = document.getElementById('missingSectionBody');
+    const missingCard = document.getElementById('missingCard');
+    const collapseBtn = document.getElementById('collapseBtn');
+
+    const renderMissingUnitsList = (): void => {
+        if (!missingSectionBody) return;
+
+        if (missingUnits.length === 0) {
+            missingSectionBody.innerHTML = `
+                <div class="empty-state">
+                    <i class="ph-fill ph-check-circle"></i>
+                    <h4>ทุกหน่วยบริการส่งข้อมูลครบแล้ว</h4>
+                    <p>ไม่มีหน่วยบริการที่ยังไม่ได้ส่งข้อมูลในเดือนนี้ 🎉</p>
+                </div>
+            `;
+            return;
         }
+
+        let html = '';
+        missingUnits.forEach((unit) => {
+            html += `
+                <div class="missing-unit-item">
+                    <div class="missing-unit-icon">
+                        <i class="ph-fill ph-warning-circle"></i>
+                    </div>
+                    <div class="missing-unit-info">
+                        <div class="missing-unit-code">${unit.code}</div>
+                        <div class="missing-unit-name" title="${unit.name}">${unit.name}</div>
+                    </div>
+                </div>
+            `;
+        });
+        missingSectionBody.innerHTML = html;
+    };
+
+    const expandSection = (): void => {
+        if (missingSection) {
+            renderMissingUnitsList();
+            missingSection.classList.add('expanded');
+        }
+    };
+
+    const collapseSection = (): void => {
+        if (missingSection) {
+            missingSection.classList.remove('expanded');
+        }
+    };
+
+    const toggleSection = (): void => {
+        if (missingSection?.classList.contains('expanded')) {
+            collapseSection();
+        } else {
+            expandSection();
+        }
+    };
+
+    if (missingCard) {
+        missingCard.addEventListener('click', toggleSection);
+    }
+
+    if (collapseBtn) {
+        collapseBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            collapseSection();
+        });
     }
 
 });

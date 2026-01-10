@@ -8,7 +8,7 @@
     --accent-cyan: #2CD3E1;
     --accent-dark: #2979FF;
 
-    --bg-body: #F0F2F5;
+    --bg-body: #E3F2FD;
     --bg-white: #FFFFFF;
     --bg-sidebar: #FFFFFF;
 
@@ -19,7 +19,7 @@
 
     --shadow-card: 0px 4px 20px rgba(0, 0, 0, 0.05);
 
-    --header-height: 70px;
+    --header-height: 100px;
     --sidebar-width: 250px;
 }
 
@@ -55,13 +55,17 @@ body {
 /* Header */
 .top-header {
     height: var(--header-height);
-    background: linear-gradient(90deg, #40C4FF 0%, #80D8FF 100%);
+    background: #E3F2FD;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     display: flex;
     align-items: center;
     justify-content: space-between;
     /* Changed to space-between */
     padding: 0 30px;
-    color: #fff;
+    color: #1e293b;
+    position: relative;
+    z-index: 50;
 }
 
 .header-left {
