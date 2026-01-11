@@ -152,13 +152,13 @@
 
         /* Province Summary Card */
         .province-summary-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #fff;
             border-radius: 12px;
             padding: 24px 30px;
             margin: 30px;
             margin-bottom: 0;
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
-            color: white;
+            box-shadow: var(--shadow-card);
+            color: var(--text-heading);
         }
 
         .province-summary-header {
@@ -172,33 +172,35 @@
             font-size: 18px;
             font-weight: 700;
             margin: 0;
-            opacity: 0.95;
+            color: var(--text-heading);
         }
 
         .month-selector {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 8px 12px;
+            background: #fff;
+            border: 2px solid var(--primary-blue);
+            color: var(--text-heading);
+            padding: 10px 16px;
             border-radius: 8px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             outline: none;
+            box-shadow: 0 2px 4px rgba(64, 196, 255, 0.1);
         }
 
         .month-selector:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: #F0F9FF;
+            box-shadow: 0 4px 8px rgba(64, 196, 255, 0.2);
         }
 
         .month-selector:focus {
-            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 3px rgba(64, 196, 255, 0.3);
         }
 
         .month-selector option {
-            background: #667eea;
-            color: white;
+            background: #fff;
+            color: var(--text-heading);
         }
 
         .province-stats {
@@ -230,12 +232,34 @@
             transition: transform 0.2s;
             padding: 12px;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
+            background: #F8FAFC;
+            border: 1px solid transparent;
         }
 
         .province-stat.clickable:hover {
             transform: scale(1.05);
-            background: rgba(255, 255, 255, 0.2);
+            background: #fff;
+            border-color: var(--primary-blue);
+            box-shadow: var(--shadow-card);
+        }
+
+        #provinceSubmitted {
+            color: #10B981;
+        }
+
+        #provinceMissing {
+            color: #EF4444;
+        }
+
+        #provinceMissingCard {
+            background: #FEF2F2;
+            border: 1px solid #FEE2E2;
+        }
+
+        #provinceMissingCard:hover {
+            background: #FFF;
+            border-color: #EF4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
         }
 
         /* Expandable Missing Section */
@@ -424,10 +448,18 @@
             <!-- Sub Header (Navigation) -->
             <div class="sub-header">
                 <nav class="header-nav">
-                    <div class="nav-item-group">
-                        <a href="hdc.html" class="nav-link active">43 แฟ้ม HDC</a>
-                    </div>
-                    <a href="#" class="nav-link">43 แฟ้ม OPPP</a>
+                    <a href="hdc.html" class="nav-link-modern active hdc-menu">
+                        <i class="ph-fill ph-file-text"></i>
+                        <span>43 แฟ้ม HDC</span>
+                    </a>
+                    <a href="oppp.html" class="nav-link-modern">
+                        <i class="ph-fill ph-first-aid"></i>
+                        <span>43 แฟ้ม OPPP</span>
+                    </a>
+                    <a href="admin-login.html" class="nav-link-modern">
+                        <i class="ph-fill ph-shield-check"></i>
+                        <span>Admin</span>
+                    </a>
                 </nav>
             </div>
 
@@ -436,28 +468,35 @@
 
             <div class="province-summary-card">
                 <div class="province-summary-header">
-                    <h2>📊 Dashboard การจัดส่งข้อมูล 43 แฟ้ม รายเดือน HDC</h2>
+                    <h2>
+                        <i class="ph-fill ph-chart-bar"
+                            style="color: #10B981; font-size: 20px; vertical-align: middle; margin-right: 10px;"></i>Dashboard
+                        การจัดส่งข้อมูล 43 แฟ้ม HDC
+                    </h2>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <a href="district-detail.html" style="
+                        <a href="hdc-report.html" style="
                             display: flex; 
                             align-items: center; 
                             gap: 6px; 
-                            background: rgba(255, 255, 255, 0.2); 
-                            border: 1px solid rgba(255, 255, 255, 0.3);
+                            background: linear-gradient(135deg, #10B981 0%, #34D399 100%); 
+                            border: none;
                             color: white; 
                             padding: 8px 12px; 
                             border-radius: 8px; 
                             text-decoration: none; 
                             font-weight: 600; 
                             font-size: 14px; 
-                            transition: all 0.2s;">
-                            <i class="ph-fill ph-chart-bar"></i>
+                            transition: all 0.2s;
+                            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);">
+                            <i class="ph-duotone ph-table"></i>
                             Dashboard รายเดือน
                         </a>
-                        <select class="month-selector" id="yearSelector">
+                        <select class="month-selector" id="yearSelector"
+                            style="border: 2px solid #10B981; color: #0F172A; text-align: center;">
                             <!-- Will be populated by JavaScript -->
                         </select>
-                        <select class="month-selector" id="monthSelector">
+                        <select class="month-selector" id="monthSelector"
+                            style="border: 2px solid #10B981; color: #0F172A; text-align: center;">
                             <!-- Will be populated by JavaScript -->
                         </select>
                     </div>
@@ -472,8 +511,27 @@
                         <div class="province-stat-value" id="provinceSubmitted">-</div>
                     </div>
                     <div class="province-stat clickable" id="provinceMissingCard">
-                        <div class="province-stat-label">⚠️ ยังไม่ได้ส่งข้อมูล</div>
+                        <div class="province-stat-label">
+                            <i class="ph-fill ph-warning-circle" style="color: #EF4444; font-size: 16px;"></i>
+                            ไม่ได้ส่งข้อมูล
+                            <i class="ph-bold ph-magnifying-glass"
+                                style="color: #EF4444; font-size: 14px; margin-left: 4px;"></i>
+                        </div>
                         <div class="province-stat-value" id="provinceMissing">-</div>
+                    </div>
+                </div>
+                <div
+                    style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #64748b;">
+                    <a href="https://hdc.moph.go.th/plk/public/standard-report-detail/92a705c26f22754d7462e9f742436b6f"
+                        target="_blank" rel="noopener noreferrer"
+                        style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #10B981; text-decoration: none; transition: all 0.2s; padding: 4px 8px; border-radius: 4px;">
+                        <i class="ph-bold ph-link-simple" style="font-size: 14px;"></i>
+                        <span style="font-weight: 500;">ที่มา: รายงาน HDC</span>
+                        <i class="ph-bold ph-arrow-square-out" style="font-size: 12px;"></i>
+                    </a>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <i class="ph ph-clock" style="font-size: 14px;"></i>
+                        <span>อัปเดต: <span id="lastUpdateTime">-</span></span>
                     </div>
                 </div>
             </div>
@@ -484,7 +542,7 @@
                     <div class="missing-section-header-province">
                         <h3>
                             <i class="ph-fill ph-warning-circle"></i>
-                            รายชื่อหน่วยบริการที่ยังไม่ได้ส่งข้อมูล
+                            รายชื่อหน่วยบริการที่ไม่ได้ส่งข้อมูล
                         </h3>
                         <button class="collapse-btn-province" id="collapseProvinceBtn">
                             ซ่อน

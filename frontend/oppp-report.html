@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HDC 43 Files Dashboard</title>
+    <title>OPPP 43 Files Dashboard</title>
 
     <!-- Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,17 +16,14 @@
 
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Page Specific Styles */
+        /* Page Specific Styles - Copied from hdc-report.html */
         .district-filter-container {
             padding: 0 30px;
             margin-top: 30px;
             overflow-x: auto;
             white-space: nowrap;
-            /* Hide scrollbar */
             -ms-overflow-style: none;
-            /* IE and Edge */
             scrollbar-width: none;
-            /* Firefox */
         }
 
         .district-filter-container::-webkit-scrollbar {
@@ -132,8 +129,8 @@
         }
 
         .status-icon.success {
-            color: #10B981;
-            background: #D1FAE5;
+            color: #0284C7;
+            background: #E0F2FE;
         }
 
         .status-icon.error {
@@ -345,50 +342,55 @@
             <!-- Sub Header (Navigation) -->
             <div class="sub-header">
                 <nav class="header-nav">
-                    <div class="nav-item-group">
-                        <a href="hdc.html" class="nav-link">43 แฟ้ม HDC</a>
-                    </div>
-                    <a href="#" class="nav-link">43 แฟ้ม OPPP</a>
+                    <a href="hdc.html" class="nav-link-modern">
+                        <i class="ph-fill ph-file-text"></i>
+                        <span>43 แฟ้ม HDC</span>
+                    </a>
+                    <a href="oppp.html" class="nav-link-modern active">
+                        <i class="ph-fill ph-first-aid"></i>
+                        <span>43 แฟ้ม OPPP</span>
+                    </a>
+                    <a href="admin-login.html" class="nav-link-modern">
+                        <i class="ph-fill ph-shield-check"></i>
+                        <span>Admin</span>
+                    </a>
                 </nav>
             </div>
-
-            <!-- District Filter (Moved to Sidebar) -->
-            <!-- <div class="district-filter-container"> ... </div> -->
 
             <div class="hdc-content">
                 <!-- District Selector -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="font-size: 24px; font-weight: 700; color: var(--text-heading);">Dashboard การจัดส่งข้อมูล
-                        43 แฟ้ม รายเดือน HDC</h2>
+                    <h2 style="font-size: 24px; font-weight: 700; color: var(--text-heading);">
+                        <i class="ph-fill ph-chart-bar"
+                            style="color: var(--primary-blue); font-size: 28px; vertical-align: middle; margin-right: 10px;"></i>Dashboard
+                        การจัดส่งข้อมูล
+                        43 แฟ้ม รายเดือน OPPP
+                    </h2>
 
                     <!-- Dropdowns Container -->
                     <div style="display: flex; gap: 12px;">
                         <!-- Year Dropdown -->
                         <div class="year-dropdown-container" style="position: relative;">
                             <div class="year-dropdown-trigger" id="yearDropdownTrigger"
-                                style="cursor: pointer; padding: 12px 20px; background: #fff; border-radius: 8px; box-shadow: var(--shadow-card); display: flex; align-items: center; gap: 10px; min-width: 140px; justify-content: space-between;">
+                                style="cursor: pointer; padding: 10px 16px; background: #fff; border-radius: 8px; border: 2px solid var(--primary-blue); display: flex; align-items: center; gap: 10px; min-width: 140px; justify-content: space-between; box-shadow: 0 2px 4px rgba(64, 196, 255, 0.1); transition: all 0.2s;">
                                 <span id="selectedYear" style="font-weight: 600; color: var(--text-heading);"></span>
-                                <i class="ph ph-caret-down" style="color: var(--text-light);"></i>
+                                <i class="ph ph-caret-down" style="color: var(--primary-blue);"></i>
                             </div>
                             <div class="year-dropdown-menu" id="yearDropdownMenu"
                                 style="position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px; background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); z-index: 1000; max-height: 400px; overflow-y: auto; display: none;">
-                                <!-- Year options will be populated by JavaScript -->
                             </div>
                         </div>
-
-                        <!-- Month Dropdown Removed -->
 
                         <!-- District Dropdown -->
                         <div class="district-dropdown-container" style="position: relative;">
                             <div class="district-dropdown-trigger" id="districtDropdownTrigger"
-                                style="cursor: pointer; padding: 12px 20px; background: #fff; border-radius: 8px; box-shadow: var(--shadow-card); display: flex; align-items: center; gap: 10px; min-width: 200px; justify-content: space-between;">
+                                style="cursor: pointer; padding: 10px 16px; background: #fff; border-radius: 8px; border: 2px solid var(--primary-blue); display: flex; align-items: center; gap: 10px; min-width: 200px; justify-content: space-between; box-shadow: 0 2px 4px rgba(64, 196, 255, 0.1); transition: all 0.2s;">
                                 <span id="selectedDistrict"
                                     style="font-weight: 600; color: var(--text-heading);">เลือกอำเภอ</span>
-                                <i class="ph ph-caret-down" style="color: var(--text-light);"></i>
+                                <i class="ph ph-caret-down" style="color: var(--primary-blue);"></i>
                             </div>
                             <div class="district-dropdown-menu" id="districtDropdownMenu"
                                 style="position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px; background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); z-index: 1000; max-height: 400px; overflow-y: auto; display: none;">
-                                <!-- District options will be populated by JavaScript from API -->
                             </div>
                         </div>
                         <!-- Hostype dropdown will be injected here by JavaScript -->
@@ -407,10 +409,10 @@
                     <div class="card info-card">
                         <div class="card-header">
                             <h4><i class="ph-fill ph-check-circle"
-                                    style="color: #10B981; font-size: 20px; vertical-align: middle; margin-right: 8px;"></i>ส่งครบทุกเดือน
+                                    style="color: #0284C7; font-size: 20px; vertical-align: middle; margin-right: 8px;"></i>ส่งครบทุกเดือน
                                 (แห่ง)</h4>
                         </div>
-                        <div class="card-value" style="color: #10B981" id="totalSubmitted">0</div>
+                        <div class="card-value" style="color: #0284C7" id="totalSubmitted">0</div>
                     </div>
                     <div class="card info-card" id="missingCard"
                         style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
@@ -473,15 +475,33 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Source and Update Information -->
+                <div
+                    style="background: #fff; border-radius: 12px; padding: 16px 24px; box-shadow: var(--shadow-card); margin-top: 0px;">
+                    <div
+                        style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #64748b;">
+                        <a href="#" target="_blank" rel="noopener noreferrer"
+                            style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--primary-blue); text-decoration: none; transition: all 0.2s; padding: 4px 8px; border-radius: 4px;">
+                            <i class="ph-bold ph-link-simple" style="font-size: 14px;"></i>
+                            <span style="font-weight: 500;">ที่มา: รายงาน OPPP</span>
+                            <i class="ph-bold ph-arrow-square-out" style="font-size: 12px;"></i>
+                        </a>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <i class="ph ph-clock" style="font-size: 14px;"></i>
+                            <span>อัปเดต: <span id="lastUpdateTime">-</span></span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <footer
-                style="text-align: center; padding: 20px; color: #8D99AE; font-size: 12px; border-top: 1px solid #F1F5F9; margin-top: auto; background: #fff;">
+                style="text-align: center; padding: 20px; color: #8D99AE; font-size: 12px; border-top: 1px solid #F1F5F9; margin-top: 0; background: #fff;">
                 Copyright ©2026 Digital Health Group of Phitsanulok Provincial Public Health Office
             </footer>
         </main>
     </div>
 
-    <script type="module" src="district-script.ts"></script>
+    <script type="module" src="oppp-report-scripts.ts"></script>
 </body>
 
 </html>

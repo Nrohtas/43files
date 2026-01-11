@@ -15,6 +15,7 @@ interface ApiUnit {
 interface Unit {
     code: string;
     name: string;
+    hostype?: string;
     months: (string | null)[];
 }
 
@@ -80,9 +81,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const hostypeHTML = `
             <div class="hostype-dropdown-container" style="position: relative;">
                 <div class="hostype-dropdown-trigger" id="hostypeDropdownTrigger"
-                    style="cursor: pointer; padding: 12px 20px; background: #fff; border-radius: 8px; box-shadow: var(--shadow-card); display: flex; align-items: center; gap: 10px; min-width: 220px; justify-content: space-between;">
+                    style="cursor: pointer; padding: 10px 16px; background: #fff; border-radius: 8px; border: 2px solid var(--primary-blue); display: flex; align-items: center; gap: 10px; min-width: 220px; justify-content: space-between; box-shadow: 0 2px 4px rgba(64, 196, 255, 0.1); transition: all 0.2s;">
                     <span id="selectedHostype" style="font-weight: 600; color: var(--text-heading);">สังกัด: ทั้งหมด</span>
-                    <i class="ph ph-caret-down" style="color: var(--text-light);"></i>
+                    <i class="ph ph-caret-down" style="color: var(--primary-blue);"></i>
                 </div>
                 <div class="hostype-dropdown-menu" id="hostypeDropdownMenu"
                     style="position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px; background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); z-index: 1000; max-height: 400px; overflow-y: auto; display: none;">
@@ -108,7 +109,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            let url = `${API_BASE_URL}/api/hdc/${encodeURIComponent(districtCode)}?year=${currentYear}`;
+            // Using /api/oppp here
+            let url = `${API_BASE_URL}/api/oppp/${encodeURIComponent(districtCode)}?year=${currentYear}`;
             if (hostypeCode) {
                 url += `&hostype=${encodeURIComponent(hostypeCode)}`;
             }
@@ -181,7 +183,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (units.length === 0) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `< td colspan = "14" style = "text-align:center; padding:40px; color:#94A3B8;" > ไม่พบข้อมูลหน่วยบริการในอำเภอนี้ </td>`;
+                tr.innerHTML = `<td colspan="14" style="text-align:center; padding:40px; color:#94A3B8;">ไม่พบข้อมูลหน่วยบริการในอำเภอนี้</td>`;
                 tableBody.appendChild(tr);
                 return;
             }
@@ -204,9 +206,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                     monthsHtml += `<td style="text-align:center">${renderStatus(status, index)}</td>`;
                 });
 
+                // Check for specific hostypes to color
+                const targetGreen = ['05', '07', '08', '11', '18', '5', '7', '8'];
+                const targetPurple = ['21'];
+
+                const hostypeStr = u.hostype ? String(u.hostype).trim() : '';
+
+                let cellStyle = 'font-weight:500;';
+                let codeStyle = 'font-family:monospace; background:#f0f2f5; padding:2px 6px; border-radius:4px;';
+
+                if (targetGreen.includes(hostypeStr)) {
+                    cellStyle = 'font-weight:600; color: #059669;'; // Emerald Green
+                    codeStyle += ' color: #059669; font-weight:600;';
+                } else if (targetPurple.includes(hostypeStr)) {
+                    cellStyle = 'font-weight:600; color: #7C3AED;'; // Violet Purple
+                    codeStyle += ' color: #7C3AED; font-weight:600;';
+                }
+
                 tr.innerHTML = `
-                    <td><span style="font-family:monospace; background:#f0f2f5; padding:2px 6px; border-radius:4px;">${u.code}</span></td>
-                    <td style="font-weight:500;">${u.name}</td>
+                    <td><span style="${codeStyle}">${u.code}</span></td>
+                    <td style="${cellStyle}">${u.name}</td>
                     ${monthsHtml}
                 `;
                 tableBody.appendChild(tr);
@@ -237,7 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (yearDropdownMenu) {
                 yearDropdownMenu.innerHTML = '';
-                // Filter out 2568 as requested
+                // Filter out 2568 as requested if needed (implied from HDC version)
                 years.filter(y => y !== '2568').forEach(year => {
                     const option = document.createElement('div');
                     option.className = 'year-option';

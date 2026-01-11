@@ -122,13 +122,24 @@ async function populateYearSelector() {
 
 // Populate month selector
 async function populateMonthSelector() {
+    console.log('Populating month selector...'); // Debug
     const months = await fetchMonths();
+    console.log('Fetched months:', months); // Debug
 
     monthSelector.innerHTML = '';
+
+    if (months.length === 0) {
+        console.warn('No months data found');
+        const option = document.createElement('option');
+        option.textContent = "ไม่มีข้อมูลเดือน";
+        monthSelector.appendChild(option);
+        return;
+    }
+
     months.forEach(month => {
         const option = document.createElement('option');
         option.value = month.value;
-        option.textContent = month.name;
+        option.textContent = month.name; // name is now the Thai short name per server update
         if (month.value === currentMonth) option.selected = true;
         monthSelector.appendChild(option);
     });
@@ -158,10 +169,10 @@ function renderDistrictCards(districts: DistrictSummary[]) {
                     <div class="district-name">${district.name}</div>
                     <div class="district-code">รหัสอำเภอ: ${district.code}</div>
                 </div>
-                <div class="district-icon" onclick="navigateToDistrict('${district.code}'); event.stopPropagation();" title="ดูรายละเอียด Dashboard รายเดือน" 
-                    style="width: auto; height: auto; padding: 6px 12px; border-radius: 20px; display: flex; gap: 6px; align-items: center; cursor: pointer; transition: transform 0.2s;">
+                <div class="district-icon" onclick="navigateToDistrict('${district.code}'); event.stopPropagation();" title="ดูรายละเอียด Dashboard รายเดือน"
+                    style="width: auto; height: auto; padding: 6px 12px; border-radius: 20px; display: flex; gap: 6px; align-items: center; cursor: pointer; transition: transform 0.2s; background: #ECFDF5; color: #10B981;">
                     <span style="font-size: 12px; font-weight: 600;">รายเดือน</span>
-                    <i class="ph-bold ph-arrow-right" style="font-size: 14px;"></i>
+                    <i class="ph-duotone ph-table" style="font-size: 14px;"></i>
                 </div>
             </div>
             
@@ -170,14 +181,14 @@ function renderDistrictCards(districts: DistrictSummary[]) {
                     <div class="stat-value total">${district.totalUnits}</div>
                     <div class="stat-label">หน่วยบริการ</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value submitted">${district.submitted}</div>
+                <div class="stat-item" style="background-color: #F0FDF4 !important;">
+                    <div class="stat-value submitted" style="color: #15803D !important;">${district.submitted}</div>
                     <div class="stat-label">ส่งแล้ว</div>
                 </div>
-                <div class="stat-item" style="cursor: pointer; transition: transform 0.2s;" onmouseover="if(this.querySelector('.missing').textContent !== '0') this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+                <div class="stat-item" style="background: #FEF2F2; cursor: pointer; transition: transform 0.2s;" onmouseover="if(this.querySelector('.missing').textContent !== '0') this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
                     <div class="stat-value missing" style="${district.missing > 0 ? 'color: #EF4444;' : 'color: #94A3B8;'}">${district.missing}</div>
                     <div class="stat-label" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-                        ไม่ได้ส่ง ${district.missing > 0 ? '<i class="ph-fill ph-hand-pointing" style="font-size: 16px; opacity: 0.9;"></i>' : ''}
+                        ไม่ได้ส่ง ${district.missing > 0 ? '<i class="ph-bold ph-magnifying-glass" style="font-size: 16px; color: #EF4444;"></i>' : ''}
                     </div>
                 </div>
             </div>
@@ -263,7 +274,7 @@ function toggleProvinceSection() {
 
 // Navigate to district detail page
 function navigateToDistrict(districtCode: string) {
-    window.location.href = `district-detail.html?district=${districtCode}&year=${currentYear}&month=${currentMonth}`;
+    window.location.href = `hdc-report.html?district=${districtCode}&year=${currentYear}&month=${currentMonth}`;
 }
 
 // Make function globally available
@@ -361,6 +372,28 @@ async function initDashboard() {
     // Fetch and prepare missing units data
     allMissingUnits = await fetchAllMissingUnits(currentYear, currentMonth);
     renderProvinceMissingUnits(allMissingUnits);
+
+    // Update last update time
+    updateLastUpdateTime();
+}
+
+// Update last update time display
+function updateLastUpdateTime() {
+    const now = new Date();
+    const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+    const day = now.getDate();
+    const month = thaiMonths[now.getMonth()];
+    const year = now.getFullYear() + 543;
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+
+    const timeString = `${day} ${month} ${year}, ${hours}:${minutes}`;
+
+    const lastUpdateEl = document.getElementById('lastUpdateTime');
+    if (lastUpdateEl) {
+        lastUpdateEl.textContent = timeString;
+    }
 }
 
 // Load data when page is ready
