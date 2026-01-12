@@ -2,6 +2,10 @@
 import express, { Request, Response } from 'express';
 import mysql from 'mysql2';
 import cors from 'cors';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 // Create Express app
 const app = express();
@@ -13,10 +17,10 @@ app.use(express.json());
 
 // Database connection configuration
 const dbConfig = {
-    host: 'localhost',
-    user: 'root',
-    password: 'root', // Replace with your actual password
-    database: '43files'
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'root',
+    database: process.env.DB_NAME || '43files'
 };
 
 // Create a connection pool

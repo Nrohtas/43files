@@ -1,94 +1,110 @@
-# 43files Dashboard - HDC Data Submission Tracking
+# README - วิธีใช้งาน Dashboard
 
-Dashboard application for tracking 43 HDC file submissions from healthcare facilities in Phitsanulok province.
+## 🚀 วิธีเริ่มระบบ (เลือก 1 วิธี)
 
-## Project Structure
+### วิธีที่ 1: ใช้ Batch File (แนะนำ - ง่ายที่สุด)
+```cmd
+start-dev.bat
+```
+จะเปิด 2 หน้าต่าง:
+- หน้าต่าง Server (ดำ)
+- หน้าต่าง Client (Vite)
 
-- **backend/** - Node.js/TypeScript server with Express and MySQL
-- **frontend/** - HTML/CSS/TypeScript frontend application
+### วิธีที่ 2: เปิดแยก 2 Terminal
+**Terminal 1 - Server:**
+```cmd
+node --import tsx server/src/index.ts
+```
+**หมายเหตุ:** หากต้องการแก้ไขการตั้งค่าฐานข้อมูล ให้แก้ไขไฟล์ `server/.env` (สร้างจาก `.env.example`)
 
-## Technologies
-
-- **Backend**: Node.js, Express, TypeScript, MySQL
-- **Frontend**: HTML5, CSS3, TypeScript, Phosphor Icons
-- **Database**: MySQL (43files database)
-
-## Setup
-
-### Prerequisites
-- Node.js (v16 or higher)
-- MySQL Server
-- npm or yarn
-
-### Installation
-
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Configure database connection in `backend/server.ts`:
-   ```typescript
-   host: 'localhost',
-   user: 'root',
-   password: 'root',
-   database: '43files',
-   port: 3306
-   ```
-
-4. Start development server:
-   ```bash
-   npm run dev
-   ```
-
-## Database Structure
-
-### Tables
-- `ampur` - District information (9 districts in Phitsanulok)
-- `hospital` - Hospital/health facility records (132 facilities)
-- `hostype` - Hospital type/affiliation categories
-- `hdc` - Monthly HDC submission tracking data
-
-### Districts (อำเภอ)
-1. เมืองพิษณุโลก (6501)
-2. นครไทย (6502)
-3. ชาติตระการ (6503)
-4. บางระกำ (6504)
-5. บางกระทุ่ม (6505)
-6. พรหมพิราม (6506)
-7. วัดโบสถ์ (6507)
-8. วังทอง (6508)
-9. เนินมะปราง (6509)
-
-## Features
-
-- District-based healthcare facility listing
-- Monthly submission status tracking (October 2024 - September 2025)
-- Filter by hospital affiliation type (สังกัด)
-- Real-time statistics dashboard
-- Responsive design
-
-## API Endpoints
-
-- `GET /api/districts` - Get list of all districts
-- `GET /api/hdc/:district` - Get HDC data for specific district
-- `GET /api/hostypes` - Get list of hospital types/affiliations
-- `GET /api/districts/summary` - Get summary statistics
-
-## Development
-
-Run backend server:
-```bash
-npx tsx backend/server.ts
+**Terminal 2 - Client:**
+```cmd
+npx vite client
 ```
 
-The application will be available at `http://localhost:3000`
+### วิธีที่ 3: เปิดใน VS Code
+1. เปิด Terminal ใน VS Code (Ctrl + `)
+2. Split Terminal (กดปุ่ม + ข้างๆ dropdown)
+3. รันคำสั่ง:
+   - Terminal 1: `node --import tsx server/src/index.ts`
+   - Terminal 2: `npx vite client`
 
-## License
+---
 
-Private - Phitsanulok Provincial Health Office
+## 🌐 เข้าใช้งานระบบ
 
-## Contact
+Server รันที่: **http://localhost:3000**  
+Client รันที่: **http://localhost:5173**
 
-สำนักงานสาธารณสุขจังหวัดพิษณุโลก
+### หน้าต่างๆ ที่ใช้งานได้:
+- **หน้าแรก**: http://localhost:5173/index.html
+- **HDC Dashboard**: http://localhost:5173/hdc/dashboard.html
+- **HDC Report**: http://localhost:5173/hdc/report.html
+- **OPPP Dashboard**: http://localhost:5173/oppp/dashboard.html
+- **OPPP Report**: http://localhost:5173/oppp/report.html
+- **Admin Login**: http://localhost:5173/admin/login.html
+
+---
+
+## ⚙️ คำสั่งอื่นๆ
+
+### Build Production
+```cmd
+npx vite build client
+```
+
+### ดู API Documentation
+Server endpoints:
+- `GET /api/districts` - รายการอำเภอ
+- `GET /api/hdc/:district` - ข้อมูล HDC
+- `GET /api/oppp/:district` - ข้อมูล OPPP
+- `GET /api/years` - ปีที่มีข้อมูล
+- `GET /api/months` - เดือนที่มีข้อมูล
+- `GET /api/hostypes` - ประเภทสถานพยาบาล
+
+---
+
+## 🔧 แก้ปัญหา
+
+### ปัญหา: npm/npx ใช้ไม่ได้
+**สาเหตุ**: PowerShell Execution Policy  
+**วิธีแก้**: ใช้ `start-dev.bat` แทน หรือรันด้วย `node` โดยตรง
+
+### ปัญหา: หน้าเว็บ 404
+**ตรวจสอบ**: กำลังเข้า URL ที่ถูกต้องหรือไม่  
+**URL ที่ใช้**: http://localhost:5173/hdc/dashboard.html (ไม่ใช่ hdc.html)
+
+### ปัญหา: ไม่มีข้อมูล
+**ตรวจสอบ**:
+1. Server รันอยู่หรือไม่ (port 3000)
+2. Database เชื่อมต่อได้หรือไม่
+3. เปิด Console ใน Browser ดู error
+
+---
+
+## 📁 โครงสร้างโปรเจค
+
+```
+43files/
+├── server/              # Server-side (Node.js + Express)
+│   ├── src/
+│   │   └── index.ts     # Main server file
+│   └── scripts/         # Development scripts
+├── client/              # Client-side (HTML + TypeScript + Vite)
+│   ├── src/
+│   │   ├── pages/       # HTML pages
+│   │   ├── scripts/     # TypeScript files
+│   │   ├── styles/      # CSS files
+│   │   └── assets/      # Images, etc.
+│   └── dist/            # Build output
+├── start-dev.bat        # Quick start script
+└── package.json
+```
+
+---
+
+## ℹ️ ข้อมูลเพิ่มเติม
+
+- **Documentation**: ดูที่ `docs/` folder (ถ้ามี)
+- **Troubleshooting**: ดู troubleshooting.md ใน artifacts
+- **Contact**: Digital Health Group, Phitsanulok PHO

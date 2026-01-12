@@ -1,34 +1,34 @@
 {
-  "name": "43files",
+  "name": "43files-workspace",
   "version": "1.0.0",
-  "description": "",
-  "main": "backend/server.ts",
+  "description": "43 แฟ้ม HDC/OPPP Data Submission Tracking Dashboard - Workspace Root",
+  "private": true,
   "type": "module",
+  "workspaces": [
+    "server",
+    "client"
+  ],
   "scripts": {
-    "dev": "vite frontend",
-    "build": "vite build frontend",
-    "preview": "vite preview frontend",
-    "server": "tsx backend/server.ts",
-    "server:watch": "tsx watch backend/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "server": "npm run dev --workspace=server",
+    "client": "npm run dev --workspace=client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build:server": "npm run build --workspace=server",
+    "build:client": "npm run build --workspace=client",
+    "build": "npm run build:server && npm run build:client",
+    "install:server": "npm install --workspace=server",
+    "install:client": "npm install --workspace=client",
+    "install:all": "npm install"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "dashboard",
+    "healthcare",
+    "hdc",
+    "oppp",
+    "workspace"
+  ],
+  "author": "Phitsanulok Provincial Health Office",
   "license": "ISC",
   "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
-    "@types/node": "^25.0.3",
-    "tsx": "^4.19.2",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.0"
-  },
-  "dependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "bcryptjs": "^3.0.3",
-    "chart.js": "^4.5.1",
-    "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "mysql2": "^3.6.5"
+    "concurrently": "^8.2.2"
   }
 }

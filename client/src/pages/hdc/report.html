@@ -14,7 +14,7 @@
     <!-- Icons: Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/src/styles/main.css">
     <style>
         /* Page Specific Styles */
         .district-filter-container {
@@ -329,7 +329,7 @@
             <header class="top-header">
                 <div class="header-left">
                     <div class="logo" style="display: flex; align-items: center; gap: 20px;">
-                        <img src="assets/logo_digital_health.png" alt="Logo"
+                        <img src="/src/assets/images/logo_digital_health.png" alt="Logo"
                             style="height: 85px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
                         <div style="display: flex; flex-direction: column; justify-content: center; line-height: 1.2;">
                             <h2
@@ -345,16 +345,16 @@
             <!-- Sub Header (Navigation) -->
             <div class="sub-header">
                 <nav class="header-nav">
-                    <a href="hdc.html" class="nav-link-modern active hdc-menu">
+                    <a href="dashboard.html" class="nav-link-modern hdc-menu">
                         <i class="ph-fill ph-file-text"></i>
                         <span>43 แฟ้ม HDC</span>
                     </a>
-                    <a href="oppp-report.html" class="nav-link-modern">
+                    <a href="../oppp/dashboard.html" class="nav-link-modern">
                         <i class="ph-fill ph-first-aid"></i>
                         <span>43 แฟ้ม OPPP</span>
                     </a>
-                    <a href="admin-login.html" class="nav-link-modern">
-                        <i class="ph-fill ph-shield-check"></i>
+                    <a href="../admin/login.html" class="nav-link-modern">
+                        <i class="ph-shield-check"></i>
                         <span>Admin</span>
                     </a>
                 </nav>
@@ -512,7 +512,7 @@
         </main>
     </div>
 
-    <script type="module" src="hdc-report-scripts.ts"></script>
+    <script type="module" src="/src/scripts/hdc/report.ts"></script>
 </body>
 
 </html>

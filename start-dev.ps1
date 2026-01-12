@@ -1,31 +1,35 @@
-# HDC Dashboard Development Servers Startup Script
-Write-Host "==================================" -ForegroundColor Cyan
-Write-Host "  HDC Dashboard Dev Environment  " -ForegroundColor Cyan
-Write-Host "==================================" -ForegroundColor Cyan
+# Quick Start Script
+# This script starts both server and client for development
+
+Write-Host "Starting 43files Dashboard..." -ForegroundColor Green
 Write-Host ""
 
-# Start backend server in background
-Write-Host "[1/2] Starting backend server on port 3000..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "node --import tsx backend/server.ts" -WorkingDirectory $PSScriptRoot
+# Start Server in background
+Write-Host "Starting Server..." -ForegroundColor Cyan
+$serverJob = Start-Job -ScriptBlock {
+    Set-Location "E:\Dashboard\43files"
+    npx tsx server/src/index.ts
+}
 
-# Wait a bit for backend to start
+# Wait a bit for server to start
 Start-Sleep -Seconds 2
 
-# Start frontend Vite dev server
-Write-Host "[2/2] Starting frontend Vite server on port 5173..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "node node_modules/vite/bin/vite.js frontend" -WorkingDirectory $PSScriptRoot
+# Start Vite Client
+Write-Host "Starting Client (Vite)..." -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Server: http://localhost:3000" -ForegroundColor Yellow
+Write-Host "Client: http://localhost:5173" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "Press Ctrl+C to stop both server and client" -ForegroundColor Gray
+Write-Host ""
 
-# Wait for servers to start
-Start-Sleep -Seconds 3
-
-Write-Host ""
-Write-Host "=====================================" -ForegroundColor Green
-Write-Host "  Servers are starting!             " -ForegroundColor Green
-Write-Host "=====================================" -ForegroundColor Green
-Write-Host ""
-Write-Host "Backend API: " -NoNewline
-Write-Host "http://localhost:3000" -ForegroundColor Cyan
-Write-Host "Frontend:    " -NoNewline
-Write-Host "http://localhost:5173/hdc.html" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "Press Ctrl+C in each terminal to stop servers" -ForegroundColor Yellow
+# Run vite in foreground (so we can see output and stop with Ctrl+C)
+try {
+    npx vite client
+} finally {
+    # Clean up background job when vite stops
+    Write-Host "`nStopping server..." -ForegroundColor Yellow
+    Stop-Job $serverJob
+    Remove-Job $serverJob
+    Write-Host "Done!" -ForegroundColor Green
+}

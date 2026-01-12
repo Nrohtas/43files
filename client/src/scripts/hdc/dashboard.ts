@@ -1,5 +1,5 @@
 // API base URL
-const API_BASE = 'http://localhost:3000/api';
+export const API_BASE = 'http://localhost:3000/api';
 
 // State
 // State
@@ -28,10 +28,6 @@ interface DistrictMissingGroup {
     districtCode: string;
     districtName: string;
     units: MissingUnit[];
-}
-
-interface Year {
-    value: string;
 }
 
 interface Month {

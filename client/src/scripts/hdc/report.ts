@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:3000';
+export const API_BASE_URL = 'http://localhost:3000';
 
 // Type Definitions
 interface District {
@@ -7,10 +7,7 @@ interface District {
     name: string;
 }
 
-interface ApiUnit {
-    code: string;
-    name: string;
-}
+
 
 interface Unit {
     code: string;
@@ -29,12 +26,7 @@ interface MissingUnit {
     name: string;
 }
 
-interface Month {
-    value: string;
-    name: string;
-    nameEng: string;
-    abbr: string;  // ชื่อย่อจาก month_th
-}
+
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -81,9 +73,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const hostypeHTML = `
             <div class="hostype-dropdown-container" style="position: relative;">
                 <div class="hostype-dropdown-trigger" id="hostypeDropdownTrigger"
-                    style="cursor: pointer; padding: 10px 16px; background: #fff; border-radius: 8px; border: 2px solid var(--primary-blue); display: flex; align-items: center; gap: 10px; min-width: 220px; justify-content: space-between; box-shadow: 0 2px 4px rgba(64, 196, 255, 0.1); transition: all 0.2s;">
+                    style="cursor: pointer; padding: 10px 16px; background: #fff; border-radius: 8px; border: 2px solid #10B981; display: flex; align-items: center; gap: 10px; min-width: 220px; justify-content: space-between; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1); transition: all 0.2s;">
                     <span id="selectedHostype" style="font-weight: 600; color: var(--text-heading);">สังกัด: ทั้งหมด</span>
-                    <i class="ph ph-caret-down" style="color: var(--primary-blue);"></i>
+                    <i class="ph ph-caret-down" style="color: #10B981;"></i>
                 </div>
                 <div class="hostype-dropdown-menu" id="hostypeDropdownMenu"
                     style="position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px; background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); z-index: 1000; max-height: 400px; overflow-y: auto; display: none;">
@@ -109,8 +101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            // Using /api/oppp here
-            let url = `${API_BASE_URL}/api/oppp/${encodeURIComponent(districtCode)}?year=${currentYear}`;
+            let url = `${API_BASE_URL}/api/hdc/${encodeURIComponent(districtCode)}?year=${currentYear}`;
             if (hostypeCode) {
                 url += `&hostype=${encodeURIComponent(hostypeCode)}`;
             }
@@ -183,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (units.length === 0) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td colspan="14" style="text-align:center; padding:40px; color:#94A3B8;">ไม่พบข้อมูลหน่วยบริการในอำเภอนี้</td>`;
+                tr.innerHTML = `< td colspan = "14" style = "text-align:center; padding:40px; color:#94A3B8;" > ไม่พบข้อมูลหน่วยบริการในอำเภอนี้ </td>`;
                 tableBody.appendChild(tr);
                 return;
             }
@@ -256,7 +247,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (yearDropdownMenu) {
                 yearDropdownMenu.innerHTML = '';
-                // Filter out 2568 as requested if needed (implied from HDC version)
+                // Filter out 2568 as requested
                 years.filter(y => y !== '2568').forEach(year => {
                     const option = document.createElement('div');
                     option.className = 'year-option';
@@ -335,23 +326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    const bindMonthDropdownOptions = (): void => {
-        const options = document.querySelectorAll('.month-option');
-        options.forEach((option) => {
-            option.addEventListener('click', () => {
-                const monthValue = (option as HTMLElement).dataset.monthValue;
-                if (!monthValue) return;
 
-                const newUrl = new URL(window.location.href);
-                newUrl.searchParams.set('year', currentYear);
-                newUrl.searchParams.set('month', monthValue);
-                if (currentSelectedDistrict) {
-                    newUrl.searchParams.set('district', currentSelectedDistrict.code);
-                }
-                window.location.href = newUrl.toString();
-            });
-        });
-    };
 
     // --- Load Districts from API ---
     const loadDistrictsFromAPI = async (): Promise<void> => {
