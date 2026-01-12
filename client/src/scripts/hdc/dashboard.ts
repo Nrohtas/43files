@@ -2,12 +2,11 @@
 export const API_BASE = 'http://localhost:3000/api';
 
 // State
-// State
 const today = new Date();
 const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-const fiscalYear = (prevMonthDate.getMonth() >= 9) ? prevMonthDate.getFullYear() + 544 : prevMonthDate.getFullYear() + 543;
 
-let currentYear = fiscalYear.toString();
+// Default to fiscal year 2568
+let currentYear = '2568';
 let currentMonth = (prevMonthDate.getMonth() + 1).toString();
 
 // Type definitions
@@ -73,9 +72,11 @@ async function fetchMonths(): Promise<Month[]> {
 }
 
 // Fetch district summary data
-async function fetchDistrictSummary(year: string, month: string): Promise<DistrictSummary[]> {
+async function fetchDistrictSummary(fiscalYear: string, month: string): Promise<DistrictSummary[]> {
     try {
-        const response = await fetch(`${API_BASE}/districts/summary?year=${year}&month=${month}`);
+        // Backend expects year_th (Thai Buddhist Year), not calendar year
+        // So we pass fiscalYear directly without conversion
+        const response = await fetch(`${API_BASE}/districts/summary?year=${fiscalYear}&month=${month}`);
         if (!response.ok) {
             throw new Error('Failed to fetch district summary');
         }
@@ -88,9 +89,10 @@ async function fetchDistrictSummary(year: string, month: string): Promise<Distri
 }
 
 // Fetch all missing units (province-wide)
-async function fetchAllMissingUnits(year: string, month: string): Promise<DistrictMissingGroup[]> {
+async function fetchAllMissingUnits(fiscalYear: string, month: string): Promise<DistrictMissingGroup[]> {
     try {
-        const response = await fetch(`${API_BASE}/missing-units/all?year=${year}&month=${month}`);
+        // Backend expects year_th (Thai Buddhist Year), not calendar year
+        const response = await fetch(`${API_BASE}/missing-units/all?year=${fiscalYear}&month=${month}`);
         if (!response.ok) {
             throw new Error('Failed to fetch missing units');
         }
@@ -179,13 +181,14 @@ function renderDistrictCards(districts: DistrictSummary[]) {
                 </div>
                 <div class="stat-item" style="background-color: #F0FDF4 !important;">
                     <div class="stat-value submitted" style="color: #15803D !important;">${district.submitted}</div>
-                    <div class="stat-label">ส่งแล้ว</div>
+                    <div class="stat-label">ประมวลผลแล้ว</div>
                 </div>
                 <div class="stat-item" style="background: #FEF2F2; cursor: pointer; transition: transform 0.2s;" onmouseover="if(this.querySelector('.missing').textContent !== '0') this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
-                    <div class="stat-value missing" style="${district.missing > 0 ? 'color: #EF4444;' : 'color: #94A3B8;'}">${district.missing}</div>
-                    <div class="stat-label" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-                        ไม่ได้ส่ง ${district.missing > 0 ? '<i class="ph-bold ph-magnifying-glass" style="font-size: 16px; color: #EF4444;"></i>' : ''}
+                    <div style="position: relative;">
+                        <div class="stat-value missing" style="${district.missing > 0 ? 'color: #EF4444;' : 'color: #94A3B8;'}">${district.missing}</div>
+                        ${district.missing > 0 ? '<i class="ph-bold ph-magnifying-glass" style="position: absolute; top: -4px; right: -4px; font-size: 14px; color: #EF4444;"></i>' : ''}
                     </div>
+                    <div class="stat-label">รอประมวลผล</div>
                 </div>
             </div>
         </div>
@@ -215,7 +218,7 @@ function renderProvinceMissingUnits(districtGroups: DistrictMissingGroup[]) {
             <div class="empty-missing-state">
                 <i class="ph-fill ph-check-circle"></i>
                 <h4>ทุกหน่วยบริการส่งข้อมูลครบแล้ว</h4>
-                <p>ไม่มีหน่วยบริการที่ยังไม่ได้ส่งข้อมูลในเดือนนี้ 🎉</p>
+                <p>ไม่มีหน่วยบริการที่รอประมวลผลในเดือนนี้ 🎉</p>
             </div>
         `;
         return;
@@ -288,7 +291,7 @@ function showMissingForDistrict(districtCode: string, districtName: string) {
     if (headerTitle) {
         headerTitle.innerHTML = `
             <i class="ph-fill ph-warning-circle"></i>
-            รายชื่อหน่วยบริการที่ยังไม่ได้ส่งข้อมูล (${districtName})
+            รายชื่อหน่วยบริการที่รอประมวลผล (${districtName})
             <button onclick="resetMissingFilter(); event.stopPropagation();" style="font-size: 12px; margin-left: 10px; padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd; background: #fff; cursor: pointer;">
                 แสดงทั้งหมด
             </button>
@@ -313,7 +316,7 @@ function resetMissingFilter() {
     if (headerTitle) {
         headerTitle.innerHTML = `
             <i class="ph-fill ph-warning-circle"></i>
-            รายชื่อหน่วยบริการที่ยังไม่ได้ส่งข้อมูล
+            รายชื่อหน่วยบริการที่รอประมวลผล
         `;
     }
 }
@@ -374,21 +377,64 @@ async function initDashboard() {
 }
 
 // Update last update time display
-function updateLastUpdateTime() {
-    const now = new Date();
-    const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+async function updateLastUpdateTime() {
+    try {
+        console.log('DEBUG HDC Dashboard: Fetching last update time');
+        const response = await fetch(`${API_BASE}/hdc/last-update?t=${new Date().getTime()}`);
+        if (!response.ok) throw new Error('Failed to fetch last update time');
 
-    const day = now.getDate();
-    const month = thaiMonths[now.getMonth()];
-    const year = now.getFullYear() + 543;
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
+        const data = await response.json();
+        console.log('DEBUG HDC Dashboard: Received data:', data);
 
-    const timeString = `${day} ${month} ${year}, ${hours}:${minutes}`;
+        // If no data, show placeholder
+        if (!data.lastUpdate) {
+            const lastUpdateEl = document.getElementById('lastUpdateTime');
+            if (lastUpdateEl) {
+                lastUpdateEl.textContent = '-';
+            }
+            return;
+        }
 
-    const lastUpdateEl = document.getElementById('lastUpdateTime');
-    if (lastUpdateEl) {
-        lastUpdateEl.textContent = timeString;
+        // Helper to parse date string robustly
+        let dateStr = data.lastUpdate;
+        if (typeof dateStr === 'string' && dateStr.includes(' ') && !dateStr.includes('T')) {
+            dateStr = dateStr.replace(' ', 'T');
+        }
+
+        const lastUpdate = new Date(dateStr);
+
+        // Check if date is valid
+        if (isNaN(lastUpdate.getTime())) {
+            console.error('Invalid date parsed from:', data.lastUpdate);
+            const lastUpdateEl = document.getElementById('lastUpdateTime');
+            if (lastUpdateEl) {
+                // DEBUG: Show raw string to user
+                lastUpdateEl.textContent = 'Err: ' + String(data.lastUpdate);
+                lastUpdateEl.style.color = 'red';
+                lastUpdateEl.style.fontSize = '10px';
+            }
+            return;
+        }
+
+        const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+        const day = lastUpdate.getDate();
+        const month = thaiMonths[lastUpdate.getMonth()];
+        const year = lastUpdate.getFullYear() + 543;
+
+        const timeString = `${day} ${month} ${year}`;
+
+        const lastUpdateEl = document.getElementById('lastUpdateTime');
+        if (lastUpdateEl) {
+            lastUpdateEl.textContent = timeString;
+        }
+    } catch (error) {
+        console.error('Error fetching last update time:', error);
+        // Show placeholder if error
+        const lastUpdateEl = document.getElementById('lastUpdateTime');
+        if (lastUpdateEl) {
+            lastUpdateEl.textContent = '-';
+        }
     }
 }
 

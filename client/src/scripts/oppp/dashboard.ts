@@ -370,21 +370,61 @@ async function initDashboard() {
 }
 
 // Update last update time display
-function updateLastUpdateTime() {
-    const now = new Date();
-    const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+// Update last update time display
+async function updateLastUpdateTime() {
+    try {
+        console.log('DEBUG OPPP Dashboard: Fetching last update time');
+        const response = await fetch(`${API_BASE}/hdc/last-update?t=${new Date().getTime()}`);
+        if (!response.ok) throw new Error('Failed to fetch last update time');
 
-    const day = now.getDate();
-    const month = thaiMonths[now.getMonth()];
-    const year = now.getFullYear() + 543;
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
+        const data = await response.json();
+        console.log('DEBUG OPPP Dashboard: Received data:', data);
 
-    const timeString = `${day} ${month} ${year}, ${hours}:${minutes}`;
+        // If no data, show placeholder
+        if (!data.lastUpdate) {
+            const lastUpdateEl = document.getElementById('lastUpdateTime');
+            if (lastUpdateEl) {
+                lastUpdateEl.textContent = '-';
+            }
+            return;
+        }
 
-    const lastUpdateEl = document.getElementById('lastUpdateTime');
-    if (lastUpdateEl) {
-        lastUpdateEl.textContent = timeString;
+        // Helper to parse date string robustly
+        let dateStr = data.lastUpdate;
+        if (typeof dateStr === 'string' && dateStr.includes(' ') && !dateStr.includes('T')) {
+            dateStr = dateStr.replace(' ', 'T');
+        }
+
+        const lastUpdate = new Date(dateStr);
+
+        // Check if date is valid
+        if (isNaN(lastUpdate.getTime())) {
+            console.error('Invalid date parsed from:', data.lastUpdate);
+            const lastUpdateEl = document.getElementById('lastUpdateTime');
+            if (lastUpdateEl) {
+                lastUpdateEl.textContent = '-';
+            }
+            return;
+        }
+
+        const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+        const day = lastUpdate.getDate();
+        const month = thaiMonths[lastUpdate.getMonth()];
+        const year = lastUpdate.getFullYear() + 543;
+
+        const timeString = `${day} ${month} ${year}`;
+
+        const lastUpdateEl = document.getElementById('lastUpdateTime');
+        if (lastUpdateEl) {
+            lastUpdateEl.textContent = timeString;
+        }
+    } catch (error) {
+        console.error('Error fetching last update time:', error);
+        const lastUpdateEl = document.getElementById('lastUpdateTime');
+        if (lastUpdateEl) {
+            lastUpdateEl.textContent = '-';
+        }
     }
 }
 

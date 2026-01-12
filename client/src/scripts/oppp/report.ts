@@ -487,6 +487,70 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadDistrictsFromAPI();
     await loadHostypesFromAPI();
 
+    // Update last update time display
+    const updateLastUpdateTime = async (): Promise<void> => {
+        try {
+            console.log('DEBUG: Fetching last update time for OPPP Report');
+            const response = await fetch(`${API_BASE_URL}/api/hdc/last-update?t=${new Date().getTime()}`);
+            if (!response.ok) throw new Error('Failed to fetch last update time');
+
+            const data = await response.json();
+            console.log('DEBUG: Received last update data:', data);
+
+            // If no data, show placeholder
+            if (!data.lastUpdate) {
+                const lastUpdateEl = document.getElementById('lastUpdateTime');
+                if (lastUpdateEl) {
+                    lastUpdateEl.textContent = '-';
+                }
+                return;
+            }
+
+            // Helper to parse date string robustly
+            let dateStr = data.lastUpdate;
+            if (typeof dateStr === 'string' && dateStr.includes(' ') && !dateStr.includes('T')) {
+                dateStr = dateStr.replace(' ', 'T');
+            }
+
+            const lastUpdate = new Date(dateStr);
+
+            // Check if date is valid
+            if (isNaN(lastUpdate.getTime())) {
+                console.error('Invalid date parsed from:', data.lastUpdate);
+                const lastUpdateEl = document.getElementById('lastUpdateTime');
+                if (lastUpdateEl) {
+                    // DEBUG: Show raw string to user
+                    lastUpdateEl.textContent = 'Err: ' + String(data.lastUpdate);
+                    lastUpdateEl.style.color = 'red';
+                    lastUpdateEl.style.fontSize = '10px';
+                }
+                return;
+            }
+
+            const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+            const day = lastUpdate.getDate();
+            const month = thaiMonths[lastUpdate.getMonth()];
+            const year = lastUpdate.getFullYear() + 543;
+
+            const timeString = `${day} ${month} ${year}`;
+
+            const lastUpdateEl = document.getElementById('lastUpdateTime');
+            if (lastUpdateEl) {
+                lastUpdateEl.textContent = timeString;
+            }
+        } catch (error) {
+            console.error('Error fetching last update time:', error);
+            // Show placeholder if error
+            const lastUpdateEl = document.getElementById('lastUpdateTime');
+            if (lastUpdateEl) {
+                lastUpdateEl.textContent = '-';
+            }
+        }
+    };
+
+    updateLastUpdateTime();
+
     // Check URL parameter for district code
     const districtParam = urlParams.get('district');
 

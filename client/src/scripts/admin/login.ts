@@ -27,11 +27,13 @@ document.addEventListener('DOMContentLoaded', () => {
         })
             .then(response => response.json())
             .then(data => {
-                if (data.message === 'Login successful') {
-                    // Determine redirect based on user or just go to hdc
-                    // Could store token here if using JWT
+                if (data.success) {
+                    // Store user info
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('userRole', data.user.role || 'user');
+
                     alert('Login Successful!');
-                    window.location.href = 'hdc.html';
+                    window.location.href = '/admin/';
                 } else {
                     alert(data.error || 'Login failed');
                 }

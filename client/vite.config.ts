@@ -21,11 +21,19 @@ export default defineConfig({
                 report: resolve(__dirname, 'hdc/report/index.html'),
                 'oppp-report': resolve(__dirname, 'oppp/report/index.html'),
                 admin: resolve(__dirname, 'admin/index.html'),
+                'admin-login': resolve(__dirname, 'admin/login.html'),
             }
         }
     },
     server: {
-        port: 5173
+        port: 5173,
+        proxy: {
+            '/api': {
+                target: 'http://localhost:3000',
+                changeOrigin: true,
+                secure: false
+            }
+        }
     },
     appType: 'mpa'
 });

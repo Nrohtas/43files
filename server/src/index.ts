@@ -3,6 +3,8 @@ import express, { Request, Response } from 'express';
 import mysql from 'mysql2';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import multer from 'multer';
+import * as xlsx from 'xlsx';
 
 // Load environment variables
 dotenv.config();
@@ -36,6 +38,10 @@ pool.getConnection((err, connection) => {
     }
 });
 
+// Configure Multer for memory storage (process files in RAM)
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 // API endpoint to login
 app.post('/api/login', (req: Request, res: Response) => {
     const { username, password } = req.body;
@@ -68,6 +74,152 @@ app.post('/api/login', (req: Request, res: Response) => {
             res.status(401).json({ error: 'Invalid credentials' });
         }
     });
+});
+
+// Endpoint to upload HDC Excel file
+app.post('/api/upload/hdc', upload.single('file'), async (req: Request, res: Response) => {
+    try {
+        if (!req.file) {
+            res.status(400).json({ error: 'No file uploaded' });
+            return;
+        }
+
+        // Function to calculate sentdata based on hostype_new and service value
+        const calculateSentdata = (hostype: number | null, service: number): string => {
+            if (hostype === null || hostype === undefined) return 'N';
+
+            // hostype_new in (13,18,21): service > 249 = Y
+            if ([13, 18, 21].includes(hostype)) {
+                return service > 249 ? 'Y' : 'N';
+            }
+            // hostype_new in (5,12): service > 19999 = Y
+            if ([5, 12].includes(hostype)) {
+                return service > 19999 ? 'Y' : 'N';
+            }
+            // hostype_new in (8): service > 999 = Y
+            if (hostype === 8) {
+                return service > 999 ? 'Y' : 'N';
+            }
+            // hostype_new in (11): service > 599 = Y
+            if (hostype === 11) {
+                return service > 599 ? 'Y' : 'N';
+            }
+            // hostype_new in (7): service > 7999 = Y
+            if (hostype === 7) {
+                return service > 7999 ? 'Y' : 'N';
+            }
+
+            // Default fallback for other hostype values
+            return 'N';
+        };
+
+        // Pre-fetch hospital types from database
+        const hospitalTypesPromise = new Promise<Map<string, number>>((resolve, reject) => {
+            pool.query('SELECT hospcode, hostype_new FROM hospital', (err, results: any) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                const hospTypeMap = new Map<string, number>();
+                results.forEach((row: any) => {
+                    // Convert hostype_new to number to ensure proper comparison
+                    const hostype = parseInt(row.hostype_new);
+                    hospTypeMap.set(row.hospcode, hostype);
+                });
+                resolve(hospTypeMap);
+            });
+        });
+
+        const hospTypeMap = await hospitalTypesPromise;
+
+        const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+
+        const rawData = xlsx.utils.sheet_to_json(sheet) as any[];
+
+        if (rawData.length === 0) {
+            res.status(400).json({ error: 'Excel file is empty' });
+            return;
+        }
+
+        const validRows: any[] = [];
+        const warnings: string[] = [];
+
+        rawData.forEach((row) => {
+            if (!row.hospcode || !row.year_th || !row.month_no || row.service === undefined || row.service === null) {
+                return;
+            }
+
+            const serviceValue = parseFloat(row.service) || 0;
+            const hospcode = row.hospcode.toString();
+            const hostype = hospTypeMap.get(hospcode);
+
+            // Warning if hospcode not found in hospital table
+            if (hostype === undefined) {
+                if (!warnings.includes(hospcode)) {
+                    warnings.push(hospcode);
+                }
+            }
+
+            const sentdataValue = calculateSentdata(hostype || null, serviceValue);
+
+            // Debug logging for the first few records
+            if (validRows.length < 5) {
+                console.log(`DEBUG: hospcode=${hospcode}, hostype=${hostype}, service=${serviceValue}, sentdata=${sentdataValue}`);
+            }
+
+            // Ensure month_no is 2-digit format
+            const monthNo = row.month_no.toString().padStart(2, '0');
+
+            validRows.push([
+                hospcode,
+                row.year_th,
+                monthNo,
+                sentdataValue,
+                serviceValue,
+                new Date()
+            ]);
+        });
+
+        if (validRows.length === 0) {
+            res.status(400).json({ error: 'No valid rows found to insert' });
+            return;
+        }
+
+        const sql = `
+            INSERT INTO hdc (hospcode, year_th, month_no, sentdata, service, d_update) 
+            VALUES ? 
+            ON DUPLICATE KEY UPDATE 
+            sentdata = VALUES(sentdata),
+            service = VALUES(service), 
+            d_update = VALUES(d_update)
+        `;
+
+        pool.query(sql, [validRows], (err, result: any) => {
+            if (err) {
+                console.error('Insert error:', err);
+                res.status(500).json({ error: 'Database insertion error' });
+                return;
+            }
+
+            const response: any = {
+                success: true,
+                message: `Successfully processed ${validRows.length} rows`,
+                affectedRows: result.affectedRows
+            };
+
+            if (warnings.length > 0) {
+                response.warnings = `${warnings.length} hospcode(s) not found in hospital table: ${warnings.slice(0, 5).join(', ')}${warnings.length > 5 ? '...' : ''}`;
+            }
+
+            res.json(response);
+        });
+
+    } catch (error) {
+        console.error('Upload handling error:', error);
+        res.status(500).json({ error: 'Internal server error processing file' });
+    }
 });
 
 // Unit Interface
@@ -302,8 +454,8 @@ app.get('/api/districts/summary', (req: Request, res: Response) => {
             h.amp_code,
             a.amp_name,
             COUNT(DISTINCT h.hospcode) as total_units,
-            SUM(CASE WHEN hdc.sentdata = 'y' THEN 1 ELSE 0 END) as submitted,
-            SUM(CASE WHEN IFNULL(hdc.sentdata, 'n') != 'y' THEN 1 ELSE 0 END) as missing
+            SUM(CASE WHEN UPPER(hdc.sentdata) = 'Y' THEN 1 ELSE 0 END) as submitted,
+            SUM(CASE WHEN UPPER(IFNULL(hdc.sentdata, 'N')) != 'Y' THEN 1 ELSE 0 END) as missing
         FROM hospital h
         LEFT JOIN ampur a ON h.amp_code = a.amp_code
         LEFT JOIN hdc ON h.hospcode = hdc.hospcode 
@@ -349,7 +501,7 @@ app.get('/api/missing-units/all', (req: Request, res: Response) => {
         LEFT JOIN hdc ON h.hospcode = hdc.hospcode 
             AND hdc.year_th = ? 
             AND hdc.month_no = ?
-        WHERE IFNULL(hdc.sentdata, 'n') != 'y'
+        WHERE UPPER(IFNULL(hdc.sentdata, 'N')) != 'Y'
         ORDER BY h.amp_code ASC, h.hospcode ASC
     `;
 
@@ -398,8 +550,8 @@ app.get('/api/oppp/districts/summary', (req: Request, res: Response) => {
             h.amp_code,
             a.amp_name,
             COUNT(DISTINCT h.hospcode) as total_units,
-            SUM(CASE WHEN oppp.sentdata = 'y' THEN 1 ELSE 0 END) as submitted,
-            SUM(CASE WHEN IFNULL(oppp.sentdata, 'n') != 'y' THEN 1 ELSE 0 END) as missing
+            SUM(CASE WHEN UPPER(oppp.sentdata) = 'Y' THEN 1 ELSE 0 END) as submitted,
+            SUM(CASE WHEN UPPER(IFNULL(oppp.sentdata, 'N')) != 'Y' THEN 1 ELSE 0 END) as missing
         FROM hospital h
         LEFT JOIN ampur a ON h.amp_code = a.amp_code
         LEFT JOIN oppp ON h.hospcode = oppp.hospcode 
@@ -445,7 +597,7 @@ app.get('/api/oppp/missing-units/all', (req: Request, res: Response) => {
         LEFT JOIN oppp ON h.hospcode = oppp.hospcode 
             AND oppp.year_th = ? 
             AND oppp.month_no = ?
-        WHERE IFNULL(oppp.sentdata, 'n') != 'y'
+        WHERE UPPER(IFNULL(oppp.sentdata, 'N')) != 'Y'
         ORDER BY h.amp_code ASC, h.hospcode ASC
     `;
 
@@ -497,6 +649,34 @@ app.get('/api/years', (req: Request, res: Response) => {
     });
 });
 
+// API endpoint to get list of available fiscal years for report
+app.get('/api/years/report', (req: Request, res: Response) => {
+    const sql = 'SELECT DISTINCT year_th FROM hdc ORDER BY year_th DESC';
+
+    pool.query(sql, (err, results: any) => {
+        if (err) {
+            console.error('Error executing query:', err);
+            res.status(500).json({ error: 'Database error' });
+            return;
+        }
+
+        // Convert calendar years to fiscal years
+        // Fiscal year X contains: Oct-Dec of year X-1 and Jan-Sep of year X
+        const calendarYears = results.map((row: any) => parseInt(row.year_th));
+        const fiscalYears = new Set<number>();
+
+        calendarYears.forEach((year: number) => {
+            // This year's Jan-Sep belongs to current fiscal year
+            fiscalYears.add(year);
+            // This year's Oct-Dec belongs to next fiscal year
+            fiscalYears.add(year + 1);
+        });
+
+        const sortedFiscalYears = Array.from(fiscalYears).sort((a, b) => b - a);
+        res.json(sortedFiscalYears.map(y => y.toString()));
+    });
+});
+
 // API endpoint to get list of months with Thai names
 app.get('/api/months', (req: Request, res: Response) => {
     console.log('API Request: /api/months');
@@ -534,6 +714,29 @@ app.get('/api/districts', (req: Request, res: Response) => {
         }));
 
         res.json(districts);
+    });
+});
+
+// API endpoint to get last update time for HDC data
+app.get('/api/hdc/last-update', (req: Request, res: Response) => {
+    const sql = 'SELECT MAX(d_update) as last_update FROM hdc WHERE d_update IS NOT NULL';
+
+    pool.query(sql, (err, results: any) => {
+        if (err) {
+            console.error('Error executing query:', err);
+            res.status(500).json({ error: 'Database error' });
+            return;
+        }
+
+        // Return null if no data, don't use current time
+        const lastUpdate = results[0]?.last_update && results[0].last_update !== null
+            ? results[0].last_update
+            : null;
+
+        console.log('DEBUG /api/hdc/last-update - Query results:', results);
+        console.log('DEBUG /api/hdc/last-update - Returning lastUpdate:', lastUpdate);
+
+        res.json({ lastUpdate });
     });
 });
 

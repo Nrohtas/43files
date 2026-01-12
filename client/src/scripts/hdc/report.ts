@@ -1,5 +1,5 @@
 // API Configuration
-export const API_BASE_URL = 'http://localhost:3000';
+export const API_BASE_URL = '';
 
 // Type Definitions
 interface District {
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Complete = u.months[i] === 'y' for all i < cutoffIndex
             const completeUnits = units.filter(u => {
                 for (let i = 0; i < cutoffIndex; i++) {
-                    if (u.months[i] !== 'y') return false;
+                    if (u.months[i]?.toUpperCase() !== 'Y') return false;
                 }
                 return true;
             });
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (!status) {
                         return `<div style="color: #94A3B8; font-size: 20px;">-</div>`;
                     }
-                    if (status === 'y') {
+                    if (status.toUpperCase() === 'Y') {
                         return `<div class="status-icon success"><i class="ph-fill ph-check-circle"></i></div>`;
                     }
                     return `<div class="status-icon error"><i class="ph-fill ph-x-circle"></i></div>`;
@@ -241,14 +241,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Load Years and populate dropdown ---
     const loadYearsFromAPI = async (): Promise<void> => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/years`);
+            const response = await fetch(`${API_BASE_URL}/api/years/report`);
             if (!response.ok) throw new Error('Failed to load years');
             const years: string[] = await response.json();
 
             if (yearDropdownMenu) {
                 yearDropdownMenu.innerHTML = '';
-                // Filter out 2568 as requested
-                years.filter(y => y !== '2568').forEach(year => {
+                // Show only 2569 as requested
+                years.filter(y => y === '2569').forEach(year => {
                     const option = document.createElement('div');
                     option.className = 'year-option';
                     option.dataset.year = year;
@@ -525,7 +525,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="empty-state">
                     <i class="ph-fill ph-check-circle"></i>
                     <h4>ทุกหน่วยบริการส่งข้อมูลครบแล้ว</h4>
-                    <p>ไม่มีหน่วยบริการที่ยังไม่ได้ส่งข้อมูลในเดือนนี้ 🎉</p>
+                    <p>ไม่มีหน่วยบริการที่รอประมวลผลในเดือนนี้ 🎉</p>
                 </div>
             `;
             return;
@@ -579,5 +579,67 @@ document.addEventListener('DOMContentLoaded', async () => {
             collapseSection();
         });
     }
+
+    // Update last update time display
+    const updateLastUpdateTime = async (): Promise<void> => {
+        try {
+            console.log('DEBUG HDC Report: Fetching last update time');
+            const response = await fetch(`${API_BASE_URL}/api/hdc/last-update?t=${new Date().getTime()}`);
+            if (!response.ok) throw new Error('Failed to fetch last update time');
+
+            const data = await response.json();
+            console.log('DEBUG HDC Report: Received data:', data);
+
+            // If no data, show placeholder
+            if (!data.lastUpdate) {
+                const lastUpdateEl = document.getElementById('lastUpdateTime');
+                if (lastUpdateEl) {
+                    lastUpdateEl.textContent = '-';
+                }
+                return;
+            }
+
+            // Helper to parse date string robustly
+            let dateStr = data.lastUpdate;
+            if (typeof dateStr === 'string' && dateStr.includes(' ') && !dateStr.includes('T')) {
+                dateStr = dateStr.replace(' ', 'T');
+            }
+
+            const lastUpdate = new Date(dateStr);
+
+            // Check if date is valid
+            if (isNaN(lastUpdate.getTime())) {
+                console.error('Invalid date parsed from:', data.lastUpdate);
+                const lastUpdateEl = document.getElementById('lastUpdateTime');
+                if (lastUpdateEl) {
+                    lastUpdateEl.textContent = '-';
+                }
+                return;
+            }
+
+            const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+            const day = lastUpdate.getDate();
+            const month = thaiMonths[lastUpdate.getMonth()];
+            const year = lastUpdate.getFullYear() + 543;
+
+            const timeString = `${day} ${month} ${year}`;
+
+            const lastUpdateEl = document.getElementById('lastUpdateTime');
+            if (lastUpdateEl) {
+                lastUpdateEl.textContent = timeString;
+            }
+        } catch (error) {
+            console.error('Error fetching last update time:', error);
+            // Show placeholder if error
+            const lastUpdateEl = document.getElementById('lastUpdateTime');
+            if (lastUpdateEl) {
+                lastUpdateEl.textContent = '-';
+            }
+        }
+    };
+
+    // Call update time function
+    await updateLastUpdateTime();
 
 });
