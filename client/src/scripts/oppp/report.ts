@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Complete = u.months[i] === 'y' for all i < cutoffIndex
             const completeUnits = units.filter(u => {
                 for (let i = 0; i < cutoffIndex; i++) {
-                    if (u.months[i] !== 'y') return false;
+                    if (u.months[i]?.toUpperCase() !== 'Y') return false;
                 }
                 return true;
             });
@@ -185,13 +185,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const tr = document.createElement('tr');
 
                 const renderStatus = (status: string | null, _monthIndex: number): string => {
-                    if (!status) {
-                        return `<div style="color: #94A3B8; font-size: 20px;">-</div>`;
-                    }
-                    if (status === 'y') {
+                    const s = status ? status.toUpperCase() : '';
+                    if (s === 'Y') {
                         return `<div class="status-icon success"><i class="ph-fill ph-check-circle"></i></div>`;
                     }
-                    return `<div class="status-icon error"><i class="ph-fill ph-x-circle"></i></div>`;
+                    if (s === 'N') {
+                        return `<div class="status-icon error"><i class="ph-fill ph-x-circle"></i></div>`;
+                    }
+                    return `<div style="color: #94A3B8; font-size: 20px;">-</div>`;
                 };
 
                 let monthsHtml = '';
@@ -249,8 +250,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (yearDropdownMenu) {
                 yearDropdownMenu.innerHTML = '';
-                // Filter out 2568 as requested if needed (implied from HDC version)
-                years.forEach(year => {
+                // Filter out 2568 as requested
+                years.filter(y => y !== '2568').forEach(year => {
                     const option = document.createElement('div');
                     option.className = 'year-option';
                     option.dataset.year = year;

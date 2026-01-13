@@ -336,7 +336,10 @@ app.post('/api/upload/oppp', upload.single('file'), async (req: Request, res: Re
             }
 
             const serviceValue = parseFloat(row.service) || 0;
-            const hospcode = row.hospcode.toString();
+            const serviceApprove = parseFloat(row.service_approve) || 0;
+            const serviceReject = parseFloat(row.service_reject) || 0;
+            // Sanitize hospcode: remove all non-numeric characters
+            const hospcode = row.hospcode.toString().replace(/\D/g, '');
             const hostype = hospTypeMap.get(hospcode);
 
             // Warning if hospcode not found in hospital table
@@ -350,7 +353,7 @@ app.post('/api/upload/oppp', upload.single('file'), async (req: Request, res: Re
 
             // Debug logging for the first few records
             if (validRows.length < 5) {
-                console.log(`DEBUG OPPP: hospcode=${hospcode}, hostype=${hostype}, service=${serviceValue}, sentdata=${sentdataValue}`);
+                console.log(`DEBUG OPPP: hospcode=${hospcode}, hostype=${hostype}, service=${serviceValue}, approve=${serviceApprove}, reject=${serviceReject}, sentdata=${sentdataValue}`);
             }
 
             // Ensure month_no is 2-digit format
@@ -362,28 +365,36 @@ app.post('/api/upload/oppp', upload.single('file'), async (req: Request, res: Re
                 monthNo,
                 sentdataValue,
                 serviceValue,
+                serviceApprove,
+                serviceReject,
                 new Date()
             ]);
         });
 
         if (validRows.length === 0) {
-            res.status(400).json({ error: 'No valid rows found to insert' });
+            const firstRowHeaders = rawData.length > 0 ? Object.keys(rawData[0]).join(', ') : 'None';
+            console.log('DEBUG: OPPP Upload Failed. Detected headers:', firstRowHeaders);
+            res.status(400).json({
+                error: `No valid rows found. Missing required columns (hospcode, year_th, month_no, service). Detected headers: ${firstRowHeaders}`
+            });
             return;
         }
 
         const sql = `
-            INSERT INTO oppp (hospcode, year_th, month_no, sentdata, service, d_update) 
+            INSERT INTO oppp (hospcode, year_th, month_no, sentdata, service, service_approve, service_reject, d_update) 
             VALUES ? 
             ON DUPLICATE KEY UPDATE 
             sentdata = VALUES(sentdata),
             service = VALUES(service), 
+            service_approve = VALUES(service_approve),
+            service_reject = VALUES(service_reject),
             d_update = VALUES(d_update)
         `;
 
         pool.query(sql, [validRows], (err, result: any) => {
             if (err) {
                 console.error('Insert error:', err);
-                res.status(500).json({ error: 'Database insertion error' });
+                res.status(500).json({ error: 'Database insertion error: ' + err.message });
                 return;
             }
 
@@ -806,7 +817,7 @@ app.get('/api/uploads/history', (req: Request, res: Response) => {
     const sql = `
         SELECT * FROM fileupload 
         ORDER BY file_time DESC 
-        LIMIT 50
+        LIMIT 5
     `;
 
     pool.query(sql, (err, results: any) => {

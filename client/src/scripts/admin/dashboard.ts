@@ -175,7 +175,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             const failCount = results.length - successCount;
 
                             let msg = `ประมวลผลเสร็จสิ้น: สำเร็จ ${successCount} ไฟล์`;
-                            if (failCount > 0) msg += `, ล้มเหลว ${failCount} ไฟล์`;
+                            if (failCount > 0) {
+                                msg += `, ล้มเหลว ${failCount} ไฟล์\n\nรายละเอียดข้อผิดพลาด:\n`;
+                                const errors = results.filter(r => !r.success).map(r => r.error || 'Unknown error');
+                                msg += errors.join('\n');
+                            }
 
                             alert(msg);
                             loadUploadHistory(); // Refresh history
