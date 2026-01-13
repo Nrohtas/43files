@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Attempting login for:', username);
 
         // Real API Authentication
-        const API_BASE = import.meta.env.VITE_API_BASE_URL;
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
         fetch(`${API_BASE}/api/login`, {
             method: 'POST',
             headers: {

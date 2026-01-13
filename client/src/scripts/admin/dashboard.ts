@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         formData.append('username', username);
 
                         // Use API_BASE from env
-                        const API_BASE = import.meta.env.VITE_API_BASE_URL;
+                        const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
                         return fetch(`${API_BASE}/api/upload/hdc`, {
                             method: 'POST',
                             body: formData
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         formData.append('username', username);
 
                         // Use API_BASE from env
-                        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+                        const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
                         return fetch(`${API_BASE}/api/upload/oppp`, {
                             method: 'POST',
                             body: formData

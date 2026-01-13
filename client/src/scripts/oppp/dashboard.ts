@@ -1,6 +1,6 @@
 // API base URL
 // API base URL
-const API_BASE = (import.meta.env.VITE_API_BASE_URL) + '/api';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '') + '/api';
 console.log('🟢 OPPP Script Loaded - Version with BLUE styling');
 
 // State
@@ -30,10 +30,6 @@ interface DistrictMissingGroup {
     districtCode: string;
     districtName: string;
     units: MissingUnit[];
-}
-
-interface Year {
-    value: string;
 }
 
 interface Month {
