@@ -361,7 +361,6 @@ export default function HDCReport() {
             <div className="table-card">
                 <div className="table-header">
                     <h3>{getDistrictName(selectedDistrict)} {selectedHostype ? `(สังกัด: ${selectedHostype})` : ''}</h3>
-                    <div style={{ fontSize: '12px', color: '#aaa' }}>Last updated: {lastUpdate}</div>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                     <table className="hdc-table">
@@ -440,14 +439,17 @@ export default function HDCReport() {
 
             {/* Source Info */}
             <div style={{ background: '#fff', borderRadius: '12px', padding: '16px 24px', boxShadow: 'var(--shadow-card)', marginTop: '0px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: '#64748b' }}>
-                    <a href="https://hdc.moph.go.th/plk/public/standard-report-detail/92a705c26f22754d7462e9f742436b6f" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#10B981', textDecoration: 'none', transition: 'all 0.2s', padding: '4px 8px', borderRadius: '4px' }}>
-                        <i className="ph-bold ph-link-simple" style={{ fontSize: '14px' }}></i>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: '#64748b' }}>
+                    <a href="https://hdc.moph.go.th/plk/public/standard-report-detail/92a705c26f22754d7462e9f742436b6f" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#10B981', textDecoration: 'none', transition: 'all 0.2s', padding: '4px 8px', borderRadius: '4px' }}>
+                        <i className="ph-bold ph-link-simple" style={{ fontSize: '13px' }}></i>
                         <span style={{ fontWeight: 500 }}>ที่มา: รายงาน HDC</span>
-                        <i className="ph-bold ph-arrow-square-out" style={{ fontSize: '12px' }}></i>
+                        <i className="ph-bold ph-arrow-square-out" style={{ fontSize: '11px' }}></i>
                     </a>
+                    <div style={{ fontWeight: 500, color: '#94A3B8' }}>
+                        Copyright ©2026 Digital Health Group of Phitsanulok Provincial Public Health Office
+                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <i className="ph ph-clock" style={{ fontSize: '14px' }}></i>
+                        <i className="ph ph-clock" style={{ fontSize: '13px' }}></i>
                         <span>อัปเดต: <span>{lastUpdate}</span></span>
                     </div>
                 </div>

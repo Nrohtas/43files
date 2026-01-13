@@ -1,6 +1,7 @@
 import Header from '@/components/Header';
 import NavBar from '@/components/NavBar';
 import HDCDashboard from '@/components/HDCDashboard';
+import Footer from '@/components/Footer';
 
 export default function HDCPage() {
     return (
@@ -8,6 +9,7 @@ export default function HDCPage() {
             <Header />
             <NavBar />
             <HDCDashboard />
+            <Footer />
         </main>
     );
 }

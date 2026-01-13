@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from '@/components/Header';
 import NavBar from '@/components/NavBar';
 import HDCReport from '@/components/HDCReport';
+import Footer from '@/components/Footer';
 import { Suspense } from 'react';
 
 export const metadata: Metadata = {

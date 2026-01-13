@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from '@/components/Header';
 import NavBar from '@/components/NavBar';
 import OPPPDashboard from '@/components/OPPPDashboard';
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
     title: "OPPP 43 Files Dashboard",
@@ -14,6 +15,7 @@ export default function OPPPDashboardPage() {
             <Header />
             <NavBar />
             <OPPPDashboard />
+            <Footer />
         </main>
     );
 }

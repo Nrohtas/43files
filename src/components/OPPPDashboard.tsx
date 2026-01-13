@@ -271,7 +271,7 @@ export default function OPPPDashboard() {
                         onClick={toggleMissingSection}
                     >
                         <div className="province-stat-label">
-                            <i className="ph-fill ph-warning-circle" style={{ color: '#EF4444', fontSize: '16px' }}></i>
+                            <i className="ph-fill ph-warning-circle" style={{ color: '#EF4444', fontSize: '16px', marginRight: '6px' }}></i>
                             รอประมวลผล
                             <i className="ph-bold ph-magnifying-glass"
                                 style={{ color: '#EF4444', fontSize: '14px', marginLeft: '4px' }}></i>

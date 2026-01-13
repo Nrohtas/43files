@@ -6,10 +6,10 @@ import { Suspense } from 'react';
 
 export const metadata: Metadata = {
     title: "OPPP 43 Files Report",
-    description: "Detailed report of OPPP 43 files submission",
+    description: "Detailed report of 43 files submission",
 };
 
-export default function OPPPReportPage() {
+export default function ReportPage() {
     return (
         <main className="main-content">
             <Header />
