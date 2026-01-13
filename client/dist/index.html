@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Blue Dashboard</title>
+
+    <!-- Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons: Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <script type="module" crossorigin src="/assets/index-BecJu6Tq.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Dgnpo5jJ.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>LOREM <span>IPSUM</span></h2>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-group">
+                    <a href="#" class="nav-item active has-submenu" id="dashboard-link">
+                        <div class="content">
+                            <i class="ph-fill ph-house"></i>
+                            <span>Dashboard</span>
+                        </div>
+                        <i class="ph ph-caret-down"></i>
+                    </a>
+                    <div class="submenu-wrapper open">
+                        <!-- Level 1 Item: HDC (Toggleable) -->
+                        <div class="nav-group-nested">
+                            <a href="hdc.html" class="submenu-item has-child">
+                                <span>43 แฟ้ม HDC</span>
+                            </a>
+                        </div>
+                        <a href="#" class="submenu-item">43 แฟ้ม OPPP</a>
+                    </div>
+                </div>
+                <a href="#" class="nav-item">
+                    <i class="ph-fill ph-chart-bar"></i>
+                    <span>Chart</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="ph-fill ph-squares-four"></i>
+                    <span>Apps</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="ph-fill ph-chat-circle-dots"></i>
+                    <span>Chat</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="ph-fill ph-gear"></i>
+                    <span>Setting</span>
+                </a>
+            </nav>
+
+            <div class="nav-section">
+                <h3>FORMS</h3>
+                <nav class="nav-menu">
+                    <a href="#" class="nav-item has-submenu">
+                        <div class="content">
+                            <span>Forms</span>
+                        </div>
+                        <i class="ph ph-caret-right"></i>
+                    </a>
+                    <a href="#" class="nav-item has-submenu">
+                        <div class="content">
+                            <span>Tables</span>
+                        </div>
+                        <i class="ph ph-caret-right"></i>
+                    </a>
+                </nav>
+            </div>
+            <nav class="nav-menu mt-auto">
+                <a href="#" class="nav-item">
+                    <i class="ph-fill ph-envelope-simple"></i>
+                    <span>Inbox</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="search-bar">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input type="text" placeholder="SEARCH">
+                </div>
+            </header>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+
+                <!-- Row 1: Sparkline Info Cards -->
+                <div class="card info-card">
+                    <div class="card-header">
+                        <h4>LOREM IPSUM</h4>
+                        <span>Dolor sit amet</span>
+                    </div>
+                    <div class="card-value">5,789</div>
+                    <div class="mini-chart-container">
+                        <canvas id="spark1"></canvas>
+                    </div>
+                </div>
+
+                <div class="card info-card">
+                    <div class="card-header">
+                        <h4>LOREM IPSUM</h4>
+                        <span>Dolor sit amet</span>
+                    </div>
+                    <div class="card-value">3,939</div>
+                    <div class="mini-chart-container">
+                        <canvas id="spark2"></canvas>
+                    </div>
+                </div>
+
+                <div class="card info-card">
+                    <div class="card-header">
+                        <h4>LOREM IPSUM</h4>
+                        <span>Dolor sit amet</span>
+                    </div>
+                    <div class="card-value">1,324</div>
+                    <div class="mini-chart-container">
+                        <canvas id="spark3"></canvas>
+                    </div>
+                </div>
+
+                <!-- Blue Status Card -->
+                <div class="card status-card">
+                    <div class="status-row">
+                        <div class="status-item">
+                            <span class="big-num">20</span>
+                            <div class="progress-bar">
+                                <div class="fill" style="width: 40%"></div>
+                            </div>
+                            <span class="label">Lorem ipsum dolor sit amet</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="big-num">30</span>
+                            <div class="progress-bar">
+                                <div class="fill" style="width: 60%"></div>
+                            </div>
+                            <span class="label">Lorem ipsum dolor sit amet</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Circular Widgets & Main Chart -->
+
+                <!-- Circular Stats Column -->
+                <div class="col-circular">
+                    <div class="card circle-card">
+                        <div class="circle-chart" style="--p:55; --c:#2CD3E1">
+                            <span class="percent">55%</span>
+                        </div>
+                        <div class="circle-info">
+                            <h4>LOREM IPSUM</h4>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="linear-stats">
+                            <div class="stat-group">
+                                <label>LOREM IPSUM</label>
+                                <div class="segmented-progress">
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                </div>
+                            </div>
+                            <div class="stat-group">
+                                <label>LOREM IPSUM</label>
+                                <div class="segmented-progress blue">
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card circle-card mt-card">
+                        <div class="circle-chart" style="--p:55; --c:#2CD3E1">
+                            <span class="percent">55%</span>
+                        </div>
+                        <div class="circle-info text-center">
+                            <p class="sm-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Line Chart -->
+                <div class="card main-chart-card">
+                    <div class="chart-header">
+                        <h4>LOREM IPSUM</h4>
+                    </div>
+                    <div class="main-chart-wrapper">
+                        <canvas id="mainAreaChart"></canvas>
+                    </div>
+                    <div class="chart-legend-side">
+                        <div class="legend-item">
+                            <h4>LOREM IPSUM</h4>
+                            <span>Dolor sit amet</span>
+                            <div class="val">3,939</div>
+                        </div>
+                        <div class="legend-item">
+                            <h4>LOREM IPSUM</h4>
+                            <span>Dolor sit amet</span>
+                            <div class="val">3,939</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Bar Chart & List -->
+                <div class="card bar-chart-card">
+                    <div class="chart-container">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card list-card">
+                    <div class="list-item">
+                        <div class="list-label">LOREM IPSUM</div>
+                        <div class="list-prog-container">
+                            <div class="list-prog-bar" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-label">LOREM IPSUM</div>
+                        <div class="list-prog-container">
+                            <div class="list-prog-bar" style="width: 45%; background-color: #7FE5F0"></div>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-label">LOREM IPSUM</div>
+                        <div class="list-prog-container">
+                            <div class="list-prog-bar" style="width: 60%; background-color: #55D8E8"></div>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-label">LOREM IPSUM</div>
+                        <div class="list-prog-container">
+                            <div class="list-prog-bar" style="width: 70%; background-color: #2CD3E1"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+</body>
+
+</html>

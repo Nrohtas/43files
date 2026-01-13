@@ -1,34 +1,26 @@
 {
-  "name": "43files-workspace",
-  "version": "1.0.0",
-  "description": "43 แฟ้ม HDC/OPPP Data Submission Tracking Dashboard - Workspace Root",
+  "name": "temp_next",
+  "version": "0.1.0",
   "private": true,
-  "type": "module",
-  "workspaces": [
-    "server",
-    "client"
-  ],
   "scripts": {
-    "server": "npm run dev --workspace=server",
-    "client": "npm run dev --workspace=client",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "build:server": "npm run build --workspace=server",
-    "build:client": "npm run build --workspace=client",
-    "build": "npm run build:server && npm run build:client",
-    "install:server": "npm install --workspace=server",
-    "install:client": "npm install --workspace=client",
-    "install:all": "npm install"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
   },
-  "keywords": [
-    "dashboard",
-    "healthcare",
-    "hdc",
-    "oppp",
-    "workspace"
-  ],
-  "author": "Phitsanulok Provincial Health Office",
-  "license": "ISC",
+  "dependencies": {
+    "mysql2": "^3.16.0",
+    "next": "16.1.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "xlsx": "^0.18.5"
+  },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.1",
+    "typescript": "^5"
   }
 }

@@ -1,110 +1,36 @@
-# README - วิธีใช้งาน Dashboard
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## 🚀 วิธีเริ่มระบบ (เลือก 1 วิธี)
+## Getting Started
 
-### วิธีที่ 1: ใช้ Batch File (แนะนำ - ง่ายที่สุด)
-```cmd
-start-dev.bat
-```
-จะเปิด 2 หน้าต่าง:
-- หน้าต่าง Server (ดำ)
-- หน้าต่าง Client (Vite)
+First, run the development server:
 
-### วิธีที่ 2: เปิดแยก 2 Terminal
-**Terminal 1 - Server:**
-```cmd
-node --import tsx server/src/index.ts
-```
-**หมายเหตุ:** หากต้องการแก้ไขการตั้งค่าฐานข้อมูล ให้แก้ไขไฟล์ `server/.env` (สร้างจาก `.env.example`)
-
-**Terminal 2 - Client:**
-```cmd
-npx vite client
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-### วิธีที่ 3: เปิดใน VS Code
-1. เปิด Terminal ใน VS Code (Ctrl + `)
-2. Split Terminal (กดปุ่ม + ข้างๆ dropdown)
-3. รันคำสั่ง:
-   - Terminal 1: `node --import tsx server/src/index.ts`
-   - Terminal 2: `npx vite client`
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
----
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## 🌐 เข้าใช้งานระบบ
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-Server รันที่: **http://localhost:3000**  
-Client รันที่: **http://localhost:5173**
+## Learn More
 
-### หน้าต่างๆ ที่ใช้งานได้:
-- **หน้าแรก**: http://localhost:5173/index.html
-- **HDC Dashboard**: http://localhost:5173/hdc/dashboard.html
-- **HDC Report**: http://localhost:5173/hdc/report.html
-- **OPPP Dashboard**: http://localhost:5173/oppp/dashboard.html
-- **OPPP Report**: http://localhost:5173/oppp/report.html
-- **Admin Login**: http://localhost:5173/admin/login.html
+To learn more about Next.js, take a look at the following resources:
 
----
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-## ⚙️ คำสั่งอื่นๆ
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-### Build Production
-```cmd
-npx vite build client
-```
+## Deploy on Vercel
 
-### ดู API Documentation
-Server endpoints:
-- `GET /api/districts` - รายการอำเภอ
-- `GET /api/hdc/:district` - ข้อมูล HDC
-- `GET /api/oppp/:district` - ข้อมูล OPPP
-- `GET /api/years` - ปีที่มีข้อมูล
-- `GET /api/months` - เดือนที่มีข้อมูล
-- `GET /api/hostypes` - ประเภทสถานพยาบาล
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
----
-
-## 🔧 แก้ปัญหา
-
-### ปัญหา: npm/npx ใช้ไม่ได้
-**สาเหตุ**: PowerShell Execution Policy  
-**วิธีแก้**: ใช้ `start-dev.bat` แทน หรือรันด้วย `node` โดยตรง
-
-### ปัญหา: หน้าเว็บ 404
-**ตรวจสอบ**: กำลังเข้า URL ที่ถูกต้องหรือไม่  
-**URL ที่ใช้**: http://localhost:5173/hdc/dashboard.html (ไม่ใช่ hdc.html)
-
-### ปัญหา: ไม่มีข้อมูล
-**ตรวจสอบ**:
-1. Server รันอยู่หรือไม่ (port 3000)
-2. Database เชื่อมต่อได้หรือไม่
-3. เปิด Console ใน Browser ดู error
-
----
-
-## 📁 โครงสร้างโปรเจค
-
-```
-43files/
-├── server/              # Server-side (Node.js + Express)
-│   ├── src/
-│   │   └── index.ts     # Main server file
-│   └── scripts/         # Development scripts
-├── client/              # Client-side (HTML + TypeScript + Vite)
-│   ├── src/
-│   │   ├── pages/       # HTML pages
-│   │   ├── scripts/     # TypeScript files
-│   │   ├── styles/      # CSS files
-│   │   └── assets/      # Images, etc.
-│   └── dist/            # Build output
-├── start-dev.bat        # Quick start script
-└── package.json
-```
-
----
-
-## ℹ️ ข้อมูลเพิ่มเติม
-
-- **Documentation**: ดูที่ `docs/` folder (ถ้ามี)
-- **Troubleshooting**: ดู troubleshooting.md ใน artifacts
-- **Contact**: Digital Health Group, Phitsanulok PHO
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

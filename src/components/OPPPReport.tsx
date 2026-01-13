@@ -1,0 +1,449 @@
+'use client';
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
+
+// Types
+interface District {
+    code: string;
+    name: string;
+}
+
+interface Unit {
+    code: string;
+    name: string;
+    hostype?: string;
+    months: (string | null)[];
+}
+
+interface Hostype {
+    code: string;
+    name: string;
+}
+
+export default function OPPPReport() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+
+    // URL Params
+    const paramYear = searchParams.get('year');
+    const paramMonth = searchParams.get('month') || '11';
+    const paramDistrict = searchParams.get('district');
+    const paramHostype = searchParams.get('hostype');
+
+    // State
+    const [years, setYears] = useState<string[]>([]);
+    const [districts, setDistricts] = useState<District[]>([]);
+    const [hostypes, setHostypes] = useState<Hostype[]>([]);
+
+    // Selection State
+    const [selectedYear, setSelectedYear] = useState<string>('2569'); // Default 2569 for OPPP
+    const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
+    const [selectedHostype, setSelectedHostype] = useState<string | null>(null);
+
+    // Data State
+    const [units, setUnits] = useState<Unit[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [lastUpdate, setLastUpdate] = useState('-');
+
+    // UI State
+    const [missingExpanded, setMissingExpanded] = useState(false);
+    const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
+    const [districtDropdownOpen, setDistrictDropdownOpen] = useState(false);
+    const [hostypeDropdownOpen, setHostypeDropdownOpen] = useState(false);
+
+    // Initial Load
+    useEffect(() => {
+        const init = async () => {
+            // 1. Load Years
+            try {
+                const res = await fetch('/api/years/report'); // Use report-specific filtered years
+                if (res.ok) {
+                    const data = await res.json();
+                    setYears(data);
+                }
+            } catch (e) { console.error(e); }
+
+            // 2. Load Districts
+            try {
+                const res = await fetch('/api/districts');
+                if (res.ok) {
+                    const data = await res.json();
+                    setDistricts(data);
+                }
+            } catch (e) { console.error(e); }
+
+            // 3. Load Hostypes
+            try {
+                const res = await fetch('/api/hostypes');
+                if (res.ok) {
+                    const data = await res.json();
+                    setHostypes(data);
+                }
+            } catch (e) { console.error(e); }
+
+            // 4. Last Update
+            fetchLastUpdate();
+
+            // Set initial selection from URL or Defaults
+            if (paramYear) setSelectedYear(paramYear);
+            if (paramDistrict) setSelectedDistrict(paramDistrict);
+            if (paramHostype) setSelectedHostype(paramHostype);
+        };
+        init();
+    }, []);
+
+    const fetchLastUpdate = async () => {
+        try {
+            const res = await fetch(`/api/last-update?type=oppp&t=${Date.now()}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.lastUpdate) {
+                    // Parse date
+                    let dateStr = data.lastUpdate;
+                    if (typeof dateStr === 'string' && dateStr.includes(' ') && !dateStr.includes('T')) {
+                        dateStr = dateStr.replace(' ', 'T');
+                    }
+                    const d = new Date(dateStr);
+                    if (!isNaN(d.getTime())) {
+                        const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                        setLastUpdate(`${d.getDate()} ${thaiMonths[d.getMonth()]} ${d.getFullYear() + 543} เวลา ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')} น.`);
+                        return;
+                    }
+                }
+            }
+            setLastUpdate('-');
+        } catch (e) {
+            setLastUpdate('-');
+        }
+    };
+
+    // React to params or state changes to fetch unit data
+    useEffect(() => {
+        if (selectedDistrict && selectedYear) {
+            fetchUnits(selectedDistrict, selectedYear, selectedHostype);
+        }
+    }, [selectedDistrict, selectedYear, selectedHostype]);
+
+    // Update URL when selection changes
+    useEffect(() => {
+        const params = new URLSearchParams();
+        if (selectedYear) params.set('year', selectedYear);
+        if (selectedDistrict) params.set('district', selectedDistrict);
+        if (selectedHostype) params.set('hostype', selectedHostype);
+        params.set('month', paramMonth); // preserve month param
+
+        router.replace(`/oppp/report?${params.toString()}`); // Use replace to avoid history stack buildup
+    }, [selectedYear, selectedDistrict, selectedHostype]);
+
+    const handleYearChange = (val: string) => setSelectedYear(val);
+    const handleDistrictChange = (val: string | null) => setSelectedDistrict(val);
+    const handleHostypeChange = (val: string | null) => setSelectedHostype(val);
+
+
+    const fetchUnits = async (districtCode: string, year: string, hostype: string | null) => {
+        setLoading(true);
+        try {
+            let url = `/api/oppp/${encodeURIComponent(districtCode)}?year=${year}`;
+            if (hostype) {
+                url += `&hostype=${encodeURIComponent(hostype)}`;
+            }
+
+            const res = await fetch(url);
+            if (res.ok) {
+                const data = await res.json();
+                setUnits(data);
+            } else {
+                setUnits([]);
+            }
+        } catch (e) {
+            console.error(e);
+            setUnits([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Logic for counting stats
+    const stats = useMemo(() => {
+        if (!units.length) return { total: 0, submitted: 0, missing: 0, missingList: [] };
+
+        const today = new Date();
+        const realFiscalYear = (today.getMonth() >= 9) ? today.getFullYear() + 544 : today.getFullYear() + 543;
+        const realFiscalMonthIndex = (today.getMonth() + 3) % 12; // 0=Oct, 11=Sep
+
+        const selectedYearInt = parseInt(selectedYear);
+        let cutoffIndex = 0;
+
+        if (selectedYearInt < realFiscalYear) {
+            cutoffIndex = 12;
+        } else if (selectedYearInt > realFiscalYear) {
+            cutoffIndex = 0;
+        } else {
+            cutoffIndex = realFiscalMonthIndex;
+        }
+
+        const completeUnits = units.filter(u => {
+            for (let i = 0; i < cutoffIndex; i++) {
+                if (u.months[i]?.toUpperCase() !== 'Y') return false;
+            }
+            return true;
+        });
+
+        const incompleteUnits = units.filter(u => !completeUnits.includes(u));
+
+        return {
+            total: units.length,
+            submitted: completeUnits.length,
+            missing: incompleteUnits.length,
+            missingList: incompleteUnits
+        };
+    }, [units, selectedYear]);
+
+    // Helpers
+    const getDistrictName = (code: string | null) => {
+        if (!code) return 'เลือกอำเภอ';
+        const d = districts.find(d => d.code === code);
+        return d ? `อำเภอ${d.name}` : 'เลือกอำเภอ';
+    };
+
+    const getHostypeName = (code: string | null) => {
+        if (!code) return 'ทั้งหมด';
+        return code || 'ทั้งหมด';
+    };
+
+    return (
+        <div className="hdc-content">
+            {/* Title & Filters */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '20px' }}>
+                <h1 style={{
+                    fontSize: '24px',
+                    fontWeight: 700,
+                    color: '#1E293B',
+                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                }}>
+                    <Image
+                        src="/nhso_logo.png"
+                        alt="NHSO Logo"
+                        width={40}
+                        height={40}
+                        style={{ objectFit: 'contain' }}
+                    />
+                    Dashboard การจัดส่งข้อมูล 43 แฟ้ม รายเดือน OPPP
+                </h1>
+
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    {/* Year Dropdown */}
+                    <select
+                        className="month-selector"
+                        value={selectedYear}
+                        onChange={(e) => handleYearChange(e.target.value)}
+                        style={{ border: '2px solid #0284C7', color: '#0F172A', textAlign: 'center', height: '42px' }}
+                    >
+                        {years.map(y => (
+                            <option key={y} value={y}>ปีงบประมาณ {y}</option>
+                        ))}
+                    </select>
+
+                    {/* District Dropdown */}
+                    <select
+                        className="month-selector"
+                        value={selectedDistrict || ''}
+                        onChange={(e) => handleDistrictChange(e.target.value || null)}
+                        style={{ border: '2px solid #0284C7', color: '#0F172A', textAlign: 'center', height: '42px' }}
+                    >
+                        <option value="">เลือกอำเภอ</option>
+                        {districts.map(d => (
+                            <option key={d.code} value={d.code}>อำเภอ{d.name}</option>
+                        ))}
+                    </select>
+
+                    {/* Hostype Dropdown */}
+                    <select
+                        className="month-selector"
+                        value={selectedHostype || ''}
+                        onChange={(e) => handleHostypeChange(e.target.value || null)}
+                        style={{ border: '2px solid #0284C7', color: '#0F172A', textAlign: 'center', height: '42px' }}
+                    >
+                        <option value="">สังกัด: ทั้งหมด</option>
+                        {hostypes.map(h => (
+                            <option key={h.code} value={h.name}>{h.name}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="stats-row">
+                <div className="info-card report-card">
+                    <div className="card-header">
+                        <h4>
+                            <i className="ph-fill ph-hospital" style={{ color: '#0284C7', fontSize: '20px', verticalAlign: 'middle', marginRight: '8px' }}></i>
+                            หน่วยบริการ (แห่ง)
+                        </h4>
+                    </div>
+                    <div className="card-value">{stats.total}</div>
+                </div>
+                <div className="info-card report-card">
+                    <div className="card-header">
+                        <h4>
+                            <i className="ph-fill ph-check-circle" style={{ color: '#0284C7', fontSize: '20px', verticalAlign: 'middle', marginRight: '8px' }}></i>
+                            ส่งครบทุกเดือน (แห่ง)
+                        </h4>
+                    </div>
+                    <div className="card-value" style={{ color: '#0284C7' }}>{stats.submitted}</div>
+                </div>
+                <div
+                    className="info-card report-card"
+                    id="missingCard"
+                    style={{ cursor: 'pointer', transition: 'transform 0.2s, boxShadow 0.2s' }}
+                    onClick={() => setMissingExpanded(!missingExpanded)}
+                >
+                    <div className="card-header">
+                        <h4>
+                            <i className="ph-fill ph-warning-circle" style={{ color: '#EF4444', fontSize: '20px', verticalAlign: 'middle', marginRight: '8px' }}></i>
+                            ส่งไม่ครบทุกเดือน (แห่ง)
+                        </h4>
+                    </div>
+                    <div className="card-value" style={{ color: '#EF4444' }}>{stats.missing}</div>
+                </div>
+            </div>
+
+            {/* Missing Section */}
+            <div className={`missing-section ${missingExpanded ? 'expanded' : ''}`}>
+                <div className="missing-section-card">
+                    <div className="missing-section-header">
+                        <h3>
+                            <i className="ph-fill ph-warning-circle" style={{ fontSize: '20px', marginRight: '10px' }}></i>
+                            รายชื่อหน่วยบริการที่ยากไม่ได้ส่งข้อมูล
+                        </h3>
+                        <button className="collapse-btn" onClick={() => setMissingExpanded(false)}>
+                            ซ่อน
+                        </button>
+                    </div>
+                    <div className="missing-section-body">
+                        {stats.missingList.length === 0 ? (
+                            <div className="empty-state">
+                                <i className="ph-fill ph-check-circle" style={{ color: '#0284C7' }}></i>
+                                <h4>ทุกหน่วยบริการส่งข้อมูลครบแล้ว</h4>
+                                <p>ไม่มีหน่วยบริการที่รอประมวลผลในเดือนนี้ 🎉</p>
+                            </div>
+                        ) : (
+                            stats.missingList.map(unit => (
+                                <div key={unit.code} className="missing-unit-item">
+                                    <div className="missing-unit-icon">
+                                        <i className="ph-fill ph-warning-circle"></i>
+                                    </div>
+                                    <div className="missing-unit-info">
+                                        <div className="missing-unit-code">{unit.code}</div>
+                                        <div className="missing-unit-name" title={unit.name}>{unit.name}</div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Data Table */}
+            <div className="table-card">
+                <div className="table-header">
+                    <h3>{getDistrictName(selectedDistrict)} {selectedHostype ? `(สังกัด: ${selectedHostype})` : ''}</h3>
+                    <div style={{ fontSize: '12px', color: '#aaa' }}>Last updated: {lastUpdate}</div>
+                </div>
+                <div style={{ overflowX: 'auto' }}>
+                    <table className="hdc-table">
+                        <thead>
+                            <tr>
+                                <th>รหัส</th>
+                                <th>หน่วยบริการ</th>
+                                <th className="text-center">ต.ค.</th>
+                                <th className="text-center">พ.ย.</th>
+                                <th className="text-center">ธ.ค.</th>
+                                <th className="text-center">ม.ค.</th>
+                                <th className="text-center">ก.พ.</th>
+                                <th className="text-center">มี.ค.</th>
+                                <th className="text-center">เม.ย.</th>
+                                <th className="text-center">พ.ค.</th>
+                                <th className="text-center">มิ.ย.</th>
+                                <th className="text-center">ก.ค.</th>
+                                <th className="text-center">ส.ค.</th>
+                                <th className="text-center">ก.ย.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={14} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
+                                        กำลังโหลดข้อมูล...
+                                    </td>
+                                </tr>
+                            ) : units.length === 0 ? (
+                                <tr>
+                                    <td colSpan={14} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
+                                        {selectedDistrict ? 'ไม่พบข้อมูลหน่วยบริการในอำเภอนี้' : 'กรุณาเลือกอำเภอเพื่อดูข้อมูล'}
+                                    </td>
+                                </tr>
+                            ) : (
+                                units.map(unit => {
+                                    // Style logic
+                                    const hostypeStr = unit.hostype ? String(unit.hostype).trim() : '';
+                                    const targetGreen = ['05', '07', '08', '11', '18', '5', '7', '8'];
+                                    const targetPurple = ['21'];
+
+                                    let cellStyle: React.CSSProperties = { fontWeight: 500 };
+                                    let codeStyle: React.CSSProperties = { fontFamily: 'monospace', background: '#f0f2f5', padding: '2px 6px', borderRadius: '4px' };
+
+                                    if (targetGreen.includes(hostypeStr)) {
+                                        cellStyle = { fontWeight: 600, color: '#059669' };
+                                        codeStyle = { ...codeStyle, color: '#059669', fontWeight: 600 };
+                                    } else if (targetPurple.includes(hostypeStr)) {
+                                        cellStyle = { fontWeight: 600, color: '#7C3AED' };
+                                        codeStyle = { ...codeStyle, color: '#7C3AED', fontWeight: 600 };
+                                    }
+
+                                    return (
+                                        <tr key={unit.code}>
+                                            <td><span style={codeStyle}>{unit.code}</span></td>
+                                            <td style={cellStyle}>{unit.name}</td>
+                                            {unit.months.map((status, idx) => (
+                                                <td key={idx} className="text-center">
+                                                    {!status ? (
+                                                        <div style={{ color: '#94A3B8', fontSize: '20px', textAlign: 'center' }}>-</div>
+                                                    ) : status.toUpperCase() === 'Y' ? (
+                                                        <div className="status-icon success" style={{ color: '#0284C7', background: '#E0F2FE' }}><i className="ph-fill ph-check-circle"></i></div>
+                                                    ) : (
+                                                        <div className="status-icon error"><i className="ph-fill ph-x-circle"></i></div>
+                                                    )}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Source Info */}
+            <div style={{ background: '#fff', borderRadius: '12px', padding: '16px 24px', boxShadow: 'var(--shadow-card)', marginTop: '0px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: '#64748b' }}>
+                    <a href="https://op.nhso.go.th/op/main/MainWebAction.do" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#0284C7', textDecoration: 'none', transition: 'all 0.2s', padding: '4px 8px', borderRadius: '4px' }}>
+                        <i className="ph-bold ph-link-simple" style={{ fontSize: '14px' }}></i>
+                        <span style={{ fontWeight: 500 }}>ที่มา: รายงาน OPPP</span>
+                        <i className="ph-bold ph-arrow-square-out" style={{ fontSize: '12px' }}></i>
+                    </a>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <i className="ph ph-clock" style={{ fontSize: '14px' }}></i>
+                        <span>อัปเดต: <span>{lastUpdate}</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

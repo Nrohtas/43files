@@ -1,0 +1,416 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+
+interface DistrictSummary {
+    code: string;
+    name: string;
+    totalUnits: number;
+    submitted: number;
+    missing: number;
+}
+
+interface MissingUnit {
+    code: string;
+    name: string;
+}
+
+interface DistrictMissingGroup {
+    districtCode: string;
+    districtName: string;
+    units: MissingUnit[];
+}
+
+interface Month {
+    value: string;
+    name: string;
+}
+
+export default function HDCDashboard() {
+    // State
+    const [year, setYear] = useState('2568');
+    const [month, setMonth] = useState('11'); // Default to Nov
+    const [years, setYears] = useState<string[]>(['2568']);
+    const [months, setMonths] = useState<Month[]>([]);
+
+    // Data State
+    const [summary, setSummary] = useState<DistrictSummary[]>([]);
+    const [allMissingUnits, setAllMissingUnits] = useState<DistrictMissingGroup[]>([]);
+    const [filteredMissingUnits, setFilteredMissingUnits] = useState<DistrictMissingGroup[]>([]);
+    const [lastUpdate, setLastUpdate] = useState<string>('-');
+
+    // UI State
+    const [loading, setLoading] = useState(true);
+    const [missingSectionExpanded, setMissingSectionExpanded] = useState(false);
+    const [missingSectionTitle, setMissingSectionTitle] = useState('รายชื่อหน่วยบริการที่รอประมวลผล');
+
+    // Init Logic
+    useEffect(() => {
+        const init = async () => {
+            // Calculate default month (previous month)
+            const today = new Date();
+            const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            const defaultMonth = (prevMonthDate.getMonth() + 1).toString();
+            setMonth(defaultMonth);
+
+            await fetchYears();
+            await fetchMonths();
+            await fetchData(year, defaultMonth);
+        };
+        init();
+    }, []);
+
+    // Fetch data when year/month changes
+    useEffect(() => {
+        // Skip initial load as it's handled by init
+        if (months.length > 0) {
+            fetchData(year, month);
+        }
+    }, [year, month]);
+
+    const fetchYears = async () => {
+        try {
+            const res = await fetch('/api/years');
+            if (res.ok) {
+                const data = await res.json();
+                setYears(data);
+            }
+        } catch (error) {
+            console.error('Error fetching years:', error);
+        }
+    };
+
+    const fetchMonths = async () => {
+        try {
+            const res = await fetch('/api/months');
+            if (res.ok) {
+                const data = await res.json();
+                setMonths(data);
+            }
+        } catch (error) {
+            console.error('Error fetching months:', error);
+        }
+    };
+
+    const fetchData = async (selectedYear: string, selectedMonth: string) => {
+        setLoading(true);
+        // Collapse missing section on refresh
+        setMissingSectionExpanded(false);
+        setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล');
+
+        try {
+            // Fetch Summary
+            const startSummary = Date.now();
+            const resSummary = await fetch(`/api/districts/summary?year=${selectedYear}&month=${selectedMonth}`);
+            if (resSummary.ok) {
+                const data = await resSummary.json();
+                setSummary(data);
+            }
+
+            // Fetch Missing Units
+            const resMissing = await fetch(`/api/missing-units/all?year=${selectedYear}&month=${selectedMonth}`);
+            if (resMissing.ok) {
+                const data = await resMissing.json();
+                setAllMissingUnits(data);
+                setFilteredMissingUnits(data); // Default show all
+            }
+
+            // Fetch Last Update
+            const resUpdate = await fetch(`/api/last-update?type=hdc&t=${Date.now()}`);
+            if (resUpdate.ok) {
+                const data = await resUpdate.json();
+                if (data.lastUpdate) {
+                    formatLastUpdate(data.lastUpdate);
+                } else {
+                    setLastUpdate('-');
+                }
+            } else {
+                setLastUpdate('-');
+            }
+
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const formatLastUpdate = (dateStr: string) => {
+        try {
+            // Helper to parse date string robustly
+            let cleanDateStr = dateStr;
+            if (typeof cleanDateStr === 'string' && cleanDateStr.includes(' ') && !cleanDateStr.includes('T')) {
+                cleanDateStr = cleanDateStr.replace(' ', 'T');
+            }
+
+            const date = new Date(cleanDateStr);
+            if (isNaN(date.getTime())) {
+                setLastUpdate('Err Date');
+                return;
+            }
+
+            const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+            const d = date.getDate();
+            const m = thaiMonths[date.getMonth()];
+            const y = date.getFullYear() + 543;
+            const time = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} น.`;
+
+            setLastUpdate(`${d} ${m} ${y} เวลา ${time}`);
+        } catch (e) {
+            setLastUpdate('-');
+        }
+    };
+
+    // Calculate province stats
+    const totalUnits = summary.reduce((acc, curr) => acc + curr.totalUnits, 0);
+    const totalSubmitted = summary.reduce((acc, curr) => acc + curr.submitted, 0);
+    const totalMissing = summary.reduce((acc, curr) => acc + curr.missing, 0);
+
+    // Handlers
+    const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setYear(e.target.value);
+    };
+
+    const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setMonth(e.target.value);
+    };
+
+    const toggleMissingSection = () => {
+        setMissingSectionExpanded(!missingSectionExpanded);
+    };
+
+    const showMissingForDistrict = (districtCode: string, districtName: string) => {
+        const districtData = allMissingUnits.filter(d => d.districtCode === districtCode);
+        setFilteredMissingUnits(districtData);
+        setMissingSectionTitle(`รายชื่อหน่วยบริการที่รอประมวลผล (${districtName})`);
+        setMissingSectionExpanded(true);
+
+        // Scroll to section
+        const section = document.getElementById('provinceMissingSection');
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+
+    const resetMissingFilter = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setFilteredMissingUnits(allMissingUnits);
+        setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล');
+    };
+
+    return (
+        <div className="dashboard-content">
+            <div className="province-summary-card">
+                <div className="province-summary-header">
+                    <h2>
+                        <i className="ph-fill ph-chart-bar"
+                            style={{ color: '#10B981', fontSize: '20px', verticalAlign: 'middle', marginRight: '10px' }}></i>
+                        Dashboard การจัดส่งข้อมูล 43 แฟ้ม HDC
+                    </h2>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <Link href="/hdc/report" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: 'linear-gradient(135deg, #10B981 0%, #34D399 100%)',
+                            border: 'none',
+                            color: 'white',
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            textDecoration: 'none',
+                            fontWeight: 600,
+                            fontSize: '14px',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 4px 6px rgba(16, 185, 129, 0.2)'
+                        }}>
+                            <i className="ph-duotone ph-table"></i>
+                            Dashboard รายเดือน
+                        </Link>
+                        <select
+                            className="month-selector"
+                            id="yearSelector"
+                            value={year}
+                            onChange={handleYearChange}
+                            style={{ border: '2px solid #10B981', color: '#0F172A', textAlign: 'center' }}
+                        >
+                            {years.map(y => (
+                                <option key={y} value={y}>ปี {y}</option>
+                            ))}
+                        </select>
+                        <select
+                            className="month-selector"
+                            id="monthSelector"
+                            value={month}
+                            onChange={handleMonthChange}
+                            style={{ border: '2px solid #10B981', color: '#0F172A', textAlign: 'center' }}
+                        >
+                            {months.length === 0 ? (
+                                <option>ไม่มีข้อมูลเดือน</option>
+                            ) : (
+                                months.map(m => (
+                                    <option key={m.value} value={m.value}>{m.name}</option>
+                                ))
+                            )}
+                        </select>
+                    </div>
+                </div>
+
+                <div className="province-stats">
+                    <div className="province-stat">
+                        <div className="province-stat-label">หน่วยบริการทั้งหมด</div>
+                        <div className="province-stat-value" id="provinceTotalUnits">{totalUnits}</div>
+                    </div>
+                    <div className="province-stat">
+                        <div className="province-stat-label">ประมวลผลแล้ว</div>
+                        <div className="province-stat-value" id="provinceSubmitted">{totalSubmitted}</div>
+                    </div>
+                    <div
+                        className="province-stat clickable"
+                        id="provinceMissingCard"
+                        onClick={toggleMissingSection}
+                    >
+                        <div className="province-stat-label">
+                            <i className="ph-fill ph-warning-circle" style={{ color: '#EF4444', fontSize: '16px' }}></i>
+                            รอประมวลผล
+                            <i className="ph-bold ph-magnifying-glass"
+                                style={{ color: '#EF4444', fontSize: '14px', marginLeft: '4px' }}></i>
+                        </div>
+                        <div className="province-stat-value" id="provinceMissing">{totalMissing}</div>
+                    </div>
+                </div>
+
+                <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: '#64748b' }}>
+                    <a href="https://hdc.moph.go.th/plk/public/standard-report-detail/92a705c26f22754d7462e9f742436b6f"
+                        target="_blank" rel="noopener noreferrer"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#10B981', textDecoration: 'none', transition: 'all 0.2s', padding: '4px 8px', borderRadius: '4px' }}>
+                        <i className="ph-bold ph-link-simple" style={{ fontSize: '14px' }}></i>
+                        <span style={{ fontWeight: 500 }}>ที่มา: รายงาน HDC</span>
+                        <i className="ph-bold ph-arrow-square-out" style={{ fontSize: '12px' }}></i>
+                    </a>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <i className="ph ph-clock" style={{ fontSize: '14px' }}></i>
+                        <span>อัปเดต: <span id="lastUpdateTime">{lastUpdate}</span></span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Expandable Missing Units Section */}
+            <div className={`province-missing-section ${missingSectionExpanded ? 'expanded' : ''}`} id="provinceMissingSection">
+                <div className="missing-section-card">
+                    <div className="missing-section-header-province">
+                        <h3>
+                            <i className="ph-fill ph-warning-circle"></i>
+                            {missingSectionTitle}
+                            {filteredMissingUnits.length !== allMissingUnits.length && (
+                                <button
+                                    onClick={resetMissingFilter}
+                                    style={{ fontSize: '12px', marginLeft: '10px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ddd', background: '#fff', cursor: 'pointer' }}
+                                >
+                                    แสดงทั้งหมด
+                                </button>
+                            )}
+                        </h3>
+                        <button className="collapse-btn-province" onClick={() => setMissingSectionExpanded(false)}>
+                            ซ่อน
+                        </button>
+                    </div>
+                    <div className="missing-section-body-province" id="provinceMissingSectionBody">
+                        {filteredMissingUnits.length === 0 ? (
+                            <div className="empty-missing-state">
+                                <i className="ph-fill ph-check-circle"></i>
+                                <h4>ทุกหน่วยบริการส่งข้อมูลครบแล้ว</h4>
+                                <p>ไม่มีหน่วยบริการที่รอประมวลผลในเดือนนี้ 🎉</p>
+                            </div>
+                        ) : (
+                            filteredMissingUnits.map(group => (
+                                group.units.length > 0 && (
+                                    <div key={group.districtCode} className="district-group">
+                                        <div className="district-group-header">
+                                            <i className="ph-fill ph-map-pin"></i>
+                                            <h4>{group.districtName}</h4>
+                                            <span className="district-group-count">{group.units.length}</span>
+                                        </div>
+                                        <div className="district-units-list">
+                                            {group.units.map(unit => (
+                                                <div key={unit.code} className="missing-unit-item-small">
+                                                    <span className="unit-code">{unit.code}</span>
+                                                    <span className="unit-name">{unit.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <div id="districtsContainer" className="districts-grid">
+                {loading ? (
+                    <div className="loading">
+                        <p>กำลังโหลดข้อมูล...</p>
+                    </div>
+                ) : summary.length === 0 ? (
+                    <div className="empty-state">
+                        <i className="ph ph-folder-notch-open"></i>
+                        <p>ไม่พบข้อมูลอำเภอ</p>
+                    </div>
+                ) : (
+                    summary.map(district => (
+                        <div
+                            key={district.code}
+                            className="district-card"
+                            onClick={() => showMissingForDistrict(district.code, district.name)}
+                        >
+                            <div className="district-card-header">
+                                <div>
+                                    <div className="district-name">{district.name}</div>
+                                    <div className="district-code">รหัสอำเภอ: {district.code}</div>
+                                </div>
+                                <div
+                                    className="district-icon"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        window.location.href = `/hdc/report/?district=${district.code}&year=${year}&month=${month}`;
+                                    }}
+                                    title="ดูรายละเอียด Dashboard รายเดือน"
+                                    style={{ width: 'auto', height: 'auto', padding: '6px 12px', borderRadius: '20px', display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s', background: '#ECFDF5', color: '#10B981' }}
+                                >
+                                    <span style={{ fontSize: '12px', fontWeight: 600 }}>รายเดือน</span>
+                                    <i className="ph-duotone ph-table" style={{ fontSize: '14px' }}></i>
+                                </div>
+                            </div>
+
+                            <div className="district-stats">
+                                <div className="stat-item">
+                                    <div className="stat-value total">{district.totalUnits}</div>
+                                    <div className="stat-label">หน่วยบริการ</div>
+                                </div>
+                                <div className="stat-item" style={{ backgroundColor: '#F0FDF4' }}>
+                                    <div className="stat-value submitted" style={{ color: '#16A34A' }}>{district.submitted}</div>
+                                    <div className="stat-label">ประมวลผลแล้ว</div>
+                                </div>
+                                <div
+                                    className="stat-item"
+                                    style={{ background: '#FEF2F2', cursor: 'pointer', transition: 'transform 0.2s' }}
+                                    onMouseOver={(e) => { if (district.missing > 0) e.currentTarget.style.transform = 'scale(1.05)'; }}
+                                    onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                                >
+                                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                                        <div className="stat-value missing" style={{ color: '#DC2626' }}>{district.missing}</div>
+                                        {district.missing > 0 && (
+                                            <i className="ph-bold ph-magnifying-glass" style={{ position: 'absolute', top: '2px', right: '-20px', fontSize: '16px', color: '#DC2626' }}></i>
+                                        )}
+                                    </div>
+                                    <div className="stat-label">รอประมวลผล</div>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+}

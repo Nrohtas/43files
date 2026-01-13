@@ -348,7 +348,7 @@ app.post('/api/upload/oppp', upload.single('file'), async (req: Request, res: Re
             }
 
             const serviceValue = parseFloat(row.service) || 0;
-            const serviceApprove = parseFloat(row.service_approve) || 0;
+            const serviceApprove = parseFloat(row.service_pass || row.service_approve) || 0; // Support both names from excel just in case, but map to service_pass
             const serviceReject = parseFloat(row.service_reject) || 0;
             // Sanitize hospcode: remove all non-numeric characters
             const hospcode = row.hospcode.toString().replace(/\D/g, '');
@@ -393,12 +393,12 @@ app.post('/api/upload/oppp', upload.single('file'), async (req: Request, res: Re
         }
 
         const sql = `
-            INSERT INTO oppp (hospcode, year_th, month_no, sentdata, service, service_approve, service_reject, d_update) 
+            INSERT INTO oppp (hospcode, year_th, month_no, sentdata, service, service_pass, service_reject, d_update) 
             VALUES ? 
             ON DUPLICATE KEY UPDATE 
             sentdata = VALUES(sentdata),
             service = VALUES(service), 
-            service_approve = VALUES(service_approve),
+            service_pass = VALUES(service_pass),
             service_reject = VALUES(service_reject),
             d_update = VALUES(d_update)
         `;
@@ -898,7 +898,7 @@ app.get('/api/oppp/missing-units/all', (req: Request, res: Response) => {
 
 // API endpoint to get list of available years
 app.get('/api/years', (req: Request, res: Response) => {
-    const sql = 'SELECT DISTINCT year_th FROM hdc ORDER BY year_th DESC';
+    const sql = "SELECT year_th FROM `year` WHERE year_th IN ('2568', '2569') ORDER BY year_th DESC";
 
     pool.query(sql, (err, results: any) => {
         if (err) {
@@ -907,14 +907,14 @@ app.get('/api/years', (req: Request, res: Response) => {
             return;
         }
 
-        const years = results.map((row: any) => row.year_th);
+        const years = results.map((row: any) => String(row.year_th));
         res.json(years);
     });
 });
 
 // API endpoint to get list of available fiscal years for report
 app.get('/api/years/report', (req: Request, res: Response) => {
-    const sql = 'SELECT DISTINCT year_th FROM hdc ORDER BY year_th DESC';
+    const sql = "SELECT year_th FROM `year` WHERE year_th = '2569'";
 
     pool.query(sql, (err, results: any) => {
         if (err) {
@@ -923,20 +923,8 @@ app.get('/api/years/report', (req: Request, res: Response) => {
             return;
         }
 
-        // Convert calendar years to fiscal years
-        // Fiscal year X contains: Oct-Dec of year X-1 and Jan-Sep of year X
-        const calendarYears = results.map((row: any) => parseInt(row.year_th));
-        const fiscalYears = new Set<number>();
-
-        calendarYears.forEach((year: number) => {
-            // This year's Jan-Sep belongs to current fiscal year
-            fiscalYears.add(year);
-            // This year's Oct-Dec belongs to next fiscal year
-            fiscalYears.add(year + 1);
-        });
-
-        const sortedFiscalYears = Array.from(fiscalYears).sort((a, b) => b - a);
-        res.json(sortedFiscalYears.map(y => y.toString()));
+        const years = results.map((row: any) => String(row.year_th));
+        res.json(years);
     });
 });
 
