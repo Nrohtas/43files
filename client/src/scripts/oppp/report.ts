@@ -35,9 +35,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
 
     // Calculate default fiscal year (Previous Month Logic)
-    const today = new Date();
-    const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-    const defaultFiscalYear = (prevMonthDate.getMonth() >= 9) ? prevMonthDate.getFullYear() + 544 : prevMonthDate.getFullYear() + 543;
+    // const today = new Date();
+    // const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const defaultFiscalYear = 2568; // Default fixed to 2568 per request
+    // const defaultFiscalYear = (prevMonthDate.getMonth() >= 9) ? prevMonthDate.getFullYear() + 544 : prevMonthDate.getFullYear() + 543;
 
     const currentYear = urlParams.get('year') || defaultFiscalYear.toString();
     const currentMonth = urlParams.get('month') || '11';
@@ -249,7 +250,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (yearDropdownMenu) {
                 yearDropdownMenu.innerHTML = '';
                 // Filter out 2568 as requested if needed (implied from HDC version)
-                years.filter(y => y !== '2568').forEach(year => {
+                years.forEach(year => {
                     const option = document.createElement('div');
                     option.className = 'year-option';
                     option.dataset.year = year;
@@ -491,7 +492,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const updateLastUpdateTime = async (): Promise<void> => {
         try {
             console.log('DEBUG: Fetching last update time for OPPP Report');
-            const response = await fetch(`${API_BASE_URL}/api/hdc/last-update?t=${new Date().getTime()}`);
+            const response = await fetch(`${API_BASE_URL}/api/last-update?type=oppp&t=${new Date().getTime()}`);
             if (!response.ok) throw new Error('Failed to fetch last update time');
 
             const data = await response.json();
@@ -533,7 +534,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const month = thaiMonths[lastUpdate.getMonth()];
             const year = lastUpdate.getFullYear() + 543;
 
-            const timeString = `${day} ${month} ${year}`;
+            const hours = lastUpdate.getHours().toString().padStart(2, '0');
+            const minutes = lastUpdate.getMinutes().toString().padStart(2, '0');
+            const timeString = `${day} ${month} ${year} เวลา ${hours}:${minutes} น.`;
 
             const lastUpdateEl = document.getElementById('lastUpdateTime');
             if (lastUpdateEl) {
@@ -590,7 +593,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="empty-state">
                     <i class="ph-fill ph-check-circle"></i>
                     <h4>ทุกหน่วยบริการส่งข้อมูลครบแล้ว</h4>
-                    <p>ไม่มีหน่วยบริการที่ยังไม่ได้ส่งข้อมูลในเดือนนี้ 🎉</p>
+                    <p>ไม่มีหน่วยบริการที่รอประมวลผลในเดือนนี้ 🎉</p>
                 </div>
             `;
             return;

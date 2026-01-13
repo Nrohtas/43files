@@ -584,7 +584,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const updateLastUpdateTime = async (): Promise<void> => {
         try {
             console.log('DEBUG HDC Report: Fetching last update time');
-            const response = await fetch(`${API_BASE_URL}/api/hdc/last-update?t=${new Date().getTime()}`);
+            const response = await fetch(`${API_BASE_URL}/api/last-update?type=hdc&t=${new Date().getTime()}`);
             if (!response.ok) throw new Error('Failed to fetch last update time');
 
             const data = await response.json();
@@ -623,7 +623,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const month = thaiMonths[lastUpdate.getMonth()];
             const year = lastUpdate.getFullYear() + 543;
 
-            const timeString = `${day} ${month} ${year}`;
+            const hours = lastUpdate.getHours().toString().padStart(2, '0');
+            const minutes = lastUpdate.getMinutes().toString().padStart(2, '0');
+            const timeString = `${day} ${month} ${year} เวลา ${hours}:${minutes} น.`;
 
             const lastUpdateEl = document.getElementById('lastUpdateTime');
             if (lastUpdateEl) {

@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Store user info
                     localStorage.setItem('user', JSON.stringify(data.user));
                     localStorage.setItem('userRole', data.user.role || 'user');
+                    localStorage.setItem('username', data.user.username || '');
 
                     alert('Login Successful!');
                     window.location.href = '/admin/';

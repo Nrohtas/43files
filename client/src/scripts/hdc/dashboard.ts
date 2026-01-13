@@ -273,7 +273,7 @@ function toggleProvinceSection() {
 
 // Navigate to district detail page
 function navigateToDistrict(districtCode: string) {
-    window.location.href = `hdc-report.html?district=${districtCode}&year=${currentYear}&month=${currentMonth}`;
+    window.location.href = `/hdc/report/?district=${districtCode}&year=${currentYear}&month=${currentMonth}`;
 }
 
 // Make function globally available
@@ -380,7 +380,7 @@ async function initDashboard() {
 async function updateLastUpdateTime() {
     try {
         console.log('DEBUG HDC Dashboard: Fetching last update time');
-        const response = await fetch(`${API_BASE}/hdc/last-update?t=${new Date().getTime()}`);
+        const response = await fetch(`${API_BASE}/last-update?type=hdc&t=${new Date().getTime()}`);
         if (!response.ok) throw new Error('Failed to fetch last update time');
 
         const data = await response.json();
@@ -422,7 +422,9 @@ async function updateLastUpdateTime() {
         const month = thaiMonths[lastUpdate.getMonth()];
         const year = lastUpdate.getFullYear() + 543;
 
-        const timeString = `${day} ${month} ${year}`;
+        const hours = lastUpdate.getHours().toString().padStart(2, '0');
+        const minutes = lastUpdate.getMinutes().toString().padStart(2, '0');
+        const timeString = `${day} ${month} ${year} เวลา ${hours}:${minutes} น.`;
 
         const lastUpdateEl = document.getElementById('lastUpdateTime');
         if (lastUpdateEl) {

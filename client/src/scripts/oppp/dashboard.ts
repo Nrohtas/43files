@@ -5,7 +5,8 @@ console.log('🟢 OPPP Script Loaded - Version with BLUE styling');
 // State
 const today = new Date();
 const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-const fiscalYear = (prevMonthDate.getMonth() >= 9) ? prevMonthDate.getFullYear() + 544 : prevMonthDate.getFullYear() + 543;
+const fiscalYear = 2568; // Default fixed to 2568 per request
+// const fiscalYear = (prevMonthDate.getMonth() >= 9) ? prevMonthDate.getFullYear() + 544 : prevMonthDate.getFullYear() + 543;
 
 let currentYear = fiscalYear.toString();
 let currentMonth = (prevMonthDate.getMonth() + 1).toString();
@@ -175,13 +176,14 @@ function renderDistrictCards(districts: DistrictSummary[]) {
                 </div>
                 <div class="stat-item" style="background-color: #E0F2FE !important;">
                     <div class="stat-value submitted" style="color: #0284C7 !important;">${district.submitted}</div>
-                    <div class="stat-label">ส่งแล้ว</div>
+                    <div class="stat-label">ประมวลผลแล้ว</div>
                 </div>
                 <div class="stat-item" style="background: #FEF2F2; cursor: pointer; transition: transform 0.2s;" onmouseover="if(this.querySelector('.missing').textContent !== '0') this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
-                    <div class="stat-value missing" style="${district.missing > 0 ? 'color: #EF4444;' : 'color: #94A3B8;'}">${district.missing}</div>
-                    <div class="stat-label" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-                        ไม่ได้ส่ง ${district.missing > 0 ? '<i class="ph-bold ph-magnifying-glass" style="font-size: 16px; color: #EF4444;"></i>' : ''}
+                    <div style="position: relative;">
+                        <div class="stat-value missing" style="${district.missing > 0 ? 'color: #EF4444;' : 'color: #94A3B8;'}">${district.missing}</div>
+                        ${district.missing > 0 ? '<i class="ph-bold ph-magnifying-glass" style="position: absolute; top: -4px; right: -4px; font-size: 14px; color: #EF4444;"></i>' : ''}
                     </div>
+                    <div class="stat-label">รอประมวลผล</div>
                 </div>
             </div>
         </div>
@@ -211,7 +213,7 @@ function renderProvinceMissingUnits(districtGroups: DistrictMissingGroup[]) {
             <div class="empty-missing-state">
                 <i class="ph-fill ph-check-circle"></i>
                 <h4>ทุกหน่วยบริการส่งข้อมูลครบแล้ว</h4>
-                <p>ไม่มีหน่วยบริการที่ยังไม่ได้ส่งข้อมูลในเดือนนี้ 🎉</p>
+                <p>ไม่มีหน่วยบริการที่รอประมวลผลในเดือนนี้ 🎉</p>
             </div>
         `;
         return;
@@ -266,7 +268,7 @@ function toggleProvinceSection() {
 
 // Navigate to district detail page (OPPP Report)
 function navigateToDistrict(districtCode: string) {
-    window.location.href = `oppp-report.html?district=${districtCode}&year=${currentYear}&month=${currentMonth}`;
+    window.location.href = `/oppp/report/?district=${districtCode}&year=${currentYear}&month=${currentMonth}`;
 }
 
 // Make function globally available
@@ -284,7 +286,7 @@ function showMissingForDistrict(districtCode: string, districtName: string) {
     if (headerTitle) {
         headerTitle.innerHTML = `
             <i class="ph-fill ph-warning-circle"></i>
-            รายชื่อหน่วยบริการที่ยังไม่ได้ส่งข้อมูล (${districtName})
+            รายชื่อหน่วยบริการที่รอประมวลผล (${districtName})
             <button onclick="resetMissingFilter(); event.stopPropagation();" style="font-size: 12px; margin-left: 10px; padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd; background: #fff; cursor: pointer;">
                 แสดงทั้งหมด
             </button>
@@ -309,7 +311,7 @@ function resetMissingFilter() {
     if (headerTitle) {
         headerTitle.innerHTML = `
             <i class="ph-fill ph-warning-circle"></i>
-            รายชื่อหน่วยบริการที่ยังไม่ได้ส่งข้อมูล
+            รายชื่อหน่วยบริการที่รอประมวลผล
         `;
     }
 }
@@ -374,7 +376,7 @@ async function initDashboard() {
 async function updateLastUpdateTime() {
     try {
         console.log('DEBUG OPPP Dashboard: Fetching last update time');
-        const response = await fetch(`${API_BASE}/hdc/last-update?t=${new Date().getTime()}`);
+        const response = await fetch(`${API_BASE}/last-update?type=oppp&t=${new Date().getTime()}`);
         if (!response.ok) throw new Error('Failed to fetch last update time');
 
         const data = await response.json();
@@ -413,7 +415,9 @@ async function updateLastUpdateTime() {
         const month = thaiMonths[lastUpdate.getMonth()];
         const year = lastUpdate.getFullYear() + 543;
 
-        const timeString = `${day} ${month} ${year}`;
+        const hours = lastUpdate.getHours().toString().padStart(2, '0');
+        const minutes = lastUpdate.getMinutes().toString().padStart(2, '0');
+        const timeString = `${day} ${month} ${year} เวลา ${hours}:${minutes} น.`;
 
         const lastUpdateEl = document.getElementById('lastUpdateTime');
         if (lastUpdateEl) {

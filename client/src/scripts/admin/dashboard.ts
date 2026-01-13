@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
     // Helper function to setup upload logic
     const setupUploadHandler = (
         type: 'hdc' | 'oppp',
@@ -49,11 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.addEventListener('click', (e) => {
                 const target = e.target as HTMLElement;
                 if (target !== selectBtn && target !== uploadBtn && !selectBtn.contains(target) && !uploadBtn.contains(target)) {
-                    // fileInput.click(); // Optional: Disable card click triggers file input to avoid confusion? 
-                    // Let's keep card click explicitly for selection if they click empty space, 
-                    // but maybe it is better to force button usage for clarity now.
-                    // User request said "Add button to select file", so maybe reliance on card click is less needed.
-                    // keeping it disabled for now to be precise.
+                    // fileInput.click(); 
                 }
             });
         }
@@ -87,23 +84,20 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             const files = fileInput.files;
             if (files && files.length > 0) {
-                const typeName = type.toUpperCase();
-
                 if (type === 'hdc') {
                     // Real Upload Logic for HDC
                     if (!confirm(`ยืนยันการนำเข้าไฟล์ Excel (${files.length} ไฟล์) เข้าสู่ระบบฐานข้อมูล HDC?`)) return;
 
-                    // Upload one by one or batch? The backend handles one file at a time currently (upload.single).
-                    // We should loop through files if multiple are selected, or restricted to single file.
-                    // Implementation: Upload first file only for now as dashboard typically handles one report file.
-                    // Or loop. Let's loop.
-
                     uploadBtn.disabled = true;
                     uploadBtn.textContent = 'กำลังอัปโหลด...';
+
+                    // Get username from localStorage
+                    const username = localStorage.getItem('username') || '';
 
                     const uploadPromises = Array.from(files).map(file => {
                         const formData = new FormData();
                         formData.append('file', file);
+                        formData.append('username', username);
 
                         return fetch('http://localhost:3000/api/upload/hdc', {
                             method: 'POST',
@@ -128,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (failCount > 0) msg += `, ล้มเหลว ${failCount} ไฟล์`;
 
                             alert(msg);
+                            loadUploadHistory(); // Refresh history
 
                             // Reset UI
                             fileInput.value = '';
@@ -146,23 +141,161 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
 
                 } else {
-                    // Simulate Upload for OPPP (not requested yet)
-                    const confirmMsg = `ยืนยันการส่งข้อมูล ${typeName} จำนวน ${files.length} ไฟล์?`;
-                    if (confirm(confirmMsg)) {
-                        alert('ระบบได้รับข้อมูลเรียบร้อยแล้ว\n(จำลองการส่งข้อมูล)');
-                        // Reset
-                        fileInput.value = '';
-                        fileInfo.textContent = 'ยังไม่ได้เลือกไฟล์';
-                        fileInfo.style.color = '#64748b';
-                        uploadBtn.disabled = true;
-                        uploadBtn.style.opacity = '0.5';
-                        uploadBtn.style.cursor = 'not-allowed';
-                    }
+                    // Real Upload Logic for OPPP
+                    if (!confirm(`ยืนยันการนำเข้าไฟล์ Excel (${files.length} ไฟล์) เข้าสู่ระบบฐานข้อมูล OPPP?`)) return;
+
+                    uploadBtn.disabled = true;
+                    uploadBtn.textContent = 'กำลังอัปโหลด...';
+
+                    // Get username from localStorage
+                    const username = localStorage.getItem('username') || '';
+
+                    const uploadPromises = Array.from(files).map(file => {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        formData.append('username', username);
+
+                        return fetch('http://localhost:3000/api/upload/oppp', {
+                            method: 'POST',
+                            body: formData
+                        }).then(async response => {
+                            const text = await response.text();
+                            try {
+                                return JSON.parse(text);
+                            } catch (e) {
+                                throw new Error(`Server returned error (${response.status}): ${text.substring(0, 100)}...`);
+                            }
+                        });
+                    });
+
+                    Promise.all(uploadPromises)
+                        .then(results => {
+                            console.log('Upload results:', results);
+                            const successCount = results.filter(r => r.success).length;
+                            const failCount = results.length - successCount;
+
+                            let msg = `ประมวลผลเสร็จสิ้น: สำเร็จ ${successCount} ไฟล์`;
+                            if (failCount > 0) msg += `, ล้มเหลว ${failCount} ไฟล์`;
+
+                            alert(msg);
+                            loadUploadHistory(); // Refresh history
+
+                            // Reset UI
+                            fileInput.value = '';
+                            fileInfo.textContent = 'ยังไม่ได้เลือกไฟล์';
+                            fileInfo.style.color = '#64748b';
+                            uploadBtn.disabled = true;
+                            uploadBtn.style.opacity = '0.5';
+                            uploadBtn.style.cursor = 'not-allowed';
+                            uploadBtn.innerHTML = '<i class="ph-bold ph-upload-simple" style="margin-right: 8px;"></i>ยืนยันการส่งข้อมูล';
+                        })
+                        .catch(err => {
+                            console.error('Upload error:', err);
+                            alert('เกิดข้อผิดพลาดในการอัปโหลด: ' + err.message);
+                            uploadBtn.disabled = false;
+                            uploadBtn.innerHTML = '<i class="ph-bold ph-upload-simple" style="margin-right: 8px;"></i>ยืนยันการส่งข้อมูล';
+                        });
                 }
             }
         });
     };
 
+
+
+    // --- Upload History Logic ---
+    const loadUploadHistory = async () => {
+        const historyBody = document.getElementById('uploadHistoryBody');
+        if (!historyBody) return;
+
+        try {
+            const response = await fetch('http://localhost:3000/api/uploads/history');
+            const history = await response.json();
+
+            if (!Array.isArray(history) || history.length === 0) {
+                historyBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="padding: 40px; text-align: center; color: #94a3b8;">
+                            <i class="ph-duotone ph-list-dashes" style="font-size: 30px; margin-bottom: 10px; display: block;"></i>
+                            ยังไม่มีประวัติการอัปโหลด
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            historyBody.innerHTML = history.map((item: any) => {
+                // Format Date: 13 ม.ค. 2569 10:30
+                const date = new Date(item.file_time);
+                const dateStr = date.toLocaleDateString('th-TH', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                // Format Size
+                const sizeInMB = (item.file_size / (1024 * 1024)).toFixed(2);
+                const sizeStr = `${sizeInMB} MB`;
+
+                // Type Badge Style
+                const isHdc = item.file_type === 'hdc';
+                const typeColor = isHdc ? '#10B981' : '#3b82f6';
+                const typeBg = isHdc ? '#ecfdf5' : '#eff6ff';
+                const typeLabel = isHdc ? 'HDC' : 'OPPP';
+
+                return `
+                    <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                        <td style="padding: 16px; color: #1e293b; font-size: 14px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="ph-duotone ph-clock" style="color: #64748b;"></i>
+                                ${dateStr}
+                            </div>
+                        </td>
+                        <td style="padding: 16px; color: #1e293b; font-weight: 500; font-size: 14px;">
+                            ${item.file_name}
+                        </td>
+                        <td style="padding: 16px; text-align: center;">
+                            <span style="background: ${typeBg}; color: ${typeColor}; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid ${typeColor}30;">
+                                ${typeLabel}
+                            </span>
+                        </td>
+                        <td style="padding: 16px; text-align: center; color: #475569; font-family: monospace; font-size: 14px;">
+                            ${item.file_log || '-'}
+                        </td>
+                        <td style="padding: 16px; text-align: center; color: #475569; font-size: 14px;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                <div style="width: 24px; height: 24px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #64748b; font-weight: 700;">
+                                    ${(item.username || '?').charAt(0).toUpperCase()}
+                                </div>
+                                ${item.username || 'Unknown'}
+                            </div>
+                        </td>
+                        <td style="padding: 16px; text-align: right; color: #64748b; font-size: 13px;">
+                            ${sizeStr}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+        } catch (error) {
+            console.error('Error loading history:', error);
+            historyBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="padding: 20px; text-align: center; color: #ef4444;">
+                         <i class="ph-bold ph-warning-circle" style="margin-right: 5px;"></i>
+                         เกิดข้อผิดพลาดในการโหลดข้อมูล
+                    </td>
+                </tr>
+            `;
+        }
+    };
+
+    // Load history on start
+    loadUploadHistory();
+
     setupUploadHandler('hdc', 'hdcFileInput', '.btn-select-file.hdc', '.btn-upload.hdc', 'hdcFileInfo');
     setupUploadHandler('oppp', 'opppFileInput', '.btn-select-file.oppp', '.btn-upload.oppp', 'opppFileInfo');
+
+
 });

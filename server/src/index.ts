@@ -65,9 +65,11 @@ app.post('/api/login', (req: Request, res: Response) => {
             res.json({
                 success: true,
                 user: {
-                    id: user.id,
-                    username: user.username,
-                    role: user.role
+                    username: user.username,  // Return username
+                    role: user.level || 'user', // Use 'level' field from database
+                    email: user.email,
+                    fname: user.fname,
+                    lname: user.lname
                 }
             });
         } else {
@@ -88,9 +90,9 @@ app.post('/api/upload/hdc', upload.single('file'), async (req: Request, res: Res
         const calculateSentdata = (hostype: number | null, service: number): string => {
             if (hostype === null || hostype === undefined) return 'N';
 
-            // hostype_new in (13,18,21): service > 249 = Y
+            // hostype_new in (13,18,21): service > 199 = Y
             if ([13, 18, 21].includes(hostype)) {
-                return service > 249 ? 'Y' : 'N';
+                return service > 199 ? 'Y' : 'N';
             }
             // hostype_new in (5,12): service > 19999 = Y
             if ([5, 12].includes(hostype)) {
@@ -203,6 +205,42 @@ app.post('/api/upload/hdc', upload.single('file'), async (req: Request, res: Res
                 return;
             }
 
+            // Extract metadata for fileupload table
+            // Get year_th and month_no from the first valid row (assuming all rows have same period)
+            const firstRow = rawData.find(row => row.year_th && row.month_no);
+
+            if (firstRow && req.file) {
+                const yearTh = firstRow.year_th.toString().slice(-2); // Get last 2 digits (e.g., 2568 -> 68)
+                const monthNo = firstRow.month_no.toString().padStart(2, '0'); // Ensure 2 digits
+                const fileLog = yearTh + monthNo; // Combine (e.g., "6810")
+
+                // Get username from request body
+                const username = req.body.username || null;
+
+                const fileMetadataSql = `
+                    INSERT INTO fileupload (file_name, file_log, file_type, username, file_size, file_time)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                `;
+
+                const fileMetadata = [
+                    req.file.originalname,
+                    fileLog,
+                    'hdc',
+                    username,
+                    req.file.size, // Size in bytes
+                    new Date()
+                ];
+
+                pool.query(fileMetadataSql, fileMetadata, (fileErr) => {
+                    if (fileErr) {
+                        console.error('File metadata insert error:', fileErr);
+                        // Don't fail the main operation, just log the error
+                    } else {
+                        console.log(`File metadata logged: ${req.file!.originalname} (${fileLog}) by ${username || 'unknown'}`);
+                    }
+                });
+            }
+
             const response: any = {
                 success: true,
                 message: `Successfully processed ${validRows.length} rows`,
@@ -218,6 +256,186 @@ app.post('/api/upload/hdc', upload.single('file'), async (req: Request, res: Res
 
     } catch (error) {
         console.error('Upload handling error:', error);
+        res.status(500).json({ error: 'Internal server error processing file' });
+    }
+});
+
+// Endpoint to upload OPPP Excel file
+app.post('/api/upload/oppp', upload.single('file'), async (req: Request, res: Response) => {
+    try {
+        if (!req.file) {
+            res.status(400).json({ error: 'No file uploaded' });
+            return;
+        }
+
+        // Function to calculate sentdata for OPPP based on hostype_new and service value
+        // Using similar logic to HDC for consistency
+        const calculateSentdata = (hostype: number | null, service: number): string => {
+            if (hostype === null || hostype === undefined) return 'N';
+
+            // hostype_new in (13,18,21): service > 199 = Y
+            if ([13, 18, 21].includes(hostype)) {
+                return service > 199 ? 'Y' : 'N';
+            }
+            // hostype_new in (5,12): service > 19999 = Y
+            if ([5, 12].includes(hostype)) {
+                return service > 19999 ? 'Y' : 'N';
+            }
+            // hostype_new in (8): service > 999 = Y
+            if (hostype === 8) {
+                return service > 999 ? 'Y' : 'N';
+            }
+            // hostype_new in (11): service > 599 = Y
+            if (hostype === 11) {
+                return service > 599 ? 'Y' : 'N';
+            }
+            // hostype_new in (7): service > 7999 = Y
+            if (hostype === 7) {
+                return service > 7999 ? 'Y' : 'N';
+            }
+
+            // Default fallback for other hostype values
+            return 'N';
+        };
+
+        // Pre-fetch hospital types from database
+        const hospitalTypesPromise = new Promise<Map<string, number>>((resolve, reject) => {
+            pool.query('SELECT hospcode, hostype_new FROM hospital', (err, results: any) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                const hospTypeMap = new Map<string, number>();
+                results.forEach((row: any) => {
+                    const hostype = parseInt(row.hostype_new);
+                    hospTypeMap.set(row.hospcode, hostype);
+                });
+                resolve(hospTypeMap);
+            });
+        });
+
+        const hospTypeMap = await hospitalTypesPromise;
+
+        const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+
+        const rawData = xlsx.utils.sheet_to_json(sheet) as any[];
+
+        if (rawData.length === 0) {
+            res.status(400).json({ error: 'Excel file is empty' });
+            return;
+        }
+
+        const validRows: any[] = [];
+        const warnings: string[] = [];
+
+        rawData.forEach((row) => {
+            if (!row.hospcode || !row.year_th || !row.month_no || row.service === undefined || row.service === null) {
+                return;
+            }
+
+            const serviceValue = parseFloat(row.service) || 0;
+            const hospcode = row.hospcode.toString();
+            const hostype = hospTypeMap.get(hospcode);
+
+            // Warning if hospcode not found in hospital table
+            if (hostype === undefined) {
+                if (!warnings.includes(hospcode)) {
+                    warnings.push(hospcode);
+                }
+            }
+
+            const sentdataValue = calculateSentdata(hostype || null, serviceValue);
+
+            // Debug logging for the first few records
+            if (validRows.length < 5) {
+                console.log(`DEBUG OPPP: hospcode=${hospcode}, hostype=${hostype}, service=${serviceValue}, sentdata=${sentdataValue}`);
+            }
+
+            // Ensure month_no is 2-digit format
+            const monthNo = row.month_no.toString().padStart(2, '0');
+
+            validRows.push([
+                hospcode,
+                row.year_th,
+                monthNo,
+                sentdataValue,
+                serviceValue,
+                new Date()
+            ]);
+        });
+
+        if (validRows.length === 0) {
+            res.status(400).json({ error: 'No valid rows found to insert' });
+            return;
+        }
+
+        const sql = `
+            INSERT INTO oppp (hospcode, year_th, month_no, sentdata, service, d_update) 
+            VALUES ? 
+            ON DUPLICATE KEY UPDATE 
+            sentdata = VALUES(sentdata),
+            service = VALUES(service), 
+            d_update = VALUES(d_update)
+        `;
+
+        pool.query(sql, [validRows], (err, result: any) => {
+            if (err) {
+                console.error('Insert error:', err);
+                res.status(500).json({ error: 'Database insertion error' });
+                return;
+            }
+
+            // Extract metadata for fileupload table
+            const firstRow = rawData.find(row => row.year_th && row.month_no);
+
+            if (firstRow && req.file) {
+                const yearTh = firstRow.year_th.toString().slice(-2); // Get last 2 digits
+                const monthNo = firstRow.month_no.toString().padStart(2, '0');
+                const fileLog = yearTh + monthNo;
+
+                // Get username from request body
+                const username = req.body.username || null;
+
+                const fileMetadataSql = `
+                    INSERT INTO fileupload (file_name, file_log, file_type, username, file_size, file_time)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                `;
+
+                const fileMetadata = [
+                    req.file.originalname,
+                    fileLog,
+                    'oppp',
+                    username,
+                    req.file.size,
+                    new Date()
+                ];
+
+                pool.query(fileMetadataSql, fileMetadata, (fileErr) => {
+                    if (fileErr) {
+                        console.error('File metadata insert error:', fileErr);
+                    } else {
+                        console.log(`File metadata logged: ${req.file!.originalname} (${fileLog}) by ${username || 'unknown'}`);
+                    }
+                });
+            }
+
+            const response: any = {
+                success: true,
+                message: `Successfully processed ${validRows.length} rows`,
+                affectedRows: result.affectedRows
+            };
+
+            if (warnings.length > 0) {
+                response.warnings = `${warnings.length} hospcode(s) not found in hospital table: ${warnings.slice(0, 5).join(', ')}${warnings.length > 5 ? '...' : ''}`;
+            }
+
+            res.json(response);
+        });
+
+    } catch (error) {
+        console.error('OPPP upload handling error:', error);
         res.status(500).json({ error: 'Internal server error processing file' });
     }
 });
@@ -580,6 +798,28 @@ app.get('/api/oppp/districts/summary', (req: Request, res: Response) => {
     });
 });
 
+// ==========================================
+// Upload History Endpoint
+// ==========================================
+
+app.get('/api/uploads/history', (req: Request, res: Response) => {
+    const sql = `
+        SELECT * FROM fileupload 
+        ORDER BY file_time DESC 
+        LIMIT 50
+    `;
+
+    pool.query(sql, (err, results: any) => {
+        if (err) {
+            console.error('Error fetching upload history:', err);
+            res.status(500).json({ error: 'Database error' });
+            return;
+        }
+
+        res.json(results);
+    });
+});
+
 
 // API endpoint for all missing units across the province for OPPP (grouped by district)
 app.get('/api/oppp/missing-units/all', (req: Request, res: Response) => {
@@ -717,25 +957,39 @@ app.get('/api/districts', (req: Request, res: Response) => {
     });
 });
 
-// API endpoint to get last update time for HDC data
-app.get('/api/hdc/last-update', (req: Request, res: Response) => {
-    const sql = 'SELECT MAX(d_update) as last_update FROM hdc WHERE d_update IS NOT NULL';
+// API endpoint to get last update time for HDC/OPPP data from file uploads
+app.get('/api/last-update', (req: Request, res: Response) => {
+    const type = req.query.type as string || 'hdc';
+    const sql = 'SELECT MAX(file_time) as last_update FROM fileupload WHERE file_type = ? AND file_time IS NOT NULL';
 
-    pool.query(sql, (err, results: any) => {
+    pool.query(sql, [type], (err, results: any) => {
         if (err) {
             console.error('Error executing query:', err);
             res.status(500).json({ error: 'Database error' });
             return;
         }
 
-        // Return null if no data, don't use current time
+        // Return null if no data
         const lastUpdate = results[0]?.last_update && results[0].last_update !== null
             ? results[0].last_update
             : null;
 
-        console.log('DEBUG /api/hdc/last-update - Query results:', results);
-        console.log('DEBUG /api/hdc/last-update - Returning lastUpdate:', lastUpdate);
+        console.log(`DEBUG /api/last-update type=${type} - Returning lastUpdate:`, lastUpdate);
 
+        res.json({ lastUpdate });
+    });
+});
+// Maintain old endpoint for backwards compatibility (optional, or just remove if we update all clients)
+app.get('/api/hdc/last-update', (req: Request, res: Response) => {
+    // Redirect logic internal or just duplicate for safety during transition
+    const sql = 'SELECT MAX(file_time) as last_update FROM fileupload WHERE file_type = "hdc" AND file_time IS NOT NULL';
+    pool.query(sql, (err, results: any) => {
+        if (err) {
+            console.error('Error executing query:', err);
+            res.status(500).json({ error: 'Database error' });
+            return;
+        }
+        const lastUpdate = results[0]?.last_update ? results[0].last_update : null;
         res.json({ lastUpdate });
     });
 });
