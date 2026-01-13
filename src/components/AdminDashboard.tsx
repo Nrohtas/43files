@@ -201,7 +201,7 @@ export default function AdminDashboard() {
                     border: '2px solid transparent', // Overridden by hover
                     transition: 'all 0.3s ease'
                 }}>
-                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #34D399 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#F0FDF4', border: '1px solid #DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
                         <Image src="/assets/images/moph_logo.png" alt="MOPH" width={60} height={60} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </div>
                     <h3 style={{ fontSize: '24px', fontWeight: 700, color: '#1E293B' }}>43 แฟ้ม HDC</h3>
@@ -278,7 +278,7 @@ export default function AdminDashboard() {
                     border: '2px solid transparent',
                     transition: 'all 0.3s ease'
                 }}>
-                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#EFF6FF', border: '1px solid #DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
                         <Image src="/assets/images/nhso_logo.png" alt="NHSO" width={60} height={60} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </div>
                     <h3 style={{ fontSize: '24px', fontWeight: 700, color: '#1E293B' }}>43 แฟ้ม OPPP</h3>
