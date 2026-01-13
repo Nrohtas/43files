@@ -1,5 +1,6 @@
 // API base URL
-export const API_BASE = 'http://localhost:3000/api';
+// API base URL
+export const API_BASE = (import.meta.env.VITE_API_BASE_URL) + '/api';
 
 // State
 const today = new Date();

@@ -7,7 +7,9 @@ import multer from 'multer';
 import * as xlsx from 'xlsx';
 
 // Load environment variables
-dotenv.config();
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+dotenv.config({ path: envFile });
+console.log(`Loaded environment from ${envFile}`);
 
 // Create Express app
 const app = express();
@@ -41,6 +43,16 @@ pool.getConnection((err, connection) => {
 // Configure Multer for memory storage (process files in RAM)
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+
+// Health Check Endpoint
+app.get('/', (req: Request, res: Response) => {
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        service: '43files-api'
+    });
+});
+
 
 // API endpoint to login
 app.post('/api/login', (req: Request, res: Response) => {

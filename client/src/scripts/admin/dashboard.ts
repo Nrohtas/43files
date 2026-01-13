@@ -99,7 +99,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         formData.append('file', file);
                         formData.append('username', username);
 
-                        return fetch('http://localhost:3000/api/upload/hdc', {
+                        // Use API_BASE from env
+                        const API_BASE = import.meta.env.VITE_API_BASE_URL;
+                        return fetch(`${API_BASE}/api/upload/hdc`, {
                             method: 'POST',
                             body: formData
                         }).then(async response => {
@@ -155,7 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         formData.append('file', file);
                         formData.append('username', username);
 
-                        return fetch('http://localhost:3000/api/upload/oppp', {
+                        // Use API_BASE from env
+                        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+                        return fetch(`${API_BASE}/api/upload/oppp`, {
                             method: 'POST',
                             body: formData
                         }).then(async response => {
