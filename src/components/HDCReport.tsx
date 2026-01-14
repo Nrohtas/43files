@@ -444,9 +444,15 @@ export default function HDCReport() {
                     <div style={{ fontWeight: 500, color: '#94A3B8' }}>
                         Copyright ©2026 Digital Health Group of Phitsanulok Provincial Public Health Office
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <i className="ph ph-clock" style={{ fontSize: '13px' }}></i>
-                        <span>อัปเดต: <span>{lastUpdate}</span></span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#16A34A', fontWeight: 600 }}>
+                            <i className="ph-fill ph-calendar-check" style={{ fontSize: '14px' }}></i>
+                            <span>ประมวลผลจากวันที่รับบริการ</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <i className="ph ph-clock" style={{ fontSize: '13px' }}></i>
+                            <span>อัปเดต: <span>{lastUpdate}</span></span>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -278,9 +278,15 @@ export default function HDCDashboard() {
                         <span style={{ fontWeight: 500 }}>ที่มา: รายงาน HDC</span>
                         <i className="ph-bold ph-arrow-square-out" style={{ fontSize: '12px' }}></i>
                     </a>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <i className="ph ph-clock" style={{ fontSize: '14px' }}></i>
-                        <span>อัปเดต: <span id="lastUpdateTime">{lastUpdate}</span></span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#16A34A', fontWeight: 600 }}>
+                            <i className="ph-fill ph-calendar-check" style={{ fontSize: '14px' }}></i>
+                            <span>ประมวลผลจากวันที่รับบริการ</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <i className="ph ph-clock" style={{ fontSize: '14px' }}></i>
+                            <span>อัปเดต: <span id="lastUpdateTime">{lastUpdate}</span></span>
+                        </div>
                     </div>
                 </div>
             </div>
