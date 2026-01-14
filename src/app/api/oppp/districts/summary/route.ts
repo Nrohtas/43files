@@ -2,7 +2,17 @@ import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 
+import { verifyToken } from '@/lib/jwt';
+
 export async function GET(request: Request) {
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.split(' ')[1];
+    const decoded = token ? verifyToken(token) : null;
+
+    if (!decoded) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const year = searchParams.get('year') || '2568';
     const month = searchParams.get('month') || '11';

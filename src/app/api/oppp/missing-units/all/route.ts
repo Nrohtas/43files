@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
+import { verifyToken } from '@/lib/jwt';
+
 export async function GET(request: NextRequest) {
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.split(' ')[1];
+    const decoded = token ? verifyToken(token) : null;
+
+    if (!decoded) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const year = searchParams.get('year') || '2568';
     const month = searchParams.get('month') || '11';

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import CustomSelect from './CustomSelect';
+import { authenticatedFetch } from '@/utils/apiClient';
 
 interface DistrictSummary {
     code: string;
@@ -103,14 +104,14 @@ export default function HDCDashboard() {
         try {
             // Fetch Summary
             const startSummary = Date.now();
-            const resSummary = await fetch(`/api/districts/summary?year=${selectedYear}&month=${selectedMonth}`);
+            const resSummary = await authenticatedFetch(`/api/districts/summary?year=${selectedYear}&month=${selectedMonth}`);
             if (resSummary.ok) {
                 const data = await resSummary.json();
                 setSummary(data);
             }
 
             // Fetch Missing Units
-            const resMissing = await fetch(`/api/missing-units/all?year=${selectedYear}&month=${selectedMonth}`);
+            const resMissing = await authenticatedFetch(`/api/missing-units/all?year=${selectedYear}&month=${selectedMonth}`);
             if (resMissing.ok) {
                 const data = await resMissing.json();
                 setAllMissingUnits(data);
@@ -118,7 +119,7 @@ export default function HDCDashboard() {
             }
 
             // Fetch Last Update
-            const resUpdate = await fetch(`/api/last-update?type=hdc&t=${Date.now()}`);
+            const resUpdate = await authenticatedFetch(`/api/last-update?type=hdc&t=${Date.now()}`);
             if (resUpdate.ok) {
                 const data = await resUpdate.json();
                 if (data.lastUpdate) {

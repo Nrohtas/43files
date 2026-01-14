@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Header from '@/components/Header';
 import NavBar from '@/components/NavBar';
 import CustomSelect from '@/components/CustomSelect';
+import { authenticatedFetch } from '@/utils/apiClient';
 
 // Types
 interface District {
@@ -163,7 +164,7 @@ export default function HDCReport() {
                 url += `&hostype=${encodeURIComponent(hostype)}`;
             }
 
-            const res = await fetch(url);
+            const res = await authenticatedFetch(url);
             if (res.ok) {
                 const data = await res.json();
                 setUnits(data);

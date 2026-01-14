@@ -32,6 +32,7 @@ export default function AdminLogin() {
 
             if (data.success) {
                 // Store session
+                localStorage.setItem('authToken', data.token); // Store token
                 localStorage.setItem('user', JSON.stringify(data.user));
                 localStorage.setItem('userRole', data.user.role || 'user');
                 localStorage.setItem('username', data.user.username || '');

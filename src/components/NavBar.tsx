@@ -22,10 +22,7 @@ export default function NavBar() {
                     <i className="ph-fill ph-shield-check"></i>
                     <span>Admin</span>
                 </Link>
-                <Link href="/fileupload" className={`nav-link-modern ${pathname.includes('/fileupload') ? 'active' : ''}`}>
-                    <i className="ph-fill ph-upload-simple"></i>
-                    <span>Upload</span>
-                </Link>
+
             </nav>
         </div>
     );

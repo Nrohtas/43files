@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import CustomSelect from './CustomSelect';
 import { useRouter } from 'next/navigation';
+import { authenticatedFetch } from '@/utils/apiClient';
 
 interface DistrictSummary {
     code: string;
@@ -106,14 +107,14 @@ export default function OPPPDashboard() {
 
         try {
             // Fetch Summary (OPPP endpoint)
-            const resSummary = await fetch(`/api/oppp/districts/summary?year=${selectedYear}&month=${selectedMonth}`);
+            const resSummary = await authenticatedFetch(`/api/oppp/districts/summary?year=${selectedYear}&month=${selectedMonth}`);
             if (resSummary.ok) {
                 const data = await resSummary.json();
                 setSummary(data);
             }
 
             // Fetch Missing Units (OPPP endpoint)
-            const resMissing = await fetch(`/api/oppp/missing-units/all?year=${selectedYear}&month=${selectedMonth}`);
+            const resMissing = await authenticatedFetch(`/api/oppp/missing-units/all?year=${selectedYear}&month=${selectedMonth}`);
             if (resMissing.ok) {
                 const data = await resMissing.json();
                 setAllMissingUnits(data);
@@ -121,7 +122,7 @@ export default function OPPPDashboard() {
             }
 
             // Fetch Last Update (OPPP type)
-            const resUpdate = await fetch(`/api/last-update?type=oppp&t=${Date.now()}`);
+            const resUpdate = await authenticatedFetch(`/api/last-update?type=oppp&t=${Date.now()}`);
             if (resUpdate.ok) {
                 const data = await resUpdate.json();
                 if (data.lastUpdate) {

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import CustomSelect from './CustomSelect';
+import { authenticatedFetch } from '@/utils/apiClient';
 
 // Types
 interface District {
@@ -151,7 +152,7 @@ export default function OPPPReport() {
                 url += `&hostype=${encodeURIComponent(hostype)}`;
             }
 
-            const res = await fetch(url);
+            const res = await authenticatedFetch(url);
             if (res.ok) {
                 const data = await res.json();
                 setUnits(data);

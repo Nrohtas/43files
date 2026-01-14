@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
+import { signToken } from '@/lib/jwt';
 
 export async function POST(request: Request) {
     try {
@@ -16,8 +17,11 @@ export async function POST(request: Request) {
 
         if (rows.length > 0) {
             const user = rows[0];
+            const token = signToken({ username: user.username, role: user.level });
+
             return NextResponse.json({
                 success: true,
+                token,
                 user: {
                     username: user.username,
                     role: user.level || 'user',

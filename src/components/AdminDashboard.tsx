@@ -71,6 +71,7 @@ export default function AdminDashboard() {
             localStorage.removeItem('userRole');
             localStorage.removeItem('user');
             localStorage.removeItem('username');
+            localStorage.removeItem('authToken');
             router.push('/admin/login');
         }
     };
@@ -104,8 +105,12 @@ export default function AdminDashboard() {
             formData.append('username', username);
 
             try {
+                const token = localStorage.getItem('authToken');
                 const res = await fetch(`/api/upload/${type}`, {
                     method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: formData
                 });
                 const text = await res.text();
@@ -172,15 +177,7 @@ export default function AdminDashboard() {
     return (
         <div className="main-content">
             {/* Header */}
-            <div style={{ padding: '30px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#1E293B', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <i className="ph-fill ph-cloud-arrow-up" style={{ color: '#64748B' }}></i>
-                    เลือกรายการอัปโหลดข้อมูล
-                </h1>
-                <p style={{ color: '#64748B', marginTop: '5px', marginLeft: '34px' }}>
-                    กรุณาเลือกประเภทข้อมูลที่ต้องการนำเข้าระบบ
-                </p>
-            </div>
+            {/* Header Removed */}
 
             <div className="upload-options-grid" style={{
                 display: 'grid',
