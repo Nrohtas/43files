@@ -353,7 +353,7 @@ export default function AdminDashboard() {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                                <th style={{ textAlign: 'left', padding: '16px', color: '#64748B', fontWeight: 600, fontSize: '14px' }}>เวลาที่ส่ง</th>
+                                <th style={{ textAlign: 'left', padding: '16px', color: '#64748B', fontWeight: 600, fontSize: '14px' }}>วันที่ส่ง</th>
                                 <th style={{ textAlign: 'left', padding: '16px', color: '#64748B', fontWeight: 600, fontSize: '14px' }}>ชื่อไฟล์</th>
                                 <th style={{ textAlign: 'center', padding: '16px', color: '#64748B', fontWeight: 600, fontSize: '14px' }}>ประเภท</th>
                                 <th style={{ textAlign: 'center', padding: '16px', color: '#64748B', fontWeight: 600, fontSize: '14px' }}>งวดข้อมูล</th>

@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         // 3. Prepare Insert/Update Query
         let successCount = 0;
         let failCount = 0;
-        let dataYear = '';
+        let periodLog = '';
         let firstError = '';
 
         // Valid columns in 'hdc' table (lowercase)
@@ -92,8 +92,8 @@ export async function POST(request: NextRequest) {
             const year_th = String(normalizedRow['year_th']);
             const month_no = String(normalizedRow['month_no']).padStart(2, '0'); // Ensure '1' -> '01'
 
-            // Capture year 
-            if (!dataYear) dataYear = year_th;
+            // Capture period for log (YYYYMM)
+            if (!periodLog) periodLog = `${year_th}${month_no}`;
 
             const hostype_new = hospitalMap.get(hospcode);
             const service = Number(normalizedRow['service'] || 0);
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        const fileLog = dataYear || '-';
+        const fileLog = periodLog || '-';
 
         // Insert log into fileupload table
         try {
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
             await pool.query(
                 `INSERT INTO fileupload (file_name, file_type, file_size, file_time, file_log, username) 
                  VALUES (?, ?, ?, NOW(), ?, ?)`,
-                [file.name, 'hdc', file.size, fileLog, username] // Store year in file_log as requested before? or status? The user asked for "file_log" to be "year" if I recall "เก็บที่ตาราง hdc ตามชื่อฟิล์ด"
+                [file.name, 'hdc', file.size, fileLog, username]
             );
         } catch (dbError) {
             console.error('Database logging error:', dbError);

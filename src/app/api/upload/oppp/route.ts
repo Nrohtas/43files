@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         // 3. Prepare Insert/Update Query
         let successCount = 0;
         let failCount = 0;
-        let dataYear = '';
+        let periodLog = '';
         let firstError = '';
 
         for (const [index, row] of (jsonData as any[]).entries()) {
@@ -102,8 +102,8 @@ export async function POST(request: NextRequest) {
                 continue;
             }
 
-            // Capture year for log
-            if (!dataYear) dataYear = year_th;
+            // Capture period for log
+            if (!periodLog) periodLog = `${year_th}${month_no}`;
 
             const hostype_new = hospitalMap.get(hospcode);
             const service = Number(normalizedRow['service'] || 0);
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        const fileLog = dataYear || '-';
+        const fileLog = periodLog || '-';
 
         // Insert log into fileupload table
         try {
