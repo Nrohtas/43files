@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import CustomSelect from './CustomSelect';
 
 interface DistrictSummary {
     code: string;
@@ -227,32 +228,21 @@ export default function HDCDashboard() {
                             <i className="ph-duotone ph-table"></i>
                             Dashboard รายเดือน
                         </Link>
-                        <select
-                            className="month-selector"
-                            id="yearSelector"
+                        <CustomSelect
                             value={year}
-                            onChange={handleYearChange}
-                            style={{ border: '2px solid #10B981', color: '#0F172A', textAlign: 'center' }}
-                        >
-                            {years.map(y => (
-                                <option key={y} value={y}>ปี {y}</option>
-                            ))}
-                        </select>
-                        <select
-                            className="month-selector"
-                            id="monthSelector"
+                            options={years.map(y => ({ value: y, label: `ปี ${y}` }))}
+                            onChange={(val) => setYear(val)}
+                            theme="green"
+                        />
+                        <CustomSelect
                             value={month}
-                            onChange={handleMonthChange}
-                            style={{ border: '2px solid #10B981', color: '#0F172A', textAlign: 'center' }}
-                        >
-                            {months.length === 0 ? (
-                                <option>ไม่มีข้อมูลเดือน</option>
-                            ) : (
-                                months.map(m => (
-                                    <option key={m.value} value={m.value}>{m.name}</option>
-                                ))
-                            )}
-                        </select>
+                            options={[
+                                ...(months.length === 0 ? [{ value: '', label: 'ไม่มีข้อมูลเดือน' }] : []),
+                                ...months.map(m => ({ value: m.value, label: m.name }))
+                            ]}
+                            onChange={(val) => setMonth(val)}
+                            theme="green"
+                        />
                     </div>
                 </div>
 
@@ -362,7 +352,6 @@ export default function HDCDashboard() {
                         <div
                             key={district.code}
                             className="district-card"
-                            onClick={() => showMissingForDistrict(district.code, district.name)}
                         >
                             <div className="district-card-header">
                                 <div>
@@ -394,16 +383,19 @@ export default function HDCDashboard() {
                                 </div>
                                 <div
                                     className="stat-item"
-                                    style={{ background: '#FEF2F2', cursor: 'pointer', transition: 'transform 0.2s' }}
+                                    style={{ background: '#FEF2F2', cursor: district.missing > 0 ? 'pointer' : 'default', transition: 'transform 0.2s', position: 'relative' }}
+                                    onClick={() => {
+                                        if (district.missing > 0) {
+                                            showMissingForDistrict(district.code, district.name);
+                                        }
+                                    }}
                                     onMouseOver={(e) => { if (district.missing > 0) e.currentTarget.style.transform = 'scale(1.05)'; }}
                                     onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
                                 >
-                                    <div style={{ position: 'relative', display: 'inline-block' }}>
-                                        <div className="stat-value missing" style={{ color: '#DC2626' }}>{district.missing}</div>
-                                        {district.missing > 0 && (
-                                            <i className="ph-bold ph-magnifying-glass" style={{ position: 'absolute', top: '2px', right: '-20px', fontSize: '16px', color: '#DC2626' }}></i>
-                                        )}
-                                    </div>
+                                    {district.missing > 0 && (
+                                        <i className="ph-bold ph-magnifying-glass" style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '14px', color: '#DC2626' }}></i>
+                                    )}
+                                    <div className="stat-value missing" style={{ color: '#DC2626' }}>{district.missing}</div>
                                     <div className="stat-label">รอประมวลผล</div>
                                 </div>
                             </div>

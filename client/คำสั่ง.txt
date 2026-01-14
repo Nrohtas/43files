@@ -1,2 +1,0 @@
-เปลี่ยน workspace นี้ เป็น Next.js โดยใช้ app router 
-ย้าย api จาก /server มาเป็น next.js buildin api

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import CustomSelect from './CustomSelect';
 import { useRouter } from 'next/navigation';
 
 interface DistrictSummary {
@@ -229,30 +230,21 @@ export default function OPPPDashboard() {
                             <i className="ph-duotone ph-table"></i>
                             Dashboard รายเดือน
                         </Link>
-                        <select
-                            className="month-selector"
+                        <CustomSelect
                             value={year}
-                            onChange={handleYearChange}
-                            style={{ border: '2px solid #40C4FF', color: '#0F172A', textAlign: 'center' }}
-                        >
-                            {years.map(y => (
-                                <option key={y} value={y}>ปี {y}</option>
-                            ))}
-                        </select>
-                        <select
-                            className="month-selector"
+                            options={years.map(y => ({ value: y, label: `ปี ${y}` }))}
+                            onChange={(val) => setYear(val)}
+                            theme="blue"
+                        />
+                        <CustomSelect
                             value={month}
-                            onChange={handleMonthChange}
-                            style={{ border: '2px solid #40C4FF', color: '#0F172A', textAlign: 'center' }}
-                        >
-                            {months.length === 0 ? (
-                                <option>ไม่มีข้อมูลเดือน</option>
-                            ) : (
-                                months.map(m => (
-                                    <option key={m.value} value={m.value}>{m.name}</option>
-                                ))
-                            )}
-                        </select>
+                            options={[
+                                ...(months.length === 0 ? [{ value: '', label: 'ไม่มีข้อมูลเดือน' }] : []),
+                                ...months.map(m => ({ value: m.value, label: m.name }))
+                            ]}
+                            onChange={(val) => setMonth(val)}
+                            theme="blue"
+                        />
                     </div>
                 </div>
 
@@ -362,7 +354,6 @@ export default function OPPPDashboard() {
                         <div
                             key={district.code}
                             className="district-card"
-                            onClick={() => showMissingForDistrict(district.code, district.name)}
                         >
                             <div className="district-card-header">
                                 <div>
@@ -394,16 +385,19 @@ export default function OPPPDashboard() {
                                 </div>
                                 <div
                                     className="stat-item"
-                                    style={{ background: '#FEF2F2', cursor: 'pointer', transition: 'transform 0.2s' }}
+                                    style={{ background: '#FEF2F2', cursor: district.missing > 0 ? 'pointer' : 'default', transition: 'transform 0.2s', position: 'relative' }}
+                                    onClick={() => {
+                                        if (district.missing > 0) {
+                                            showMissingForDistrict(district.code, district.name);
+                                        }
+                                    }}
                                     onMouseOver={(e) => { if (district.missing > 0) e.currentTarget.style.transform = 'scale(1.05)'; }}
                                     onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
                                 >
-                                    <div style={{ position: 'relative' }}>
-                                        <div className="stat-value missing" style={district.missing > 0 ? { color: '#EF4444' } : { color: '#94A3B8' }}>{district.missing}</div>
-                                        {district.missing > 0 && (
-                                            <i className="ph-bold ph-magnifying-glass" style={{ position: 'absolute', top: '-4px', right: '-4px', fontSize: '14px', color: '#EF4444' }}></i>
-                                        )}
-                                    </div>
+                                    {district.missing > 0 && (
+                                        <i className="ph-bold ph-magnifying-glass" style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '14px', color: '#EF4444' }}></i>
+                                    )}
+                                    <div className="stat-value missing" style={district.missing > 0 ? { color: '#EF4444' } : { color: '#94A3B8' }}>{district.missing}</div>
                                     <div className="stat-label">รอประมวลผล</div>
                                 </div>
                             </div>

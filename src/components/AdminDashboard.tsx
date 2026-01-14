@@ -366,28 +366,28 @@ export default function AdminDashboard() {
                         </thead>
                         <tbody>
                             {loadingHistory ? (
-                                <tr>
+                                <tr key="loading">
                                     <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: '#94A3B8' }}>
                                         <i className="ph-duotone ph-spinner-gap ph-spin" style={{ fontSize: '30px', marginBottom: '10px', display: 'block', margin: '0 auto' }}></i>
                                         กำลังโหลดข้อมูล...
                                     </td>
                                 </tr>
                             ) : history.length === 0 ? (
-                                <tr>
+                                <tr key="empty">
                                     <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: '#94A3B8' }}>
                                         <i className="ph-duotone ph-list-dashes" style={{ fontSize: '30px', marginBottom: '10px', display: 'block', margin: '0 auto' }}></i>
                                         ยังไม่มีประวัติการอัปโหลด
                                     </td>
                                 </tr>
                             ) : (
-                                history.map(item => {
+                                history.map((item, index) => {
                                     const isHdc = item.file_type === 'hdc';
                                     const typeColor = isHdc ? '#10B981' : '#3B82F6';
                                     const typeBg = isHdc ? '#ECFDF5' : '#EFF6FF';
                                     const typeLabel = (item.file_type || '').toUpperCase();
 
                                     return (
-                                        <tr key={item.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                        <tr key={item.id ? `${item.id}-${index}` : `row-${index}`} style={{ borderBottom: '1px solid #F1F5F9' }}>
                                             <td style={{ padding: '16px', color: '#1E293B', fontSize: '14px' }}>{formatDate(item.file_time)}</td>
                                             <td style={{ padding: '16px', color: '#1E293B', fontWeight: 500, fontSize: '14px' }}>{item.file_name}</td>
                                             <td style={{ padding: '16px', textAlign: 'center' }}>

@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import NavBar from '@/components/NavBar';
+import CustomSelect from '@/components/CustomSelect';
 
 // Types
 interface District {
@@ -230,7 +231,7 @@ export default function HDCReport() {
     };
 
     return (
-        <div className="hdc-content">
+        <div className="hdc-content hdc-page">
             {/* Title & Filters */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '20px' }}>
                 <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-heading)', margin: 0, display: 'flex', alignItems: 'center' }}>
@@ -245,43 +246,37 @@ export default function HDCReport() {
                 </h2>
 
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                    {/* Year Selector */}
-                    <select
-                        className="month-selector"
-                        value={selectedYear}
-                        onChange={(e) => handleYearChange(e.target.value)}
-                        style={{ border: '2px solid #10B981', color: '#0F172A', textAlign: 'center', height: '42px' }}
-                    >
-                        {years.map(y => (
-                            <option key={y} value={y}>ปีงบประมาณ {y}</option>
-                        ))}
-                    </select>
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        {/* Year Selector */}
+                        <CustomSelect
+                            value={selectedYear}
+                            options={years.map(y => ({ value: y, label: `ปีงบประมาณ ${y}` }))}
+                            onChange={handleYearChange}
+                            theme="green"
+                        />
 
-                    {/* District Selector */}
-                    <select
-                        className="month-selector"
-                        value={selectedDistrict || ''}
-                        onChange={(e) => handleDistrictChange(e.target.value || null)}
-                        style={{ border: '2px solid #10B981', color: '#0F172A', textAlign: 'center', height: '42px' }}
-                    >
-                        <option value="">เลือกอำเภอ</option>
-                        {districts.map(d => (
-                            <option key={d.code} value={d.code}>อำเภอ{d.name}</option>
-                        ))}
-                    </select>
+                        {/* District Selector */}
+                        <CustomSelect
+                            value={selectedDistrict || ''}
+                            options={[
+                                { value: '', label: 'เลือกอำเภอ' },
+                                ...districts.map(d => ({ value: d.code, label: `อำเภอ${d.name}` }))
+                            ]}
+                            onChange={(val) => handleDistrictChange(val || null)}
+                            theme="green"
+                        />
 
-                    {/* Hostype Selector */}
-                    <select
-                        className="month-selector"
-                        value={selectedHostype || ''}
-                        onChange={(e) => handleHostypeChange(e.target.value || null)}
-                        style={{ border: '2px solid #10B981', color: '#0F172A', textAlign: 'center', height: '42px' }}
-                    >
-                        <option value="">สังกัด: ทั้งหมด</option>
-                        {hostypes.map(h => (
-                            <option key={h.code} value={h.name}>{h.name}</option>
-                        ))}
-                    </select>
+                        {/* Hostype Selector */}
+                        <CustomSelect
+                            value={selectedHostype || ''}
+                            options={[
+                                { value: '', label: 'สังกัด: ทั้งหมด' },
+                                ...hostypes.map(h => ({ value: h.name, label: h.name }))
+                            ]}
+                            onChange={(val) => handleHostypeChange(val || null)}
+                            theme="green"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -315,6 +310,7 @@ export default function HDCReport() {
                         <h4>
                             <i className="ph-fill ph-warning-circle" style={{ color: '#EF4444', fontSize: '20px', verticalAlign: 'middle', marginRight: '8px' }}></i>
                             ส่งไม่ครบทุกเดือน (แห่ง)
+                            <i className="ph-bold ph-magnifying-glass" style={{ marginLeft: '8px', fontSize: '16px', color: '#EF4444' }}></i>
                         </h4>
                     </div>
                     <div className="card-value" style={{ color: '#EF4444' }}>{stats.missing}</div>
@@ -326,7 +322,7 @@ export default function HDCReport() {
                 <div className="missing-section-card">
                     <div className="missing-section-header">
                         <h3>
-                            <i className="ph-fill ph-warning-circle" style={{ fontSize: '20px', marginRight: '10px' }}></i>
+                            <i className="ph-fill ph-warning-circle" style={{ fontSize: '20px', marginRight: '10px', color: '#EF4444' }}></i>
                             รายชื่อหน่วยบริการที่ยังไม่ได้ส่งข้อมูล
                         </h3>
                         <button className="collapse-btn" onClick={() => setMissingExpanded(false)}>
@@ -336,15 +332,15 @@ export default function HDCReport() {
                     <div className="missing-section-body">
                         {stats.missingList.length === 0 ? (
                             <div className="empty-state">
-                                <i className="ph-fill ph-check-circle"></i>
+                                <i className="ph-fill ph-check-circle" style={{ color: '#10B981' }}></i>
                                 <h4>ทุกหน่วยบริการส่งข้อมูลครบแล้ว</h4>
                                 <p>ไม่มีหน่วยบริการที่รอประมวลผลในเดือนนี้ 🎉</p>
                             </div>
                         ) : (
                             stats.missingList.map(unit => (
                                 <div key={unit.code} className="missing-unit-item">
-                                    <div className="missing-unit-icon">
-                                        <i className="ph-fill ph-warning-circle"></i>
+                                    <div className="missing-unit-icon" style={{ backgroundColor: '#EF4444' }}>
+                                        <i className="ph-fill ph-warning-circle" style={{ color: 'white' }}></i>
                                     </div>
                                     <div className="missing-unit-info">
                                         <div className="missing-unit-code">{unit.code}</div>

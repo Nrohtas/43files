@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import CustomSelect from './CustomSelect';
 
 // Types
 interface District {
@@ -238,42 +239,34 @@ export default function OPPPReport() {
 
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                     {/* Year Dropdown */}
-                    <select
-                        className="month-selector"
+                    <CustomSelect
                         value={selectedYear}
-                        onChange={(e) => handleYearChange(e.target.value)}
-                        style={{ border: '2px solid #0284C7', color: '#0F172A', textAlign: 'center', height: '42px' }}
-                    >
-                        {years.map(y => (
-                            <option key={y} value={y}>ปีงบประมาณ {y}</option>
-                        ))}
-                    </select>
+                        options={years.map(y => ({ value: y, label: `ปีงบประมาณ ${y}` }))}
+                        onChange={handleYearChange}
+                        theme="blue"
+                    />
 
                     {/* District Dropdown */}
-                    <select
-                        className="month-selector"
+                    <CustomSelect
                         value={selectedDistrict || ''}
-                        onChange={(e) => handleDistrictChange(e.target.value || null)}
-                        style={{ border: '2px solid #0284C7', color: '#0F172A', textAlign: 'center', height: '42px' }}
-                    >
-                        <option value="">เลือกอำเภอ</option>
-                        {districts.map(d => (
-                            <option key={d.code} value={d.code}>อำเภอ{d.name}</option>
-                        ))}
-                    </select>
+                        options={[
+                            { value: '', label: 'เลือกอำเภอ' },
+                            ...districts.map(d => ({ value: d.code, label: `อำเภอ${d.name}` }))
+                        ]}
+                        onChange={(val) => handleDistrictChange(val || null)}
+                        theme="blue"
+                    />
 
                     {/* Hostype Dropdown */}
-                    <select
-                        className="month-selector"
+                    <CustomSelect
                         value={selectedHostype || ''}
-                        onChange={(e) => handleHostypeChange(e.target.value || null)}
-                        style={{ border: '2px solid #0284C7', color: '#0F172A', textAlign: 'center', height: '42px' }}
-                    >
-                        <option value="">สังกัด: ทั้งหมด</option>
-                        {hostypes.map(h => (
-                            <option key={h.code} value={h.name}>{h.name}</option>
-                        ))}
-                    </select>
+                        options={[
+                            { value: '', label: 'สังกัด: ทั้งหมด' },
+                            ...hostypes.map(h => ({ value: h.name, label: h.name }))
+                        ]}
+                        onChange={(val) => handleHostypeChange(val || null)}
+                        theme="blue"
+                    />
                 </div>
             </div>
 
@@ -307,6 +300,7 @@ export default function OPPPReport() {
                         <h4>
                             <i className="ph-fill ph-warning-circle" style={{ color: '#EF4444', fontSize: '20px', verticalAlign: 'middle', marginRight: '8px' }}></i>
                             ส่งไม่ครบทุกเดือน (แห่ง)
+                            <i className="ph-bold ph-magnifying-glass" style={{ marginLeft: '8px', fontSize: '16px', color: '#EF4444' }}></i>
                         </h4>
                     </div>
                     <div className="card-value" style={{ color: '#EF4444' }}>{stats.missing}</div>
