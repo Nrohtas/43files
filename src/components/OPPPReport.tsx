@@ -218,56 +218,51 @@ export default function OPPPReport() {
     return (
         <div className="hdc-content">
             {/* Title & Filters */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '20px' }}>
-                <h1 style={{
-                    fontSize: '24px',
-                    fontWeight: 700,
-                    color: '#1E293B',
-                    margin: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px'
-                }}>
+            {/* Title & Filters */}
+            <div className="report-header-container">
+                <h2 className="report-title">
                     <Image
                         src="/nhso_logo.png"
                         alt="NHSO Logo"
                         width={40}
                         height={40}
-                        style={{ objectFit: 'contain' }}
+                        style={{ objectFit: 'contain', marginRight: '10px' }}
                     />
                     Dashboard การจัดส่งข้อมูล 43 แฟ้ม รายเดือน OPPP
-                </h1>
+                </h2>
 
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    {/* Year Dropdown */}
-                    <CustomSelect
-                        value={selectedYear}
-                        options={years.map(y => ({ value: y, label: `ปีงบประมาณ ${y}` }))}
-                        onChange={handleYearChange}
-                        theme="blue"
-                    />
+                <div className="report-filters">
+                    <div className="filter-group">
+                        {/* Year Dropdown */}
+                        <CustomSelect
+                            value={selectedYear}
+                            options={years.map(y => ({ value: y, label: `ปีงบประมาณ ${y}` }))}
+                            onChange={handleYearChange}
+                            theme="blue"
+                        />
 
-                    {/* District Dropdown */}
-                    <CustomSelect
-                        value={selectedDistrict || ''}
-                        options={[
-                            { value: '', label: 'เลือกอำเภอ' },
-                            ...districts.map(d => ({ value: d.code, label: `อำเภอ${d.name}` }))
-                        ]}
-                        onChange={(val) => handleDistrictChange(val || null)}
-                        theme="blue"
-                    />
+                        {/* District Dropdown */}
+                        <CustomSelect
+                            value={selectedDistrict || ''}
+                            options={[
+                                { value: '', label: 'เลือกอำเภอ' },
+                                ...districts.map(d => ({ value: d.code, label: `อำเภอ${d.name}` }))
+                            ]}
+                            onChange={(val) => handleDistrictChange(val || null)}
+                            theme="blue"
+                        />
 
-                    {/* Hostype Dropdown */}
-                    <CustomSelect
-                        value={selectedHostype || ''}
-                        options={[
-                            { value: '', label: 'สังกัด: ทั้งหมด' },
-                            ...hostypes.map(h => ({ value: h.name, label: h.name }))
-                        ]}
-                        onChange={(val) => handleHostypeChange(val || null)}
-                        theme="blue"
-                    />
+                        {/* Hostype Dropdown */}
+                        <CustomSelect
+                            value={selectedHostype || ''}
+                            options={[
+                                { value: '', label: 'สังกัด: ทั้งหมด' },
+                                ...hostypes.map(h => ({ value: h.name, label: h.name }))
+                            ]}
+                            onChange={(val) => handleHostypeChange(val || null)}
+                            theme="blue"
+                        />
+                    </div>
                 </div>
             </div>
 
