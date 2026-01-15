@@ -100,24 +100,12 @@ export async function POST(request: NextRequest) {
             let sentdata = 'N';
 
             // Logic for sentdata
-            if (hospcode === '10613') {
-                sentdata = service > 129 ? 'Y' : 'N';
-            } else if (hostype_new) {
-                if (['13', '18', '21'].includes(hostype_new)) {
-                    sentdata = service > 199 ? 'Y' : 'N';
-                } else if (['5', '12'].includes(hostype_new)) {
-                    sentdata = service > 19999 ? 'Y' : 'N';
-                } else if (hostype_new === '8') {
-                    sentdata = service > 999 ? 'Y' : 'N';
-                } else if (hostype_new === '11') {
-                    sentdata = service > 599 ? 'Y' : 'N';
-                } else if (hostype_new === '7') {
-                    sentdata = service > 7999 ? 'Y' : 'N';
-                } else {
-                    sentdata = 'N';
-                }
+            // Exception for specific hospcodes 10613 and 07512
+            if (['10613', '07512'].includes(hospcode)) {
+                sentdata = service > 119 ? 'Y' : 'N';
             } else {
-                sentdata = 'N';
+                // General rule for all other hospcodes
+                sentdata = service > 189 ? 'Y' : 'N';
             }
 
             // Prepare Insert Data
