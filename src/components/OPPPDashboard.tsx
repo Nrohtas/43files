@@ -212,22 +212,8 @@ export default function OPPPDashboard() {
                             style={{ color: 'var(--primary-blue)', fontSize: '20px', verticalAlign: 'middle', marginRight: '10px' }}></i>
                         Dashboard การจัดส่งข้อมูล 43 แฟ้ม OPPP
                     </h2>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                        <Link href="/oppp/report" style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            background: 'linear-gradient(135deg, #40C4FF 0%, #2CD3E1 100%)',
-                            border: 'none',
-                            color: 'white',
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            textDecoration: 'none',
-                            fontWeight: 600,
-                            fontSize: '14px',
-                            transition: 'all 0.2s',
-                            boxShadow: '0 4px 6px rgba(44, 211, 225, 0.2)'
-                        }}>
+                    <div className="dashboard-filters">
+                        <Link href="/oppp/report" className="dashboard-btn-report-blue">
                             <i className="ph-duotone ph-table"></i>
                             Dashboard รายเดือน
                         </Link>
@@ -251,11 +237,17 @@ export default function OPPPDashboard() {
 
                 <div className="province-stats">
                     <div className="province-stat">
-                        <div className="province-stat-label">หน่วยบริการทั้งหมด</div>
+                        <div className="province-stat-label">
+                            <i className="ph-fill ph-hospital" style={{ color: '#0284C7', fontSize: '18px', marginRight: '6px', verticalAlign: 'text-bottom' }}></i>
+                            หน่วยบริการทั้งหมด
+                        </div>
                         <div className="province-stat-value">{totalUnits}</div>
                     </div>
                     <div className="province-stat">
-                        <div className="province-stat-label">ประมวลผลแล้ว</div>
+                        <div className="province-stat-label">
+                            <i className="ph-fill ph-check-circle" style={{ color: '#0284C7', fontSize: '18px', marginRight: '6px', verticalAlign: 'text-bottom' }}></i>
+                            ประมวลผลแล้ว
+                        </div>
                         <div className="province-stat-value" style={{ color: '#0284C7' }}>{totalSubmitted}</div>
                     </div>
                     <div

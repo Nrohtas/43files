@@ -817,6 +817,37 @@ body {
 
 /* --- New Dashboard Styles & Responsiveness --- */
 
+/* Report Page Header Styles */
+.report-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.report-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.report-filters {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
 .dashboard-filters {
     display: flex;
     gap: 10px;
@@ -845,20 +876,47 @@ body {
     box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
 }
 
+/* Blue Variant for OPPP */
+.dashboard-btn-report-blue {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #40C4FF 0%, #2CD3E1 100%);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px rgba(44, 211, 225, 0.2);
+    white-space: nowrap;
+}
+
+.dashboard-btn-report-blue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(44, 211, 225, 0.3);
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
+
     /* Top Header */
     .top-header {
-        padding: 0 15px; /* Reduce padding */
+        padding: 0 15px;
+        /* Reduce padding */
     }
 
     .header-left .logo h2 {
-        font-size: 16px; /* Smaller font */
+        font-size: 16px;
+        /* Smaller font */
         margin-right: 0;
     }
-    
+
     .search-bar {
-        display: none; /* Hide search on mobile if not critical */
+        display: none;
+        /* Hide search on mobile if not critical */
     }
 
     /* Sub Header (Nav) */
@@ -867,22 +925,26 @@ body {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
-        height: auto; /* Allow growth */
-        overflow-x: auto; /* Allow horizontal scroll if needed */
+        height: auto;
+        /* Allow growth */
+        overflow-x: auto;
+        /* Allow horizontal scroll if needed */
     }
 
     .header-nav {
         width: 100%;
         overflow-x: auto;
-        padding-bottom: 5px; /* Space for scrollbar */
+        padding-bottom: 5px;
+        /* Space for scrollbar */
         gap: 10px;
         -webkit-overflow-scrolling: touch;
     }
-    
+
     .nav-link-modern {
         padding: 8px 12px;
         font-size: 13px;
-        flex-shrink: 0; /* Prevent shrinking */
+        flex-shrink: 0;
+        /* Prevent shrinking */
     }
 
     /* Dashboard Header */
@@ -901,35 +963,83 @@ body {
         flex-wrap: wrap;
         gap: 10px;
     }
-    
-    .dashboard-btn-report {
+
+    .dashboard-btn-report,
+    .dashboard-btn-report-blue {
         flex: 1;
         justify-content: center;
     }
-    
-    .dashboard-filters .custom-select-container { 
-        flex: 1; /* Make selects grow */
+
+    .dashboard-filters .custom-select-container {
+        flex: 1;
+        /* Make selects grow */
         min-width: 120px;
     }
 
     /* Province Stats Grid */
     .province-stats {
-        grid-template-columns: 1fr; /* Stack vertically */
+        grid-template-columns: 1fr;
+        /* Stack vertically */
         gap: 12px;
     }
-    
+
     .province-summary-card {
         padding: 20px 15px;
     }
 
     /* Footer / Bottom of card */
-    .province-summary-card > div[style*="border-top"] {
+    .province-summary-card>div[style*="border-top"] {
         flex-direction: column;
         align-items: flex-start !important;
         gap: 10px !important;
     }
-    
-    .province-summary-card > div[style*="border-top"] > div {
+
+    .province-summary-card>div[style*="border-top"]>div {
         flex-wrap: wrap;
+    }
+
+    /* Report Page Mobile Fixes */
+    .report-header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .report-title {
+        font-size: 18px;
+        /* Smaller title on mobile */
+    }
+
+    .filter-group {
+        flex-wrap: wrap;
+        /* Allow filters to wrap */
+        width: 100%;
+        gap: 10px;
+    }
+
+    .filter-group .custom-select-container {
+        flex: 1;
+        min-width: 140px;
+        /* Ensure minimum width for readability */
+    }
+
+    /* Stats Row Mobile */
+    .stats-row {
+        gap: 12px;
+    }
+
+    .info-card.report-card {
+        padding: 16px;
+        height: auto;
+        min-height: 120px;
+    }
+
+    .info-card h4 {
+        font-size: 13px;
+    }
+
+    .card-value {
+        font-size: 24px;
+        margin-top: 10px;
     }
 }

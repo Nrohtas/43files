@@ -234,8 +234,9 @@ export default function HDCReport() {
     return (
         <div className="hdc-content hdc-page">
             {/* Title & Filters */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '20px' }}>
-                <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-heading)', margin: 0, display: 'flex', alignItems: 'center' }}>
+            {/* Title & Filters */}
+            <div className="report-header-container">
+                <h2 className="report-title">
                     <Image
                         src="/moph_logo.png"
                         alt="MOPH Logo"
@@ -246,8 +247,8 @@ export default function HDCReport() {
                     Dashboard การจัดส่งข้อมูล 43 แฟ้ม รายเดือน HDC
                 </h2>
 
-                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <div className="report-filters">
+                    <div className="filter-group">
                         {/* Year Selector */}
                         <CustomSelect
                             value={selectedYear}

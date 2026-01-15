@@ -235,11 +235,17 @@ export default function HDCDashboard() {
 
                 <div className="province-stats">
                     <div className="province-stat">
-                        <div className="province-stat-label">หน่วยบริการทั้งหมด</div>
+                        <div className="province-stat-label">
+                            <i className="ph-fill ph-hospital" style={{ color: '#10B981', fontSize: '18px', marginRight: '6px', verticalAlign: 'text-bottom' }}></i>
+                            หน่วยบริการทั้งหมด
+                        </div>
                         <div className="province-stat-value" id="provinceTotalUnits">{totalUnits}</div>
                     </div>
                     <div className="province-stat">
-                        <div className="province-stat-label">ประมวลผลแล้ว</div>
+                        <div className="province-stat-label">
+                            <i className="ph-fill ph-check-circle" style={{ color: '#10B981', fontSize: '18px', marginRight: '6px', verticalAlign: 'text-bottom' }}></i>
+                            ประมวลผลแล้ว
+                        </div>
                         <div className="province-stat-value" id="provinceSubmitted">{totalSubmitted}</div>
                     </div>
                     <div
