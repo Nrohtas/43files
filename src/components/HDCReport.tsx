@@ -110,7 +110,7 @@ export default function HDCReport() {
 
     const fetchLastUpdate = async () => {
         try {
-            const res = await fetch(`/api/last-update?type=hdc&t=${Date.now()}`);
+            const res = await authenticatedFetch(`/api/last-update?type=hdc&t=${Date.now()}`);
             if (res.ok) {
                 const data = await res.json();
                 if (data.lastUpdate) {

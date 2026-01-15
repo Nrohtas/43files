@@ -98,7 +98,7 @@ export default function OPPPReport() {
 
     const fetchLastUpdate = async () => {
         try {
-            const res = await fetch(`/api/last-update?type=oppp&t=${Date.now()}`);
+            const res = await authenticatedFetch(`/api/last-update?type=oppp&t=${Date.now()}`);
             if (res.ok) {
                 const data = await res.json();
                 if (data.lastUpdate) {
