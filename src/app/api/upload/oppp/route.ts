@@ -122,7 +122,9 @@ export async function POST(request: NextRequest) {
             let sentdata = 'N';
 
             // Logic for sentdata (Same as HDC)
-            if (hostype_new) {
+            if (hospcode === '10613') {
+                sentdata = service > 129 ? 'Y' : 'N';
+            } else if (hostype_new) {
                 if (['13', '18', '21'].includes(hostype_new)) {
                     sentdata = service > 199 ? 'Y' : 'N';
                 } else if (['5', '12'].includes(hostype_new)) {
