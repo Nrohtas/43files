@@ -210,22 +210,8 @@ export default function HDCDashboard() {
                             style={{ color: '#10B981', fontSize: '20px', verticalAlign: 'middle', marginRight: '10px' }}></i>
                         Dashboard การจัดส่งข้อมูล 43 แฟ้ม HDC
                     </h2>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                        <Link href="/hdc/report" style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            background: 'linear-gradient(135deg, #10B981 0%, #34D399 100%)',
-                            border: 'none',
-                            color: 'white',
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            textDecoration: 'none',
-                            fontWeight: 600,
-                            fontSize: '14px',
-                            transition: 'all 0.2s',
-                            boxShadow: '0 4px 6px rgba(16, 185, 129, 0.2)'
-                        }}>
+                    <div className="dashboard-filters">
+                        <Link href="/hdc/report" className="dashboard-btn-report">
                             <i className="ph-duotone ph-table"></i>
                             Dashboard รายเดือน
                         </Link>

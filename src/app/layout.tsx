@@ -6,7 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "43 แฟ้ม HDC - Dashboard",
+  title: "HDC 43 Files Dashboard",
   description: "Phitsanulok Provincial Public Health Office",
 };
 

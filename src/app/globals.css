@@ -814,3 +814,122 @@ body {
     font-size: 13px;
     font-weight: 500;
 }
+
+/* --- New Dashboard Styles & Responsiveness --- */
+
+.dashboard-filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.dashboard-btn-report {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+    white-space: nowrap;
+}
+
+.dashboard-btn-report:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    /* Top Header */
+    .top-header {
+        padding: 0 15px; /* Reduce padding */
+    }
+
+    .header-left .logo h2 {
+        font-size: 16px; /* Smaller font */
+        margin-right: 0;
+    }
+    
+    .search-bar {
+        display: none; /* Hide search on mobile if not critical */
+    }
+
+    /* Sub Header (Nav) */
+    .sub-header {
+        padding: 10px 15px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        height: auto; /* Allow growth */
+        overflow-x: auto; /* Allow horizontal scroll if needed */
+    }
+
+    .header-nav {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 5px; /* Space for scrollbar */
+        gap: 10px;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .nav-link-modern {
+        padding: 8px 12px;
+        font-size: 13px;
+        flex-shrink: 0; /* Prevent shrinking */
+    }
+
+    /* Dashboard Header */
+    .province-summary-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .province-summary-header h2 {
+        font-size: 16px;
+    }
+
+    .dashboard-filters {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .dashboard-btn-report {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .dashboard-filters .custom-select-container { 
+        flex: 1; /* Make selects grow */
+        min-width: 120px;
+    }
+
+    /* Province Stats Grid */
+    .province-stats {
+        grid-template-columns: 1fr; /* Stack vertically */
+        gap: 12px;
+    }
+    
+    .province-summary-card {
+        padding: 20px 15px;
+    }
+
+    /* Footer / Bottom of card */
+    .province-summary-card > div[style*="border-top"] {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+    
+    .province-summary-card > div[style*="border-top"] > div {
+        flex-wrap: wrap;
+    }
+}
