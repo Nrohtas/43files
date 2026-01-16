@@ -34,9 +34,9 @@ export default function OPPPDashboard() {
     const router = useRouter();
 
     // State
-    const [year, setYear] = useState('2568');
+    const [year, setYear] = useState('2569');
     const [month, setMonth] = useState('11');
-    const [years, setYears] = useState<string[]>(['2568']);
+    const [years, setYears] = useState<string[]>(['2569']);
     const [months, setMonths] = useState<Month[]>([]);
 
     // Data State
@@ -58,6 +58,15 @@ export default function OPPPDashboard() {
             const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
             const defaultMonth = (prevMonthDate.getMonth() + 1).toString();
             setMonth(defaultMonth);
+
+            // Calculate fiscal year based on previous month
+            // ถ้าเดือนก่อนหน้าคือ ต.ค. (10), พ.ย. (11), ธ.ค. (12) -> ปีงบ = ปีปฏิทิน + 1
+            // ถ้าเดือนก่อนหน้าคือ ม.ค. - ก.ย. -> ปีงบ = ปีปฏิทิน
+            const prevMonthIndex = prevMonthDate.getMonth(); // 0-11
+            const fiscalYear = (prevMonthIndex >= 9) ? prevMonthDate.getFullYear() + 544 : prevMonthDate.getFullYear() + 543;
+            setYear(fiscalYear.toString());
+            setYears([fiscalYear.toString()]); // Init with calculated year while fetching
+
 
             await fetchYears();
             await fetchMonths();
@@ -219,7 +228,7 @@ export default function OPPPDashboard() {
                         </Link>
                         <CustomSelect
                             value={year}
-                            options={years.map(y => ({ value: y, label: `ปี ${y}` }))}
+                            options={years.map(y => ({ value: y, label: `ปีงบประมาณ ${y}` }))}
                             onChange={(val) => setYear(val)}
                             theme="blue"
                         />

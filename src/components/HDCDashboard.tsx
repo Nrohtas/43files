@@ -54,11 +54,17 @@ export default function HDCDashboard() {
             const today = new Date();
             const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
             const defaultMonth = (prevMonthDate.getMonth() + 1).toString();
+            // Calculate default fiscal year
+            const defaultYear = (prevMonthDate.getMonth() >= 9)
+                ? (prevMonthDate.getFullYear() + 544).toString()
+                : (prevMonthDate.getFullYear() + 543).toString();
+
             setMonth(defaultMonth);
+            setYear(defaultYear);
 
             await fetchYears();
             await fetchMonths();
-            await fetchData(year, defaultMonth);
+            await fetchData(defaultYear, defaultMonth);
         };
         init();
     }, []);
@@ -217,7 +223,7 @@ export default function HDCDashboard() {
                         </Link>
                         <CustomSelect
                             value={year}
-                            options={years.map(y => ({ value: y, label: `ปี ${y}` }))}
+                            options={years.map(y => ({ value: y, label: `ปีงบประมาณ ${y}` }))}
                             onChange={(val) => setYear(val)}
                             theme="green"
                         />

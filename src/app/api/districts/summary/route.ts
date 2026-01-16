@@ -17,24 +17,27 @@ export async function GET(request: Request) {
     const year = searchParams.get('year') || '2568';
     const month = searchParams.get('month') || '11';
 
+    // Map month number to status column name (10=status10, 11=status11, ..., 1=status01, ...)
+    const monthPadded = month.padStart(2, '0');
+    const statusCol = `status${monthPadded}`;
+
     const sql = `
         SELECT 
-            h.amp_code,
+            ho.amp_code,
             a.amp_name,
-            COUNT(DISTINCT h.hospcode) as total_units,
-            SUM(CASE WHEN UPPER(hdc.sentdata) = 'Y' THEN 1 ELSE 0 END) as submitted,
-            SUM(CASE WHEN UPPER(IFNULL(hdc.sentdata, 'N')) != 'Y' THEN 1 ELSE 0 END) as missing
-        FROM hospital h
-        LEFT JOIN ampur a ON h.amp_code = a.amp_code
-        LEFT JOIN hdc ON h.hospcode = hdc.hospcode 
-            AND hdc.year_th = ? 
-            AND hdc.month_no = ?
-        GROUP BY h.amp_code, a.amp_name
-        ORDER BY h.amp_code ASC
+            COUNT(DISTINCT ho.hospcode) as total_units,
+            SUM(CASE WHEN UPPER(IFNULL(h.${statusCol}, 'N')) = 'Y' THEN 1 ELSE 0 END) as submitted,
+            SUM(CASE WHEN UPPER(IFNULL(h.${statusCol}, 'N')) != 'Y' THEN 1 ELSE 0 END) as missing
+        FROM hospital ho
+        LEFT JOIN ampur a ON ho.amp_code = a.amp_code
+        LEFT JOIN hdc h ON ho.hospcode = h.hospcode 
+            AND h.b_year = ?
+        GROUP BY ho.amp_code, a.amp_name
+        ORDER BY ho.amp_code ASC
     `;
 
     try {
-        const [rows] = await pool.query<RowDataPacket[]>(sql, [year, month]);
+        const [rows] = await pool.query<RowDataPacket[]>(sql, [year]);
 
         const summary = rows.map((row: any) => ({
             code: row.amp_code,

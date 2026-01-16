@@ -3,8 +3,14 @@ import { pool } from '@/lib/db';
 
 export async function GET() {
     try {
-        const [rows]: any = await pool.query("SELECT year_th FROM `year` WHERE year_th IN ('2568', '2569') ORDER BY year_th DESC");
-        const years = rows.map((row: any) => String(row.year_th));
+        // ดึงปีงบประมาณจากทั้ง HDC (b_year) และ OPPP (b_year) แล้วรวมกันโดยไม่ซ้ำ
+        const [rows]: any = await pool.query(`
+            SELECT DISTINCT b_year as year_value FROM hdc WHERE b_year IS NOT NULL
+            UNION
+            SELECT DISTINCT b_year as year_value FROM oppp WHERE b_year IS NOT NULL
+            ORDER BY year_value DESC
+        `);
+        const years = rows.map((row: any) => String(row.year_value));
         return NextResponse.json(years);
     } catch (error) {
         console.error('Error fetching years:', error);

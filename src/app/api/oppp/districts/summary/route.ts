@@ -27,7 +27,7 @@ export async function GET(request: Request) {
         FROM hospital h
         LEFT JOIN ampur a ON h.amp_code = a.amp_code
         LEFT JOIN oppp ON h.hospcode = oppp.hospcode 
-            AND oppp.year_th = ? 
+            AND oppp.b_year = ? 
             AND oppp.month_no = ?
         GROUP BY h.amp_code, a.amp_name
         ORDER BY h.amp_code ASC

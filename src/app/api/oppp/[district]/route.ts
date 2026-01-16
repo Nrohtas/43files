@@ -23,8 +23,6 @@ export async function GET(
     const year = searchParams.get('year') || '2568';
 
     const currentYearInt = parseInt(year);
-    const prevYearInt = currentYearInt - 1;
-    const prevYear = prevYearInt.toString();
 
     let sql = `
         SELECT 
@@ -44,16 +42,12 @@ export async function GET(
             MAX(CASE WHEN oppp.month_no = '08' THEN oppp.sentdata END) as month_20,
             MAX(CASE WHEN oppp.month_no = '09' THEN oppp.sentdata END) as month_21
         FROM hospital h
-        LEFT JOIN oppp ON h.hospcode = oppp.hospcode AND (
-            (oppp.year_th = ? AND oppp.month_no IN ('01', '02', '03', '04', '05', '06', '07', '08', '09'))
-            OR
-            (oppp.year_th = ? AND oppp.month_no IN ('10', '11', '12'))
-        )
+        LEFT JOIN oppp ON h.hospcode = oppp.hospcode AND oppp.b_year = ?
         LEFT JOIN hostype ht ON h.hostype_new = ht.hostype_new
         WHERE h.amp_code = ?
     `;
 
-    const sqlParams: any[] = [year, prevYear, district];
+    const sqlParams: any[] = [year, district];
 
     if (hostype) {
         sql += ' AND ht.hostype_name = ?';

@@ -21,33 +21,17 @@ export async function POST(request: NextRequest) {
 
         const data = await request.formData();
         const file: File | null = data.get('file') as unknown as File;
-        // const username = data.get('username') as string || 'Unknown'; // Use token username instead
 
         if (!file) {
             return NextResponse.json({ success: false, error: 'No file uploaded' }, { status: 400 });
         }
 
         const buffer = Buffer.from(await file.arrayBuffer());
-        const uploadDir = path.join(process.cwd(), 'fileupload');
-
-        try {
-            await mkdir(uploadDir, { recursive: true });
-        } catch (e) {
-            // Directory likely exists
-        }
-
-        const filePath = path.join(uploadDir, file.name);
-        await writeFile(filePath, buffer);
-
-        // --- Process File Logic ---
 
         // 1. Read Excel
         const workbook = XLSX.read(buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-
-        // Use raw: false to try and get formatted strings, but usually raw: true is safer for numbers.
-        // Let's use clean raw data.
         const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: null });
 
         if (jsonData.length === 0) {
@@ -56,71 +40,93 @@ export async function POST(request: NextRequest) {
 
         console.log(`[HDC Upload] Processing ${jsonData.length} rows from ${file.name}`);
 
-        // 2. Fetch Hospital Data for Logic
+        // 2. Fetch Hospital Data for Logic (hostype_new)
         const [hospitals] = await pool.query<RowDataPacket[]>('SELECT hospcode, hostype_new FROM hospital');
         const hospitalMap = new Map<string, string>();
         hospitals.forEach(h => {
             hospitalMap.set(String(h.hospcode), String(h.hostype_new));
         });
 
-        // 3. Prepare Insert/Update Query
+        // 3. Define Logic for sentdata
+        const calculateStatus = (hostype: string | null, serviceVal: any) => {
+            const service = parseInt(serviceVal) || 0;
+            const type = parseInt(hostype || '0');
+
+            if ([13, 18, 21].includes(type)) return service > 99 ? 'Y' : 'N';
+            if ([5, 12].includes(type)) return service > 9999 ? 'Y' : 'N';
+            if (type === 8) return service > 499 ? 'Y' : 'N';
+            if (type === 11) return service > 499 ? 'Y' : 'N';
+            if (type === 7) return service > 4999 ? 'Y' : 'N';
+
+            return 'N';
+        };
+
+        // 4. Process Rows
         let successCount = 0;
         let failCount = 0;
         let periodLog = '';
         let firstError = '';
 
-        // Valid columns in 'hdc' table (lowercase)
-        // From schema check: hospcode, year_th, month_no, sentdata, service, d_update
-        const validColumns = ['hospcode', 'year_th', 'month_no', 'sentdata', 'service', 'd_update'];
+        // List of all valid columns in 'hdc' to filter input
+        const hdcColumns = [
+            'id', 'hospcode', 'areacode', 'date_com', 'b_year', 'target', 'result',
+            'result10', 'status10', 'result11', 'status11', 'result12', 'status12',
+            'result01', 'status01', 'result02', 'status02', 'result03', 'status03',
+            'result04', 'status04', 'result05', 'status05', 'result06', 'status06',
+            'result07', 'status07', 'result08', 'status08', 'result09', 'status09'
+        ];
 
         for (const [index, row] of (jsonData as any[]).entries()) {
-            // Normalize keys to lowercase for matching
             const normalizedRow: any = {};
             for (const key in row) {
                 normalizedRow[key.toLowerCase()] = row[key];
             }
 
-            // Ensure required PKs exist
-            if (!normalizedRow['hospcode'] || !normalizedRow['year_th'] || !normalizedRow['month_no']) {
-                // If missing vital keys, skip (but log first few)
-                if (failCount < 3) console.warn(`[HDC Upload] Row ${index + 1} missing PKs:`, JSON.stringify(row));
+            // Required basic fields
+            const hospcode = String(normalizedRow['hospcode'] || '');
+            const b_year = String(normalizedRow['b_year'] || normalizedRow['year_th'] || '');
+            const month_no = normalizedRow['month_no'] ? String(normalizedRow['month_no']).padStart(2, '0') : null;
+
+            if (!hospcode || !b_year) {
                 failCount++;
                 continue;
             }
 
-            const hospcode = String(normalizedRow['hospcode']);
-            const year_th = String(normalizedRow['year_th']);
-            const month_no = String(normalizedRow['month_no']).padStart(2, '0'); // Ensure '1' -> '01'
+            if (!periodLog && month_no) periodLog = `${b_year}${month_no}`;
 
-            // Capture period for log (YYYYMM)
-            if (!periodLog) periodLog = `${year_th}${month_no}`;
+            const hostype_new = hospitalMap.get(hospcode) || null;
+            const service = normalizedRow['service'] !== undefined ? normalizedRow['service'] : normalizedRow['result'];
 
-            const hostype_new = hospitalMap.get(hospcode);
-            const service = Number(normalizedRow['service'] || 0);
-            let sentdata = 'N';
+            // Build dynamic insert object
+            const insertObj: any = {};
 
-            // Logic for sentdata
-            // Exception for specific hospcodes 10613 and 07512
-            if (['10613', '07512'].includes(hospcode)) {
-                sentdata = service > 119 ? 'Y' : 'N';
-            } else {
-                // General rule for all other hospcodes
-                sentdata = service > 189 ? 'Y' : 'N';
+            // 1. Copy matching fields from excel
+            for (const col of hdcColumns) {
+                if (normalizedRow[col] !== undefined) {
+                    insertObj[col] = normalizedRow[col];
+                }
             }
 
-            // Prepare Insert Data
-            const insertData: any = {
-                hospcode,
-                year_th,
-                month_no,
-                service,
-                sentdata,
-                d_update: new Date() // Set current timestamp
-            };
+            // 2. Basic fields override
+            insertObj.hospcode = hospcode;
+            insertObj.b_year = b_year;
+            insertObj.id = `${hospcode}_${b_year}`;
+            insertObj.d_update = new Date();
 
-            const columns = Object.keys(insertData);
-            const values = Object.values(insertData); // all defined now
+            // 3. Monthly Logic: if month_no is present, we map 'service' to the right result/status columns
+            if (month_no) {
+                const resultCol = `result${month_no}`;
+                const statusCol = `status${month_no}`;
 
+                if (service !== undefined) {
+                    insertObj[resultCol] = service;
+                    insertObj[statusCol] = calculateStatus(hostype_new, service);
+                }
+            }
+
+            // Construct SQL
+            const columns = Object.keys(insertObj);
+            const values = Object.values(insertObj);
             const placeholders = columns.map(() => '?').join(', ');
             const updates = columns.map(col => `${col} = VALUES(${col})`).join(', ');
 
@@ -131,33 +137,19 @@ export async function POST(request: NextRequest) {
                 successCount++;
             } catch (err: any) {
                 if (!firstError) firstError = err.message;
-                if (failCount < 5) console.error(`[HDC Upload] DB Error row ${index + 1}:`, err.message);
                 failCount++;
             }
         }
 
+        // Insert log
         const fileLog = periodLog || '-';
-
-        // Insert log into fileupload table
         try {
-            const finalLog = `OK:${successCount},Err:${failCount}`;
             await pool.query(
                 `INSERT INTO fileupload (file_name, file_type, file_size, file_time, file_log, username) 
                  VALUES (?, ?, ?, NOW(), ?, ?)`,
                 [file.name, 'hdc', file.size, fileLog, username]
             );
-        } catch (dbError) {
-            console.error('Database logging error:', dbError);
-        }
-
-        console.log(`[HDC Upload] Completed. Success: ${successCount}, Failed: ${failCount}`);
-
-        if (successCount === 0 && failCount > 0) {
-            return NextResponse.json({
-                success: false,
-                error: `All rows failed. First error: ${firstError}. Check server console for details.`
-            }, { status: 400 });
-        }
+        } catch (e) { }
 
         return NextResponse.json({ success: true, processed: successCount, failed: failCount });
     } catch (error) {

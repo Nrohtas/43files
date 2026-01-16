@@ -393,8 +393,29 @@ export default function HDCReport() {
                                         {selectedDistrict ? 'ไม่พบข้อมูลหน่วยบริการในอำเภอนี้' : 'กรุณาเลือกอำเภอเพื่อดูข้อมูล'}
                                     </td>
                                 </tr>
-                            ) : (
-                                units.map(unit => {
+                            ) : (() => {
+                                // คำนวณ cutoffIndex สำหรับปีงบประมาณที่เลือก
+                                const today = new Date();
+                                // ปีงบประมาณปัจจุบัน (ต.ค. = เดือน 9 ใน JS, เริ่มปีงบใหม่)
+                                const realFiscalYear = (today.getMonth() >= 9) ? today.getFullYear() + 544 : today.getFullYear() + 543;
+                                // คำนวณ fiscal month index: 0=ต.ค., 1=พ.ย., ..., 11=ก.ย.
+                                const realFiscalMonthIndex = (today.getMonth() + 3) % 12;
+
+                                const selectedYearInt = parseInt(selectedYear);
+                                let cutoffIndex = 0;
+
+                                if (selectedYearInt < realFiscalYear) {
+                                    // ปีที่ผ่านมา - ทุกเดือนผ่านแล้ว
+                                    cutoffIndex = 12;
+                                } else if (selectedYearInt > realFiscalYear) {
+                                    // ปีอนาคต - ไม่มีเดือนไหนถึง
+                                    cutoffIndex = 0;
+                                } else {
+                                    // ปีปัจจุบัน - cutoff ที่เดือนปัจจุบัน (รวมเดือนนี้ด้วย)
+                                    cutoffIndex = realFiscalMonthIndex + 1;
+                                }
+
+                                return units.map(unit => {
                                     // Style logic from report.ts
                                     const hostypeStr = unit.hostype ? String(unit.hostype).trim() : '';
                                     const targetGreen = ['05', '07', '08', '11', '18', '5', '7', '8'];
@@ -415,21 +436,28 @@ export default function HDCReport() {
                                         <tr key={unit.code}>
                                             <td><span style={codeStyle}>{unit.code}</span></td>
                                             <td style={cellStyle}>{unit.name}</td>
-                                            {unit.months.map((status, idx) => (
-                                                <td key={idx} className="text-center">
-                                                    {!status ? (
-                                                        <div style={{ color: '#94A3B8', fontSize: '20px', textAlign: 'center' }}>-</div>
-                                                    ) : status.toUpperCase() === 'Y' ? (
-                                                        <div className="status-icon success"><i className="ph-fill ph-check-circle"></i></div>
-                                                    ) : (
-                                                        <div className="status-icon error"><i className="ph-fill ph-x-circle"></i></div>
-                                                    )}
-                                                </td>
-                                            ))}
+                                            {unit.months.map((status, idx) => {
+                                                // ถ้าเดือนยังไม่ถึง (idx >= cutoffIndex) ให้แสดง "-"
+                                                const isMonthNotYet = idx >= cutoffIndex;
+
+                                                return (
+                                                    <td key={idx} className="text-center">
+                                                        {isMonthNotYet ? (
+                                                            <div style={{ color: '#94A3B8', fontSize: '20px', textAlign: 'center' }}>-</div>
+                                                        ) : !status ? (
+                                                            <div style={{ color: '#94A3B8', fontSize: '20px', textAlign: 'center' }}>-</div>
+                                                        ) : status.toUpperCase() === 'Y' ? (
+                                                            <div className="status-icon success"><i className="ph-fill ph-check-circle"></i></div>
+                                                        ) : (
+                                                            <div className="status-icon error"><i className="ph-fill ph-x-circle"></i></div>
+                                                        )}
+                                                    </td>
+                                                );
+                                            })}
                                         </tr>
                                     );
-                                })
-                            )}
+                                });
+                            })()}
                         </tbody>
                     </table>
                 </div>
