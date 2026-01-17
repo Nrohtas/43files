@@ -280,7 +280,7 @@ export default function HDCDashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#16A34A', fontWeight: 600 }}>
                             <i className="ph-fill ph-calendar-check" style={{ fontSize: '14px' }}></i>
-                            <span>ประมวลผลจากวันที่รับบริการ</span>
+                            <span>ประมวลผลวันที่รับบริการ</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <i className="ph ph-clock" style={{ fontSize: '14px' }}></i>
