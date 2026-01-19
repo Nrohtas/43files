@@ -392,8 +392,7 @@ export default function OPPPDashboard() {
                                     <div key={group.districtCode} className="district-group">
                                         <div className="district-group-header">
                                             <i className="ph-fill ph-map-pin"></i>
-                                            <h4>{group.districtName}</h4>
-                                            <span className="district-group-count">{group.units.length}</span>
+                                            <h4>{group.districtName} <span className="district-group-count">{group.units.length}</span></h4>
                                         </div>
                                         <div className="district-units-list">
                                             {group.units.map(unit => (
