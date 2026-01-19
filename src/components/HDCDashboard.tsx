@@ -213,44 +213,6 @@ export default function HDCDashboard() {
         setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล');
     };
 
-    const saveAsImage = async () => {
-        try {
-            // Import html2canvas dynamically to avoid SSR issues
-            const html2canvas = (await import('html2canvas')).default;
-
-            const element = document.getElementById('provinceMissingSection');
-            if (!element) return;
-
-            const canvas = await html2canvas(element, {
-                backgroundColor: '#ffffff',
-                scale: 2, // Improve quality
-                logging: false,
-                useCORS: true
-            });
-
-            const image = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.href = image;
-
-            const now = new Date();
-            const Y = now.getFullYear();
-            const M = (now.getMonth() + 1).toString().padStart(2, '0');
-            const D = now.getDate().toString().padStart(2, '0');
-            const H = now.getHours().toString().padStart(2, '0');
-            const Min = now.getMinutes().toString().padStart(2, '0');
-            const S = now.getSeconds().toString().padStart(2, '0');
-
-            link.download = `43files_HDC_${Y}-${M}-${D}_${H}-${Min}-${S}.png`;
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch (error) {
-            console.error('Error saving image:', error);
-            alert('เกิดข้อผิดพลาดในการบันทึกภาพ');
-        }
-    };
-
     return (
         <div className="dashboard-content hdc-page">
             <div className="province-summary-card">
@@ -337,7 +299,7 @@ export default function HDCDashboard() {
             {/* Expandable Missing Units Section */}
             <div className={`province-missing-section ${missingSectionExpanded ? 'expanded' : ''}`} id="provinceMissingSection">
                 <div className="missing-section-card">
-                    <div className="missing-section-header-province">
+                    <div className="missing-section-header-province" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h3>
                             <i className="ph-fill ph-warning-circle"></i>
                             {missingSectionTitle}
@@ -375,67 +337,41 @@ export default function HDCDashboard() {
                                     แสดงทั้งหมด
                                 </button>
                             )}
-                            <button
-                                onClick={() => setMissingSectionExpanded(false)}
-                                style={{
-                                    border: 'none',
-                                    padding: '4px 10px',
-                                    borderRadius: '12px',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    background: '#FEE2E2',
-                                    color: '#EF4444',
-                                    fontSize: '11px',
-                                    fontWeight: 600,
-                                    marginLeft: '10px'
-                                }}
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.background = '#FECACA';
-                                    e.currentTarget.style.transform = 'scale(1.05)';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.background = '#FEE2E2';
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                }}
-                            >
-                                <i className="ph-bold ph-minus" style={{ fontSize: '12px' }}></i>
-                                ซ่อน
-                            </button>
                         </h3>
-                        <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
-                            <button
-                                onClick={saveAsImage}
-                                style={{
-                                    border: 'none',
-                                    padding: '6px 12px',
-                                    borderRadius: '20px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    background: '#EFF6FF', // Blue-50
-                                    color: '#3B82F6',     // Blue-500
-                                    fontSize: '12px',
-                                    fontWeight: 600,
-                                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                                }}
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.background = '#DBEAFE'; // Blue-100
-                                    e.currentTarget.style.transform = 'translateY(-1px)';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.background = '#EFF6FF';
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                }}
-                            >
-                                <i className="ph-bold ph-image" style={{ fontSize: '14px' }}></i>
-                                บันทึกภาพ
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => setMissingSectionExpanded(false)}
+                            style={{
+                                border: '1px solid #E2E8F0',
+                                padding: '4px 10px',
+                                borderRadius: '12px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                background: '#fff',
+                                color: '#475569',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                marginLeft: '10px',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.borderColor = '#CBD5E1';
+                                e.currentTarget.style.color = '#1E293B';
+                                e.currentTarget.style.background = '#F8FAFC';
+                                e.currentTarget.style.transform = 'scale(1.05)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.borderColor = '#E2E8F0';
+                                e.currentTarget.style.color = '#475569';
+                                e.currentTarget.style.background = '#fff';
+                                e.currentTarget.style.transform = 'scale(1)';
+                            }}
+                        >
+                            <i className="ph-bold ph-minus" style={{ fontSize: '12px' }}></i>
+                            ซ่อน
+                        </button>
                     </div>
                     <div className="missing-section-body-province" id="provinceMissingSectionBody">
                         {filteredMissingUnits.length === 0 ? (

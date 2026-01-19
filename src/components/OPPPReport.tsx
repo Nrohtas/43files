@@ -209,36 +209,6 @@ export default function OPPPReport() {
         });
     }, [units, selectedYear]);
 
-    const saveAsImage = async () => {
-        const element = document.getElementById('opppReportMissingCard');
-        if (!element) return;
-
-        try {
-            const canvas = await html2canvas(element, {
-                backgroundColor: '#ffffff',
-                scale: 2,
-                logging: false,
-                useCORS: true
-            });
-
-            const link = document.createElement('a');
-            const now = new Date();
-            const Y = now.getFullYear();
-            const M = String(now.getMonth() + 1).padStart(2, '0');
-            const D = String(now.getDate()).padStart(2, '0');
-            const H = String(now.getHours()).padStart(2, '0');
-            const Min = String(now.getMinutes()).padStart(2, '0');
-            const S = String(now.getSeconds()).padStart(2, '0');
-
-            link.download = `43files_OPPP_${Y}-${M}-${D}_${H}-${Min}-${S}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        } catch (err) {
-            console.error('Error saving image:', err);
-            alert('ไม่สามารถบันทึกรูปภาพได้');
-        }
-    };
-
     // Helpers
     const getDistrictName = (code: string | null) => {
         if (!code) return 'เลือกอำเภอ';
@@ -343,70 +313,44 @@ export default function OPPPReport() {
             <div className={`missing-section ${missingExpanded ? 'expanded' : ''}`}>
                 <div className="missing-section-card" id="opppReportMissingCard">
                     <div className="missing-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h3>
+                        <h3 style={{ margin: 0, padding: 0 }}>
                             <i className="ph-fill ph-warning-circle" style={{ fontSize: '20px', marginRight: '10px' }}></i>
                             รายชื่อหน่วยบริการส่งไม่ครบทุกเดือน
-                            <button
-                                onClick={() => setMissingExpanded(false)}
-                                style={{
-                                    border: 'none',
-                                    padding: '4px 10px',
-                                    borderRadius: '12px',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    background: '#FEE2E2',
-                                    color: '#EF4444',
-                                    fontSize: '11px',
-                                    fontWeight: 600,
-                                    marginLeft: '10px'
-                                }}
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.background = '#FECACA';
-                                    e.currentTarget.style.transform = 'scale(1.05)';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.background = '#FEE2E2';
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                }}
-                            >
-                                <i className="ph-bold ph-minus" style={{ fontSize: '12px' }}></i>
-                                ซ่อน
-                            </button>
                         </h3>
-                        <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
-                            <button
-                                onClick={saveAsImage}
-                                style={{
-                                    border: 'none',
-                                    padding: '6px 12px',
-                                    borderRadius: '20px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    background: '#EFF6FF', // Blue-50
-                                    color: '#3B82F6',     // Blue-500
-                                    fontSize: '12px',
-                                    fontWeight: 600,
-                                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                                }}
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.background = '#DBEAFE'; // Blue-100
-                                    e.currentTarget.style.transform = 'translateY(-1px)';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.background = '#EFF6FF';
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                }}
-                            >
-                                <i className="ph-bold ph-image" style={{ fontSize: '14px' }}></i>
-                                บันทึกภาพ
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => setMissingExpanded(false)}
+                            style={{
+                                border: '1px solid #E2E8F0',
+                                padding: '4px 10px',
+                                borderRadius: '12px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                background: '#fff',
+                                color: '#475569',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                marginLeft: '10px',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.borderColor = '#CBD5E1';
+                                e.currentTarget.style.color = '#1E293B';
+                                e.currentTarget.style.background = '#F8FAFC';
+                                e.currentTarget.style.transform = 'scale(1.05)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.borderColor = '#E2E8F0';
+                                e.currentTarget.style.color = '#475569';
+                                e.currentTarget.style.background = '#fff';
+                                e.currentTarget.style.transform = 'scale(1)';
+                            }}
+                        >
+                            <i className="ph-bold ph-minus" style={{ fontSize: '12px' }}></i>
+                            ซ่อน
+                        </button>
                     </div>
                     <div className="missing-section-body">
                         {stats.missingList.length === 0 ? (
