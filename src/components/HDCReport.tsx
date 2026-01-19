@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Header from '@/components/Header';
@@ -179,9 +179,14 @@ export default function HDCReport() {
         }
     };
 
-    // Logic for counting stats
-    const stats = useMemo(() => {
-        if (!units.length) return { total: 0, submitted: 0, missing: 0, missingList: [] };
+    // Logic for counting stats (client-side only to avoid hydration mismatch)
+    const [stats, setStats] = useState<{ total: number; submitted: number; missing: number; missingList: Unit[] }>({ total: 0, submitted: 0, missing: 0, missingList: [] });
+
+    useEffect(() => {
+        if (!units.length) {
+            setStats({ total: 0, submitted: 0, missing: 0, missingList: [] });
+            return;
+        }
 
         const today = new Date();
         const realFiscalYear = (today.getMonth() >= 9) ? today.getFullYear() + 544 : today.getFullYear() + 543;
@@ -207,12 +212,12 @@ export default function HDCReport() {
 
         const incompleteUnits = units.filter(u => !completeUnits.includes(u));
 
-        return {
+        setStats({
             total: units.length,
             submitted: completeUnits.length,
             missing: incompleteUnits.length,
             missingList: incompleteUnits
-        };
+        });
     }, [units, selectedYear]);
 
     // Helpers
@@ -229,6 +234,44 @@ export default function HDCReport() {
         // So yes, it seems to filter by name or code. Let's assume code is what we want if available, but legacy used name.
         // Let's stick to what we have in state.
         return code || 'ทั้งหมด';
+    };
+
+    const saveAsImage = async () => {
+        try {
+            // Import html2canvas dynamically
+            const html2canvas = (await import('html2canvas')).default;
+
+            const element = document.getElementById('missingSectionCard');
+            if (!element) return;
+
+            const canvas = await html2canvas(element, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                logging: false,
+                useCORS: true
+            });
+
+            const image = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = image;
+
+            const now = new Date();
+            const Y = now.getFullYear();
+            const M = (now.getMonth() + 1).toString().padStart(2, '0');
+            const D = now.getDate().toString().padStart(2, '0');
+            const H = now.getHours().toString().padStart(2, '0');
+            const Min = now.getMinutes().toString().padStart(2, '0');
+            const S = now.getSeconds().toString().padStart(2, '0');
+
+            link.download = `43files_HDC_${Y}-${M}-${D}_${H}-${Min}-${S}.png`;
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Error saving image:', error);
+            alert('เกิดข้อผิดพลาดในการบันทึกภาพ');
+        }
     };
 
     return (
@@ -321,15 +364,72 @@ export default function HDCReport() {
 
             {/* Missing Section */}
             <div className={`missing-section ${missingExpanded ? 'expanded' : ''}`}>
-                <div className="missing-section-card">
-                    <div className="missing-section-header">
+                <div className="missing-section-card" id="missingSectionCard">
+                    <div className="missing-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h3>
                             <i className="ph-fill ph-warning-circle" style={{ fontSize: '20px', marginRight: '10px', color: '#EF4444' }}></i>
-                            รายชื่อหน่วยบริการที่ยังไม่ได้ส่งข้อมูล
+                            รายชื่อหน่วยบริการส่งไม่ครบทุกเดือน
+                            <button
+                                onClick={() => setMissingExpanded(false)}
+                                style={{
+                                    border: 'none',
+                                    padding: '4px 10px',
+                                    borderRadius: '12px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    background: '#FEE2E2',
+                                    color: '#EF4444',
+                                    fontSize: '11px',
+                                    fontWeight: 600,
+                                    marginLeft: '10px'
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.background = '#FECACA';
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.background = '#FEE2E2';
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                }}
+                            >
+                                <i className="ph-bold ph-minus" style={{ fontSize: '12px' }}></i>
+                                ซ่อน
+                            </button>
                         </h3>
-                        <button className="collapse-btn" onClick={() => setMissingExpanded(false)}>
-                            ซ่อน
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                                onClick={saveAsImage}
+                                style={{
+                                    border: 'none',
+                                    padding: '6px 12px',
+                                    borderRadius: '20px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    background: '#EFF6FF', // Blue-50
+                                    color: '#3B82F6',     // Blue-500
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.background = '#DBEAFE'; // Blue-100
+                                    e.currentTarget.style.transform = 'translateY(-1px)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.background = '#EFF6FF';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                }}
+                            >
+                                <i className="ph-bold ph-image" style={{ fontSize: '14px' }}></i>
+                                บันทึกภาพ
+                            </button>
+                        </div>
                     </div>
                     <div className="missing-section-body">
                         {stats.missingList.length === 0 ? (

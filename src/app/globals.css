@@ -741,6 +741,12 @@ body {
     overflow-y: auto;
 }
 
+.missing-section-body {
+    padding: 20px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
 .district-group {
     margin-bottom: 24px;
 }
