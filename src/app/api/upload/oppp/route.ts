@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
             throw new Error('File is empty or could not be parsed');
         }
 
-        console.log(`[OPPP Upload] Processing ${jsonData.length} rows from ${file.name}`);
+
 
         // 2. Prepare Insert/Update Query
         let successCount = 0;

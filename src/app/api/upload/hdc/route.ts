@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
             throw new Error('File is empty or could not be parsed');
         }
 
-        console.log(`[HDC Upload] Processing ${jsonData.length} rows from ${file.name}`);
+
 
         // 2. Fetch Hospital Data for Logic (hostype_new)
         const [hospitals] = await pool.query<RowDataPacket[]>('SELECT hospcode, hostype_new FROM hospital');

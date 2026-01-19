@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import CustomSelect from './CustomSelect';
 import { authenticatedFetch } from '@/utils/apiClient';
-import html2canvas from 'html2canvas';
+
 
 // Types
 interface District {

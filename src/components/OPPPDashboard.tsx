@@ -5,7 +5,7 @@ import Link from 'next/link';
 import CustomSelect from './CustomSelect';
 import { useRouter } from 'next/navigation';
 import { authenticatedFetch } from '@/utils/apiClient';
-import html2canvas from 'html2canvas';
+
 
 interface DistrictSummary {
     code: string;
