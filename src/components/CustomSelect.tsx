@@ -99,7 +99,12 @@ export default function CustomSelect({
                     whiteSpace: 'nowrap'
                 }}
             >
-                <span>{displayLabel}</span>
+                <span style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    maxWidth: '100%'
+                }}>{displayLabel}</span>
                 <i className={`ph-bold ph-caret-down`} style={{
                     fontSize: '12px',
                     transition: 'transform 0.2s',

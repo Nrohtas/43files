@@ -292,7 +292,7 @@ export default function OPPPDashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0284C7', fontWeight: 600 }}>
                             <i className="ph-fill ph-calendar-check" style={{ fontSize: '14px' }}></i>
-                            <span>ประมวลผลวันที่รับบริการ</span>
+                            <span>ประมวลผลวันที่รับบริการ (แฟ้ม Service)</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <i className="ph ph-clock" style={{ fontSize: '14px' }}></i>

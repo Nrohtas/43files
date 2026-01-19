@@ -990,6 +990,32 @@ body {
         gap: 12px;
     }
 
+    /* Wrap filters on mobile */
+    .dashboard-filters {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* Adjust buttons text size or padding if needed */
+    .dashboard-btn-report,
+    .dashboard-btn-report-blue {
+        padding: 8px 10px;
+        font-size: 13px;
+        flex: 1 1 auto;
+        /* Allow shrink/grow */
+        justify-content: center;
+        width: 100%;
+        /* Take full width on small screens if needed, or let wrap handle it */
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .dashboard-btn-report i,
+    .dashboard-btn-report-blue i {
+        display: none;
+        /* Hide icon on very small screens to save space if needed, or keep it */
+    }
+
     .province-summary-card {
         padding: 20px 15px;
     }
