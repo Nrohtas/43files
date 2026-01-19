@@ -411,8 +411,9 @@ export default function HDCReport() {
                                     // ปีอนาคต - ไม่มีเดือนไหนถึง
                                     cutoffIndex = 0;
                                 } else {
-                                    // ปีปัจจุบัน - cutoff ที่เดือนปัจจุบัน (รวมเดือนนี้ด้วย)
-                                    cutoffIndex = realFiscalMonthIndex + 1;
+                                    // ปีปัจจุบัน - cutoff ที่เดือนปัจจุบัน (ให้แสดงผลถึงแค่เดือนก่อนหน้า)
+                                    // เช่น ตอนนี้ ม.ค. (index 3) -> cutoff = 3 -> index 0-2 (ต.ค.-ธ.ค.) แสดงผล, index 3 (ม.ค.) แสดง -
+                                    cutoffIndex = realFiscalMonthIndex;
                                 }
 
                                 return units.map(unit => {
