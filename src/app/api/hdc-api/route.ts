@@ -1,19 +1,11 @@
 import { NextResponse } from 'next/server';
-import mysql from 'mysql2/promise';
+import { pool } from '@/lib/db';
 
 // GET - Fetch HDC API status data
 export async function GET() {
-    let connection;
     try {
-        connection = await mysql.createConnection({
-            host: process.env.DB_HOST || 'localhost',
-            user: process.env.DB_USER || 'root',
-            password: process.env.DB_PASSWORD || '',
-            database: '43files'
-        });
-
         // Get all records ordered by latest update
-        const [rows] = await connection.execute(`
+        const [rows] = await pool.execute(`
             SELECT 
                 api_id,
                 h_count,
@@ -25,7 +17,7 @@ export async function GET() {
         `);
 
         // Get summary statistics
-        const [summaryRows] = await connection.execute(`
+        const [summaryRows] = await pool.execute(`
             SELECT 
                 COUNT(*) as total_runs,
                 SUM(h_count) as total_units,
@@ -36,7 +28,7 @@ export async function GET() {
         `);
 
         // Get latest record for current status
-        const [latestRows] = await connection.execute(`
+        const [latestRows] = await pool.execute(`
             SELECT 
                 h_count,
                 h_y,
@@ -87,9 +79,5 @@ export async function GET() {
             { success: false, error: 'Failed to fetch HDC API status' },
             { status: 500 }
         );
-    } finally {
-        if (connection) {
-            await connection.end();
-        }
     }
 }
