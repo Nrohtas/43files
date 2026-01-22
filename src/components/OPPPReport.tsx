@@ -388,7 +388,7 @@ export default function OPPPReport() {
                         </a>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#0369A1', fontWeight: 600 }}>
                             <i className="ph-fill ph-calendar-check"></i>
-                            <span>ประมวลผลวันที่รับบริการ</span>
+                            <span>ประมวลผลวันที่รับบริการ (แฟ้ม Service)</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748b' }}>
                             <i className="ph ph-clock"></i>
