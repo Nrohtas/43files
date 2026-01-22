@@ -309,6 +309,24 @@ export default function OPPPDashboard() {
                         <h3>
                             <i className="ph-fill ph-warning-circle"></i>
                             {missingSectionTitle}
+                            <span style={{
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                color: '#0284C7',
+                                background: '#F0F9FF',
+                                padding: '4px 12px',
+                                borderRadius: '20px',
+                                marginLeft: '12px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                verticalAlign: 'middle',
+                                border: '1px solid #BAE6FD',
+                                boxShadow: '0 1px 2px rgba(2, 132, 199, 0.1)'
+                            }}>
+                                <i className="ph-bold ph-calendar-check" style={{ fontSize: '14px' }}></i>
+                                ปีงบ {year} | {months.find(m => m.value === month)?.name || '-'}
+                            </span>
                             {filteredMissingUnits.length !== allMissingUnits.length && (
                                 <button
                                     onClick={resetMissingFilter}
