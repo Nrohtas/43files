@@ -281,7 +281,7 @@ export default function OPPPDashboard() {
                     </div>
                 </div>
 
-                <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: '#64748b' }}>
+                <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px', fontSize: '12px', color: '#64748b' }}>
                     <a href="https://op.nhso.go.th/op/main/MainWebAction.do"
                         target="_blank" rel="noopener noreferrer"
                         style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#40C4FF', textDecoration: 'none', transition: 'all 0.2s', padding: '4px 8px', borderRadius: '4px' }}>

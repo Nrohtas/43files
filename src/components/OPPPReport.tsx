@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import CustomSelect from './CustomSelect';
+import Footer from './Footer';
 import { authenticatedFetch } from '@/utils/apiClient';
 
 
@@ -225,8 +226,8 @@ export default function OPPPReport() {
         <div className="hdc-content">
             {/* Title & Filters */}
             {/* Title & Filters */}
-            <div className="report-header-container">
-                <h2 className="report-title">
+            <div className="report-header-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', marginBottom: '20px' }}>
+                <h2 className="report-title" style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
                     <Image
                         src="/nhso_logo.png"
                         alt="NHSO Logo"
@@ -237,7 +238,7 @@ export default function OPPPReport() {
                     Dashboard การจัดส่งข้อมูล 43 แฟ้ม รายเดือน OPPP
                 </h2>
 
-                <div className="report-filters">
+                <div className="report-filters" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', width: 'auto', gap: '20px' }}>
                     <div className="filter-group">
                         {/* Year Dropdown */}
                         <CustomSelect
@@ -378,8 +379,22 @@ export default function OPPPReport() {
 
             {/* Data Table */}
             <div className="table-card">
-                <div className="table-header">
-                    <h3>{getDistrictName(selectedDistrict)} {selectedHostype ? `(สังกัด: ${selectedHostype})` : ''}</h3>
+                <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                    <h3 style={{ margin: 0 }}>{getDistrictName(selectedDistrict)} {selectedHostype ? `(สังกัด: ${selectedHostype})` : ''}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px' }}>
+                        <a href="https://op.nhso.go.th/op/main/MainWebAction.do" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#0284C7', textDecoration: 'none', transition: 'all 0.2s', background: 'rgba(2, 132, 199, 0.05)', padding: '4px 8px', borderRadius: '4px' }}>
+                            <i className="ph-bold ph-link-simple"></i>
+                            <span style={{ fontWeight: 600 }}>ที่มา: รายงาน OPPP</span>
+                        </a>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#0369A1', fontWeight: 600 }}>
+                            <i className="ph-fill ph-calendar-check"></i>
+                            <span>ประมวลผลวันที่รับบริการ</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748b' }}>
+                            <i className="ph ph-clock"></i>
+                            <span>อัปเดต: <span style={{ fontWeight: 600, color: '#475569' }}>{lastUpdate}</span></span>
+                        </div>
+                    </div>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                     <table className="hdc-table">
@@ -456,29 +471,7 @@ export default function OPPPReport() {
                 </div>
             </div>
 
-            {/* Source Info */}
-            <div style={{ background: '#fff', borderRadius: '12px', padding: '16px 24px', boxShadow: 'var(--shadow-card)', marginTop: '0px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: '#64748b' }}>
-                    <a href="https://op.nhso.go.th/op/main/MainWebAction.do" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#0284C7', textDecoration: 'none', transition: 'all 0.2s', padding: '4px 8px', borderRadius: '4px' }}>
-                        <i className="ph-bold ph-link-simple" style={{ fontSize: '13px' }}></i>
-                        <span style={{ fontWeight: 500 }}>ที่มา: รายงาน OPPP</span>
-                        <i className="ph-bold ph-arrow-square-out" style={{ fontSize: '11px' }}></i>
-                    </a>
-                    <div style={{ fontWeight: 500, color: '#94A3B8' }}>
-                        Copyright ©2026 Digital Health Group of Phitsanulok Provincial Public Health Office
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0284C7', fontWeight: 600 }}>
-                            <i className="ph-fill ph-calendar-check" style={{ fontSize: '14px' }}></i>
-                            <span>ประมวลผลวันที่รับบริการ (แฟ้ม Service)</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <i className="ph ph-clock" style={{ fontSize: '13px' }}></i>
-                            <span>อัปเดต: <span>{lastUpdate}</span></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <Footer />
         </div>
     );
 }
