@@ -468,7 +468,7 @@ export default function OPPPDashboard() {
                                     {district.missing > 0 && (
                                         <i className="ph-bold ph-magnifying-glass" style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '14px', color: '#EF4444' }}></i>
                                     )}
-                                    <div className="stat-value missing" style={district.missing > 0 ? { color: '#EF4444' } : { color: '#94A3B8' }}>{district.missing}</div>
+                                    <div className="stat-value missing" style={{ color: '#EF4444' }}>{district.missing}</div>
                                     <div className="stat-label">รอประมวลผล</div>
                                 </div>
                             </div>

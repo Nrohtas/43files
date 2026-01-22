@@ -395,22 +395,8 @@ export default function HDCReport() {
 
             {/* Data Table */}
             <div className="table-card">
-                <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                <div className="table-header">
                     <h3 style={{ margin: 0 }}>{getDistrictName(selectedDistrict)} {selectedHostype ? `(สังกัด: ${selectedHostype})` : ''}</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px' }}>
-                        <a href="https://hdc.moph.go.th/plk/public/standard-report-detail/92a705c26f22754d7462e9f742436b6f" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#10B981', textDecoration: 'none', transition: 'all 0.2s', background: 'rgba(16, 185, 129, 0.05)', padding: '4px 8px', borderRadius: '4px' }}>
-                            <i className="ph-bold ph-link-simple"></i>
-                            <span style={{ fontWeight: 600 }}>ที่มา: รายงาน HDC</span>
-                        </a>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#059669', fontWeight: 600 }}>
-                            <i className="ph-fill ph-calendar-check"></i>
-                            <span>ประมวลผลวันที่รับบริการ (แฟ้ม Service)</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748b' }}>
-                            <i className="ph ph-clock"></i>
-                            <span>อัปเดต: <span style={{ fontWeight: 600, color: '#475569' }}>{lastUpdate}</span></span>
-                        </div>
-                    </div>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                     <table className="hdc-table">
