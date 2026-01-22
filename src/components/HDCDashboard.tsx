@@ -45,7 +45,7 @@ export default function HDCDashboard() {
     // UI State
     const [loading, setLoading] = useState(true);
     const [missingSectionExpanded, setMissingSectionExpanded] = useState(false);
-    const [missingSectionTitle, setMissingSectionTitle] = useState('รายชื่อหน่วยบริการที่รอประมวลผล');
+    const [missingSectionTitle, setMissingSectionTitle] = useState('รายชื่อหน่วยบริการที่รอประมวลผล HDC');
 
     // Init Logic
     useEffect(() => {
@@ -111,7 +111,7 @@ export default function HDCDashboard() {
         setLoading(true);
         // Collapse missing section on refresh
         setMissingSectionExpanded(false);
-        setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล');
+        setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล HDC');
 
         try {
             // Fetch Summary
@@ -197,7 +197,7 @@ export default function HDCDashboard() {
     const showMissingForDistrict = (districtCode: string, districtName: string) => {
         const districtData = allMissingUnits.filter(d => d.districtCode === districtCode);
         setFilteredMissingUnits(districtData);
-        setMissingSectionTitle(`รายชื่อหน่วยบริการที่รอประมวลผล (${districtName})`);
+        setMissingSectionTitle(`รายชื่อหน่วยบริการที่รอประมวลผล HDC (${districtName})`);
         setMissingSectionExpanded(true);
 
         // Scroll to section
@@ -210,7 +210,7 @@ export default function HDCDashboard() {
     const resetMissingFilter = (e: React.MouseEvent) => {
         e.stopPropagation();
         setFilteredMissingUnits(allMissingUnits);
-        setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล');
+        setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล HDC');
     };
 
     return (

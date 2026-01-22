@@ -49,7 +49,7 @@ export default function OPPPDashboard() {
     // UI State
     const [loading, setLoading] = useState(true);
     const [missingSectionExpanded, setMissingSectionExpanded] = useState(false);
-    const [missingSectionTitle, setMissingSectionTitle] = useState('รายชื่อหน่วยบริการที่ไม่ได้ส่งข้อมูล');
+    const [missingSectionTitle, setMissingSectionTitle] = useState('รายชื่อหน่วยบริการที่รอประมวลผล OPPP');
 
     // Init Logic
     useEffect(() => {
@@ -119,7 +119,7 @@ export default function OPPPDashboard() {
         setLoading(true);
         // Collapse missing section on refresh
         setMissingSectionExpanded(false);
-        setMissingSectionTitle('รายชื่อหน่วยบริการที่ไม่ได้ส่งข้อมูล');
+        setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล OPPP');
 
         try {
             // Fetch Summary (OPPP endpoint)
@@ -216,7 +216,7 @@ export default function OPPPDashboard() {
     const resetMissingFilter = (e: React.MouseEvent) => {
         e.stopPropagation();
         setFilteredMissingUnits(allMissingUnits);
-        setMissingSectionTitle('รายชื่อหน่วยบริการที่ไม่ได้ส่งข้อมูล');
+        setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล OPPP');
     };
 
     return (
