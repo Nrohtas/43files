@@ -437,17 +437,47 @@ export default function OPPPReport() {
                                         <tr key={unit.code}>
                                             <td><span style={codeStyle}>{unit.code}</span></td>
                                             <td style={cellStyle}>{unit.name}</td>
-                                            {unit.months.map((status, idx) => (
-                                                <td key={idx} className="text-center">
-                                                    {!status ? (
-                                                        <div style={{ color: '#94A3B8', fontSize: '20px', textAlign: 'center' }}>-</div>
-                                                    ) : status.toUpperCase() === 'Y' ? (
-                                                        <div className="status-icon success" style={{ color: '#0284C7', background: '#E0F2FE' }}><i className="ph-fill ph-check-circle"></i></div>
-                                                    ) : (
-                                                        <div className="status-icon error"><i className="ph-fill ph-x-circle"></i></div>
-                                                    )}
-                                                </td>
-                                            ))}
+                                            {unit.months.map((status, idx) => {
+                                                // Calculate cutoff logic
+                                                const today = new Date();
+                                                const currentFiscalYear = (today.getMonth() >= 9) ? today.getFullYear() + 544 : today.getFullYear() + 543;
+                                                const currentFiscalMonthIndex = (today.getMonth() + 3) % 12; // 0=Oct, 11=Sep
+
+                                                const selectedYearInt = parseInt(selectedYear);
+                                                let isFuture = false;
+
+                                                if (selectedYearInt > currentFiscalYear) {
+                                                    isFuture = true;
+                                                } else if (selectedYearInt === currentFiscalYear) {
+                                                    // If idx is Current Month or later, it's future/pending
+                                                    // User said "Current Month - 1" is the last to show.
+                                                    // So if idx >= currentFiscalMonthIndex, it is hidden.
+                                                    if (idx >= currentFiscalMonthIndex) {
+                                                        isFuture = true;
+                                                    }
+                                                }
+                                                // If selectedYear < currentFiscalYear, isFuture is false (show all)
+
+                                                if (isFuture) {
+                                                    return (
+                                                        <td key={idx} className="text-center">
+                                                            <div style={{ color: '#94A3B8', fontSize: '20px', textAlign: 'center' }}>-</div>
+                                                        </td>
+                                                    );
+                                                }
+
+                                                return (
+                                                    <td key={idx} className="text-center">
+                                                        {!status ? (
+                                                            <div style={{ color: '#94A3B8', fontSize: '20px', textAlign: 'center' }}>-</div>
+                                                        ) : status.toUpperCase() === 'Y' ? (
+                                                            <div className="status-icon success" style={{ color: '#0284C7', background: '#E0F2FE' }}><i className="ph-fill ph-check-circle"></i></div>
+                                                        ) : (
+                                                            <div className="status-icon error"><i className="ph-fill ph-x-circle"></i></div>
+                                                        )}
+                                                    </td>
+                                                );
+                                            })}
                                         </tr>
                                     );
                                 })

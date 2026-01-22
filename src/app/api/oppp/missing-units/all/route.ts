@@ -27,12 +27,11 @@ export async function GET(request: NextRequest) {
             LEFT JOIN ampur a ON h.amp_code = a.amp_code
             LEFT JOIN oppp ON h.hospcode = oppp.hospcode 
                 AND oppp.b_year = ? 
-                AND oppp.month_no = ?
-            WHERE UPPER(IFNULL(oppp.sentdata, 'N')) != 'Y'
+            WHERE UPPER(IFNULL(oppp.status${month}, 'N')) != 'Y'
             ORDER BY h.amp_code ASC, h.hospcode ASC
         `;
 
-        const [rows]: any = await pool.query(sql, [year, month]);
+        const [rows]: any = await pool.query(sql, [year]);
 
         // Group by district
         const grouped: { [key: string]: any } = {};

@@ -22,25 +22,23 @@ export async function GET(
     const hostype = searchParams.get('hostype');
     const year = searchParams.get('year') || '2568';
 
-    const currentYearInt = parseInt(year);
-
     let sql = `
         SELECT 
             h.hospcode,
             h.hospname,
             h.hostype_new,
-            MAX(CASE WHEN oppp.month_no = '10' THEN oppp.sentdata END) as month_10,
-            MAX(CASE WHEN oppp.month_no = '11' THEN oppp.sentdata END) as month_11,
-            MAX(CASE WHEN oppp.month_no = '12' THEN oppp.sentdata END) as month_12,
-            MAX(CASE WHEN oppp.month_no = '01' THEN oppp.sentdata END) as month_13,
-            MAX(CASE WHEN oppp.month_no = '02' THEN oppp.sentdata END) as month_14,
-            MAX(CASE WHEN oppp.month_no = '03' THEN oppp.sentdata END) as month_15,
-            MAX(CASE WHEN oppp.month_no = '04' THEN oppp.sentdata END) as month_16,
-            MAX(CASE WHEN oppp.month_no = '05' THEN oppp.sentdata END) as month_17,
-            MAX(CASE WHEN oppp.month_no = '06' THEN oppp.sentdata END) as month_18,
-            MAX(CASE WHEN oppp.month_no = '07' THEN oppp.sentdata END) as month_19,
-            MAX(CASE WHEN oppp.month_no = '08' THEN oppp.sentdata END) as month_20,
-            MAX(CASE WHEN oppp.month_no = '09' THEN oppp.sentdata END) as month_21
+            oppp.status10 as month_10,
+            oppp.status11 as month_11,
+            oppp.status12 as month_12,
+            oppp.status01 as month_13,
+            oppp.status02 as month_14,
+            oppp.status03 as month_15,
+            oppp.status04 as month_16,
+            oppp.status05 as month_17,
+            oppp.status06 as month_18,
+            oppp.status07 as month_19,
+            oppp.status08 as month_20,
+            oppp.status09 as month_21
         FROM hospital h
         LEFT JOIN oppp ON h.hospcode = oppp.hospcode AND oppp.b_year = ?
         LEFT JOIN hostype ht ON h.hostype_new = ht.hostype_new
@@ -54,7 +52,7 @@ export async function GET(
         sqlParams.push(hostype);
     }
 
-    sql += ' GROUP BY h.hospcode, h.hospname, h.hostype_new ORDER BY h.hospcode ASC';
+    sql += ' ORDER BY h.hospcode ASC';
 
     try {
         const [rows] = await pool.query<RowDataPacket[]>(sql, sqlParams);

@@ -22,19 +22,19 @@ export async function GET(request: Request) {
             h.amp_code,
             a.amp_name,
             COUNT(DISTINCT h.hospcode) as total_units,
-            SUM(CASE WHEN UPPER(oppp.sentdata) = 'Y' THEN 1 ELSE 0 END) as submitted,
-            SUM(CASE WHEN UPPER(IFNULL(oppp.sentdata, 'N')) != 'Y' THEN 1 ELSE 0 END) as missing
+            SUM(CASE WHEN UPPER(oppp.status${month}) = 'Y' THEN 1 ELSE 0 END) as submitted,
+            SUM(CASE WHEN UPPER(IFNULL(oppp.status${month}, 'N')) != 'Y' THEN 1 ELSE 0 END) as missing
         FROM hospital h
         LEFT JOIN ampur a ON h.amp_code = a.amp_code
         LEFT JOIN oppp ON h.hospcode = oppp.hospcode 
             AND oppp.b_year = ? 
-            AND oppp.month_no = ?
         GROUP BY h.amp_code, a.amp_name
         ORDER BY h.amp_code ASC
     `;
 
     try {
-        const [rows] = await pool.query<RowDataPacket[]>(sql, [year, month]);
+        // Only pass 'year' as parameter, 'month' is injected into column name
+        const [rows] = await pool.query<RowDataPacket[]>(sql, [year]);
 
         const summary = rows.map((row: any) => ({
             code: row.amp_code,
