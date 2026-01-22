@@ -203,7 +203,7 @@ export default function OPPPDashboard() {
     const showMissingForDistrict = (districtCode: string, districtName: string) => {
         const districtData = allMissingUnits.filter(d => d.districtCode === districtCode);
         setFilteredMissingUnits(districtData);
-        setMissingSectionTitle(`รายชื่อหน่วยบริการที่รอประมวลผล (${districtName})`);
+        setMissingSectionTitle(`รายชื่อหน่วยบริการที่รอประมวลผล OPPP (${districtName})`);
         setMissingSectionExpanded(true);
 
         // Scroll to section
