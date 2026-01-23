@@ -395,8 +395,28 @@ export default function HDCReport() {
 
             {/* Data Table */}
             <div className="table-card">
-                <div className="table-header">
+                <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                     <h3 style={{ margin: 0 }}>{getDistrictName(selectedDistrict)} {selectedHostype ? `(สังกัด: ${selectedHostype})` : ''}</h3>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', color: '#64748b' }}>
+                        <a href="https://hdc.moph.go.th/plk/public/standard-report-detail/92a705c26f22754d7462e9f742436b6f"
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#10B981', textDecoration: 'none', transition: 'all 0.2s', padding: '4px 8px', borderRadius: '4px' }}>
+                            <i className="ph-bold ph-link-simple" style={{ fontSize: '14px' }}></i>
+                            <span style={{ fontWeight: 500 }}>ที่มา: รายงาน HDC</span>
+                            <i className="ph-bold ph-arrow-square-out" style={{ fontSize: '12px' }}></i>
+                        </a>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#16A34A', fontWeight: 600 }}>
+                                <i className="ph-fill ph-calendar-check" style={{ fontSize: '14px' }}></i>
+                                <span>ประมวลผลวันที่รับบริการ (แฟ้ม Service)</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <i className="ph ph-clock" style={{ fontSize: '14px' }}></i>
+                                <span>อัปเดต: <span id="lastUpdateTime">{lastUpdate}</span></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                     <table className="hdc-table">
