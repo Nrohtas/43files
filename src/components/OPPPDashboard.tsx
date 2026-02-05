@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import CustomSelect from './CustomSelect';
 import { useRouter } from 'next/navigation';
 import { authenticatedFetch } from '@/utils/apiClient';
@@ -224,14 +225,25 @@ export default function OPPPDashboard() {
             <div className="province-summary-card">
                 <div className="province-summary-header">
                     <h2>
-                        <i className="ph-fill ph-chart-bar"
-                            style={{ color: 'var(--primary-blue)', fontSize: '20px', verticalAlign: 'middle', marginRight: '10px' }}></i>
-                        Dashboard การจัดส่งข้อมูล 43 แฟ้ม OPPP
+                        <h2>
+                            <Image
+                                src="/nhso_logo.png"
+                                alt="OPPP Logo"
+                                width={32}
+                                height={32}
+                                style={{ objectFit: 'contain', verticalAlign: 'middle', marginRight: '10px' }}
+                            />
+                            Dashboard การจัดส่งข้อมูล 43 แฟ้ม OPPP
+                        </h2>
                     </h2>
                     <div className="dashboard-filters">
                         <Link href="/oppp/report" className="dashboard-btn-report-blue">
                             <i className="ph-duotone ph-table"></i>
                             Dashboard รายเดือน
+                        </Link>
+                        <Link href="/opppservice" className="dashboard-btn-report-blue" style={{ background: '#F0F9FF', color: '#0284C7', border: '1px solid #BAE6FD' }}>
+                            <i className="ph-duotone ph-briefcase"></i>
+                            แปลข้อมูล Service
                         </Link>
                         <CustomSelect
                             value={year}

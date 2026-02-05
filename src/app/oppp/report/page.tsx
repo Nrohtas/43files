@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from '@/components/Header';
 import NavBar from '@/components/NavBar';
 import OPPPReport from '@/components/OPPPReport';
+import Footer from '@/components/Footer';
 import { Suspense } from 'react';
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default function ReportPage() {
             <Suspense fallback={<div style={{ padding: '30px', textAlign: 'center' }}>Loading...</div>}>
                 <OPPPReport />
             </Suspense>
+            <Footer />
         </main>
     );
 }

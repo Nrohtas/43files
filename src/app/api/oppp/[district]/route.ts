@@ -27,18 +27,18 @@ export async function GET(
             h.hospcode,
             h.hospname,
             h.hostype_new,
-            oppp.status10 as month_10,
-            oppp.status11 as month_11,
-            oppp.status12 as month_12,
-            oppp.status01 as month_13,
-            oppp.status02 as month_14,
-            oppp.status03 as month_15,
-            oppp.status04 as month_16,
-            oppp.status05 as month_17,
-            oppp.status06 as month_18,
-            oppp.status07 as month_19,
-            oppp.status08 as month_20,
-            oppp.status09 as month_21
+            oppp.pass10, oppp.reject10, oppp.result10, oppp.status10,
+            oppp.pass11, oppp.reject11, oppp.result11, oppp.status11,
+            oppp.pass12, oppp.reject12, oppp.result12, oppp.status12,
+            oppp.pass01, oppp.reject01, oppp.result01, oppp.status01,
+            oppp.pass02, oppp.reject02, oppp.result02, oppp.status02,
+            oppp.pass03, oppp.reject03, oppp.result03, oppp.status03,
+            oppp.pass04, oppp.reject04, oppp.result04, oppp.status04,
+            oppp.pass05, oppp.reject05, oppp.result05, oppp.status05,
+            oppp.pass06, oppp.reject06, oppp.result06, oppp.status06,
+            oppp.pass07, oppp.reject07, oppp.result07, oppp.status07,
+            oppp.pass08, oppp.reject08, oppp.result08, oppp.status08,
+            oppp.pass09, oppp.reject09, oppp.result09, oppp.status09
         FROM hospital h
         LEFT JOIN oppp ON h.hospcode = oppp.hospcode AND oppp.b_year = ?
         LEFT JOIN hostype ht ON h.hostype_new = ht.hostype_new
@@ -62,10 +62,18 @@ export async function GET(
             name: row.hospname,
             hostype: row.hostype_new,
             months: [
-                row.month_10, row.month_11, row.month_12,
-                row.month_13, row.month_14, row.month_15,
-                row.month_16, row.month_17, row.month_18,
-                row.month_19, row.month_20, row.month_21
+                { pass: row.pass10, reject: row.reject10, total: row.result10, status: row.status10 },
+                { pass: row.pass11, reject: row.reject11, total: row.result11, status: row.status11 },
+                { pass: row.pass12, reject: row.reject12, total: row.result12, status: row.status12 },
+                { pass: row.pass01, reject: row.reject01, total: row.result01, status: row.status01 },
+                { pass: row.pass02, reject: row.reject02, total: row.result02, status: row.status02 },
+                { pass: row.pass03, reject: row.reject03, total: row.result03, status: row.status03 },
+                { pass: row.pass04, reject: row.reject04, total: row.result04, status: row.status04 },
+                { pass: row.pass05, reject: row.reject05, total: row.result05, status: row.status05 },
+                { pass: row.pass06, reject: row.reject06, total: row.result06, status: row.status06 },
+                { pass: row.pass07, reject: row.reject07, total: row.result07, status: row.status07 },
+                { pass: row.pass08, reject: row.reject08, total: row.result08, status: row.status08 },
+                { pass: row.pass09, reject: row.reject09, total: row.result09, status: row.status09 }
             ]
         }));
 

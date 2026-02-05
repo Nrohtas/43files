@@ -18,7 +18,12 @@ interface Unit {
     code: string;
     name: string;
     hostype?: string;
-    months: (string | null)[];
+    months: {
+        pass: number | null;
+        reject: number | null;
+        total: number | null;
+        status: string;
+    }[];
 }
 
 interface Hostype {
@@ -195,7 +200,7 @@ export default function OPPPReport() {
 
         const completeUnits = units.filter(u => {
             for (let i = 0; i < cutoffIndex; i++) {
-                if (u.months[i]?.toUpperCase() !== 'Y') return false;
+                if (u.months[i]?.status?.toUpperCase() !== 'Y') return false;
             }
             return true;
         });
@@ -402,24 +407,24 @@ export default function OPPPReport() {
                         </div>
                     </div>
                 </div>
-                <div style={{ overflowX: 'auto' }}>
+                <div style={{ overflow: 'auto', maxHeight: 'calc(100vh - 180px)', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
                     <table className="hdc-table">
                         <thead>
                             <tr>
-                                <th>รหัส</th>
-                                <th>หน่วยบริการ</th>
-                                <th className="text-center">ต.ค.</th>
-                                <th className="text-center">พ.ย.</th>
-                                <th className="text-center">ธ.ค.</th>
-                                <th className="text-center">ม.ค.</th>
-                                <th className="text-center">ก.พ.</th>
-                                <th className="text-center">มี.ค.</th>
-                                <th className="text-center">เม.ย.</th>
-                                <th className="text-center">พ.ค.</th>
-                                <th className="text-center">มิ.ย.</th>
-                                <th className="text-center">ก.ค.</th>
-                                <th className="text-center">ส.ค.</th>
-                                <th className="text-center">ก.ย.</th>
+                                <th style={{ position: 'sticky', left: 0, top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', minWidth: '60px' }}>รหัส</th>
+                                <th style={{ position: 'sticky', left: '60px', top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', minWidth: '200px' }}>หน่วยบริการ</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ต.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>พ.ย.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ธ.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ม.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ก.พ.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>มี.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>เม.ย.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>พ.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>มิ.ย.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ก.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ส.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ก.ย.</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -445,19 +450,22 @@ export default function OPPPReport() {
                                     let cellStyle: React.CSSProperties = { fontWeight: 500 };
                                     let codeStyle: React.CSSProperties = { fontFamily: 'monospace', background: '#f0f2f5', padding: '2px 6px', borderRadius: '4px' };
 
+                                    let stickyBg = '#fff'; // Default background for sticky cols
                                     if (targetGreen.includes(hostypeStr)) {
                                         cellStyle = { fontWeight: 600, color: '#059669' };
                                         codeStyle = { ...codeStyle, color: '#059669', fontWeight: 600 };
+                                        stickyBg = '#fff'; // or '#f0fdf4' if you want row highlight
                                     } else if (targetPurple.includes(hostypeStr)) {
                                         cellStyle = { fontWeight: 600, color: '#7C3AED' };
                                         codeStyle = { ...codeStyle, color: '#7C3AED', fontWeight: 600 };
+                                        stickyBg = '#fff';
                                     }
 
                                     return (
                                         <tr key={unit.code}>
-                                            <td><span style={codeStyle}>{unit.code}</span></td>
-                                            <td style={cellStyle}>{unit.name}</td>
-                                            {unit.months.map((status, idx) => {
+                                            <td style={{ position: 'sticky', left: 0, zIndex: 40, background: stickyBg }}><span style={codeStyle}>{unit.code}</span></td>
+                                            <td style={{ ...cellStyle, position: 'sticky', left: '60px', zIndex: 40, background: stickyBg }}>{unit.name}</td>
+                                            {unit.months.map((monthData, idx) => {
                                                 // Calculate cutoff logic
                                                 const today = new Date();
                                                 const currentFiscalYear = (today.getMonth() >= 9) ? today.getFullYear() + 544 : today.getFullYear() + 543;
@@ -488,9 +496,9 @@ export default function OPPPReport() {
 
                                                 return (
                                                     <td key={idx} className="text-center">
-                                                        {!status ? (
+                                                        {!monthData.status ? (
                                                             <div style={{ color: '#94A3B8', fontSize: '20px', textAlign: 'center' }}>-</div>
-                                                        ) : status.toUpperCase() === 'Y' ? (
+                                                        ) : monthData.status.toUpperCase() === 'Y' ? (
                                                             <div className="status-icon success" style={{ color: '#0284C7', background: '#E0F2FE' }}><i className="ph-fill ph-check-circle"></i></div>
                                                         ) : (
                                                             <div className="status-icon error"><i className="ph-fill ph-x-circle"></i></div>
@@ -507,7 +515,6 @@ export default function OPPPReport() {
                 </div>
             </div>
 
-            <Footer />
         </div>
     );
 }

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import CustomSelect from './CustomSelect';
 import { authenticatedFetch } from '@/utils/apiClient';
 
@@ -218,8 +219,13 @@ export default function HDCDashboard() {
             <div className="province-summary-card">
                 <div className="province-summary-header">
                     <h2>
-                        <i className="ph-fill ph-chart-bar"
-                            style={{ color: '#10B981', fontSize: '20px', verticalAlign: 'middle', marginRight: '10px' }}></i>
+                        <Image
+                            src="/moph_logo.png"
+                            alt="HDC Logo"
+                            width={32}
+                            height={32}
+                            style={{ objectFit: 'contain', verticalAlign: 'middle', marginRight: '10px' }}
+                        />
                         Dashboard การจัดส่งข้อมูล 43 แฟ้ม HDC
                     </h2>
                     <div className="dashboard-filters">

@@ -418,24 +418,24 @@ export default function HDCReport() {
                         </div>
                     </div>
                 </div>
-                <div style={{ overflowX: 'auto' }}>
+                <div style={{ overflow: 'auto', maxHeight: 'calc(100vh - 180px)', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
                     <table className="hdc-table">
                         <thead>
                             <tr>
-                                <th>รหัส</th>
-                                <th>หน่วยบริการ</th>
-                                <th className="text-center">ต.ค.</th>
-                                <th className="text-center">พ.ย.</th>
-                                <th className="text-center">ธ.ค.</th>
-                                <th className="text-center">ม.ค.</th>
-                                <th className="text-center">ก.พ.</th>
-                                <th className="text-center">มี.ค.</th>
-                                <th className="text-center">เม.ย.</th>
-                                <th className="text-center">พ.ค.</th>
-                                <th className="text-center">มิ.ย.</th>
-                                <th className="text-center">ก.ค.</th>
-                                <th className="text-center">ส.ค.</th>
-                                <th className="text-center">ก.ย.</th>
+                                <th style={{ position: 'sticky', left: 0, top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', minWidth: '60px' }}>รหัส</th>
+                                <th style={{ position: 'sticky', left: '60px', top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', minWidth: '200px' }}>หน่วยบริการ</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff' }}>ต.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff' }}>พ.ย.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff' }}>ธ.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff' }}>ม.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff' }}>ก.พ.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff' }}>มี.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff' }}>เม.ย.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff' }}>พ.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff' }}>มิ.ย.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff' }}>ก.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff' }}>ส.ค.</th>
+                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff' }}>ก.ย.</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -483,18 +483,21 @@ export default function HDCReport() {
                                     let cellStyle: React.CSSProperties = { fontWeight: 500 };
                                     let codeStyle: React.CSSProperties = { fontFamily: 'monospace', background: '#f0f2f5', padding: '2px 6px', borderRadius: '4px' };
 
+                                    let stickyBg = '#fff';
                                     if (targetGreen.includes(hostypeStr)) {
                                         cellStyle = { fontWeight: 600, color: '#059669' };
                                         codeStyle = { ...codeStyle, color: '#059669', fontWeight: 600 };
+                                        stickyBg = '#fff';
                                     } else if (targetPurple.includes(hostypeStr)) {
                                         cellStyle = { fontWeight: 600, color: '#7C3AED' };
                                         codeStyle = { ...codeStyle, color: '#7C3AED', fontWeight: 600 };
+                                        stickyBg = '#fff';
                                     }
 
                                     return (
                                         <tr key={unit.code}>
-                                            <td><span style={codeStyle}>{unit.code}</span></td>
-                                            <td style={cellStyle}>{unit.name}</td>
+                                            <td style={{ position: 'sticky', left: 0, zIndex: 40, background: stickyBg }}><span style={codeStyle}>{unit.code}</span></td>
+                                            <td style={{ ...cellStyle, position: 'sticky', left: '60px', zIndex: 40, background: stickyBg }}>{unit.name}</td>
                                             {unit.months.map((status, idx) => {
                                                 // ถ้าเดือนยังไม่ถึง (idx >= cutoffIndex) ให้แสดง "-"
                                                 const isMonthNotYet = idx >= cutoffIndex;
