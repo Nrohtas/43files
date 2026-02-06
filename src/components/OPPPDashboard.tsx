@@ -459,17 +459,31 @@ export default function OPPPDashboard() {
                                     <div className="district-name">{district.name}</div>
                                     <div className="district-code">รหัสอำเภอ: {district.code}</div>
                                 </div>
-                                <div
-                                    className="district-icon"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        router.push(`/oppp/report/?district=${district.code}&year=${year}&month=${month}`);
-                                    }}
-                                    title="ดูรายละเอียด Dashboard รายเดือน"
-                                    style={{ width: 'auto', height: 'auto', padding: '6px 12px', borderRadius: '20px', display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s', background: '#F0F9FF', color: '#0284C7' }}
-                                >
-                                    <span style={{ fontSize: '12px', fontWeight: 600 }}>รายเดือน</span>
-                                    <i className="ph-duotone ph-table" style={{ fontSize: '14px' }}></i>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <div
+                                        className="district-icon"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            router.push(`/oppp/report/?district=${district.code}&year=${year}&month=${month}`);
+                                        }}
+                                        title="ดูรายละเอียด Dashboard รายเดือน"
+                                        style={{ width: 'auto', height: 'auto', padding: '6px 12px', borderRadius: '20px', display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s', background: '#F0F9FF', color: '#0284C7' }}
+                                    >
+                                        <span style={{ fontSize: '12px', fontWeight: 600 }}>รายเดือน</span>
+                                        <i className="ph-duotone ph-table" style={{ fontSize: '14px' }}></i>
+                                    </div>
+                                    <div
+                                        className="district-icon"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            router.push(`/opppservice?district=${district.code}&year=${year}`);
+                                        }}
+                                        title="ดูรายละเอียด Service"
+                                        style={{ width: 'auto', height: 'auto', padding: '6px 12px', borderRadius: '20px', display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s', background: '#F0FDF4', color: '#166534' }}
+                                    >
+                                        <span style={{ fontSize: '12px', fontWeight: 600 }}>Service</span>
+                                        <i className="ph-duotone ph-briefcase" style={{ fontSize: '14px' }}></i>
+                                    </div>
                                 </div>
                             </div>
 
