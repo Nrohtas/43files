@@ -479,7 +479,7 @@ export default function OPPPDashboard() {
                                             router.push(`/opppservice?district=${district.code}&year=${year}`);
                                         }}
                                         title="ดูรายละเอียด Service"
-                                        style={{ width: 'auto', height: 'auto', padding: '6px 12px', borderRadius: '20px', display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s', background: '#F0FDF4', color: '#166534' }}
+                                        style={{ width: 'auto', height: 'auto', padding: '6px 12px', borderRadius: '20px', display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s', background: '#F0F9FF', color: '#0284C7' }}
                                     >
                                         <span style={{ fontSize: '12px', fontWeight: 600 }}>Service</span>
                                         <i className="ph-duotone ph-briefcase" style={{ fontSize: '14px' }}></i>
