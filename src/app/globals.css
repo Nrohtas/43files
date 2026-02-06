@@ -308,6 +308,8 @@ body {
     align-items: center;
     border-bottom: 1px solid #E2E8F0;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    position: relative;
+    z-index: 100;
 }
 
 .header-nav {
@@ -411,18 +413,19 @@ body {
     width: 240px;
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     padding: 8px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(10px);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 1000;
+    z-index: 9999;
     border: 1px solid #E2E8F0;
     margin-top: 8px;
 }
 
-.nav-item-dropdown:hover .dropdown-menu {
+.nav-item-dropdown:hover .dropdown-menu,
+.dropdown-menu.show {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
