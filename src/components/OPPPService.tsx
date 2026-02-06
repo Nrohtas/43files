@@ -7,6 +7,7 @@ import CustomSelect from './CustomSelect';
 import Footer from './Footer';
 import Link from 'next/link';
 import { authenticatedFetch } from '@/utils/apiClient';
+import * as XLSX from 'xlsx';
 
 
 // Types
@@ -148,6 +149,81 @@ export default function OPPPService() {
     const handleDistrictChange = (val: string | null) => setSelectedDistrict(val);
     const handleHostypeChange = (val: string | null) => setSelectedHostype(val);
 
+    const handleExportExcel = () => {
+        if (units.length === 0) {
+            alert('ไม่มีข้อมูลสำหรับส่งออก');
+            return;
+        }
+
+        const prevYearSuffix = (parseInt(selectedYear) - 1).toString().slice(-2);
+        const currYearSuffix = selectedYear.slice(-2);
+        const monthNames = [
+            `ต.ค. ${prevYearSuffix}`, `พ.ย. ${prevYearSuffix}`, `ธ.ค. ${prevYearSuffix}`,
+            `ม.ค. ${currYearSuffix}`, `ก.พ. ${currYearSuffix}`, `มี.ค. ${currYearSuffix}`,
+            `เม.ย. ${currYearSuffix}`, `พ.ค. ${currYearSuffix}`, `มิ.ย. ${currYearSuffix}`,
+            `ก.ค. ${currYearSuffix}`, `ส.ค. ${currYearSuffix}`, `ก.ย. ${currYearSuffix}`
+        ];
+
+        // Prepare Header Rows
+        const headerRow1 = ['รหัส', 'หน่วยบริการ'];
+        const headerRow2 = ['', ''];
+
+        monthNames.forEach(m => {
+            headerRow1.push(m, '', ''); // Placeholder for merged cells
+            headerRow2.push('ผ่าน', 'ไม่ผ่าน', 'รวม');
+        });
+
+        // Prepare Data Rows
+        const dataRows = units.map(unit => {
+            const row: (string | number)[] = [unit.code, unit.name];
+            unit.months.forEach(m => {
+                row.push(m.pass ?? 0, m.reject ?? 0, m.total ?? 0);
+            });
+            return row;
+        });
+
+        // Combine all to AOA (Array of Arrays)
+        const aoa = [headerRow1, headerRow2, ...dataRows];
+
+        // Create Worksheet
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+        // Define Merges
+        // s = start, e = end, c = column index, r = row index (0-indexed)
+        const merges = [
+            { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // Merge 'รหัส' vertical
+            { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // Merge 'หน่วยบริการ' vertical
+        ];
+
+        // Merge month headers horizontal (3 columns each)
+        for (let i = 0; i < 12; i++) {
+            const startCol = 2 + (i * 3);
+            merges.push({
+                s: { r: 0, c: startCol },
+                e: { r: 0, c: startCol + 2 }
+            });
+        }
+
+        ws['!merges'] = merges;
+
+        // Set column widths (approximate widths in characters)
+        ws['!cols'] = [
+            { wch: 10 }, // รหัส
+            { wch: 35 }, // หน่วยบริการ
+            ...new Array(36).fill({ wch: 8 }) // Pass/Fail/Total columns
+        ];
+
+        // Create Workbook and Save
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "OPPP Service Report");
+
+        // Generate Filename
+        const districtName = districts.find(d => d.code === selectedDistrict)?.name || selectedDistrict;
+        const filename = `OPPP_Service_${districtName}_${selectedYear}.xlsx`;
+
+        XLSX.writeFile(wb, filename);
+    };
+
 
     const fetchUnits = async (districtCode: string, year: string, hostype: string | null) => {
         setLoading(true);
@@ -232,7 +308,7 @@ export default function OPPPService() {
                         height={40}
                         style={{ objectFit: 'contain', marginRight: '10px' }}
                     />
-                    Dashboard การจัดส่งข้อมูล 43 แฟ้ม รายเดือน OPPP Service
+                    Dashboard การจัดส่งข้อมูล 43 แฟ้ม OPPP แฟ้ม Service
                 </h2>
 
                 <div className="report-filters" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', width: 'auto', gap: '20px' }}>
@@ -394,27 +470,67 @@ export default function OPPPService() {
                                 <span>อัปเดต: <span id="lastUpdateTime">{lastUpdate}</span></span>
                             </div>
                         </div>
+                        {/* Export Button Mockup */}
+                        <button
+                            onClick={handleExportExcel}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '8px 16px',
+                                background: '#f0fdf4',
+                                border: '1px solid #bbf7d0',
+                                borderRadius: '10px',
+                                color: '#166534',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.background = '#dcfce7';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.background = '#f0fdf4';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                            }}
+                        >
+                            <i className="ph-duotone ph-file-xls" style={{ fontSize: '18px' }}></i>
+                            Export Excel
+                        </button>
                     </div>
                 </div>
                 <div style={{ overflow: 'auto', maxHeight: 'calc(100vh - 180px)', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
                     <table className="hdc-table table-nested-headers">
                         <thead>
-                            <tr>
-                                <th rowSpan={2} style={{ position: 'sticky', left: 0, top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', minWidth: '60px' }}>รหัส</th>
-                                <th rowSpan={2} style={{ position: 'sticky', left: '60px', top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', borderRight: '2px solid #cbd5e1', minWidth: '200px' }}>หน่วยบริการ</th>
-                                <th colSpan={3} className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' }}>ต.ค.</th>
-                                <th colSpan={3} className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' }}>พ.ย.</th>
-                                <th colSpan={3} className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' }}>ธ.ค.</th>
-                                <th colSpan={3} className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' }}>ม.ค.</th>
-                                <th colSpan={3} className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' }}>ก.พ.</th>
-                                <th colSpan={3} className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' }}>มี.ค.</th>
-                                <th colSpan={3} className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' }}>เม.ย.</th>
-                                <th colSpan={3} className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' }}>พ.ค.</th>
-                                <th colSpan={3} className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' }}>มิ.ย.</th>
-                                <th colSpan={3} className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' }}>ก.ค.</th>
-                                <th colSpan={3} className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' }}>ส.ค.</th>
-                                <th colSpan={3} className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' }}>ก.ย.</th>
-                            </tr>
+                            {(() => {
+                                const prevYearSuffix = (parseInt(selectedYear) - 1).toString().slice(-2);
+                                const currYearSuffix = selectedYear.slice(-2);
+                                const headerStyle: React.CSSProperties = { position: 'sticky', top: 0, zIndex: 30, borderRight: '2px solid #cbd5e1', background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '8px 4px', fontWeight: 700, color: '#334155' };
+
+                                return (
+                                    <tr>
+                                        <th rowSpan={2} style={{ position: 'sticky', left: 0, top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', minWidth: '60px' }}>รหัส</th>
+                                        <th rowSpan={2} style={{ position: 'sticky', left: '60px', top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', borderRight: '2px solid #cbd5e1', minWidth: '200px' }}>หน่วยบริการ</th>
+                                        <th colSpan={3} className="text-center" style={headerStyle}>ต.ค. {prevYearSuffix}</th>
+                                        <th colSpan={3} className="text-center" style={headerStyle}>พ.ย. {prevYearSuffix}</th>
+                                        <th colSpan={3} className="text-center" style={headerStyle}>ธ.ค. {prevYearSuffix}</th>
+                                        <th colSpan={3} className="text-center" style={headerStyle}>ม.ค. {currYearSuffix}</th>
+                                        <th colSpan={3} className="text-center" style={headerStyle}>ก.พ. {currYearSuffix}</th>
+                                        <th colSpan={3} className="text-center" style={headerStyle}>มี.ค. {currYearSuffix}</th>
+                                        <th colSpan={3} className="text-center" style={headerStyle}>เม.ย. {currYearSuffix}</th>
+                                        <th colSpan={3} className="text-center" style={headerStyle}>พ.ค. {currYearSuffix}</th>
+                                        <th colSpan={3} className="text-center" style={headerStyle}>มิ.ย. {currYearSuffix}</th>
+                                        <th colSpan={3} className="text-center" style={headerStyle}>ก.ค. {currYearSuffix}</th>
+                                        <th colSpan={3} className="text-center" style={headerStyle}>ส.ค. {currYearSuffix}</th>
+                                        <th colSpan={3} className="text-center" style={headerStyle}>ก.ย. {currYearSuffix}</th>
+                                    </tr>
+                                );
+                            })()}
                             <tr className="sub-header-row">
                                 <th className="text-center sub-col passed" style={{ position: 'sticky', top: '44px', zIndex: 30, color: '#0284C7', background: '#E0F2FE', fontSize: '11px', fontWeight: 600 }}>ผ่าน</th>
                                 <th className="text-center sub-col failed" style={{ position: 'sticky', top: '44px', zIndex: 30, color: '#DC2626', background: '#FEF2F2', fontSize: '11px', fontWeight: 600 }}>ไม่ผ่าน</th>
@@ -518,11 +634,8 @@ export default function OPPPService() {
                                                     }
                                                 }
 
-                                                // Determine background color for month grouping
-                                                // Oct=0 (even), Nov=1 (odd), etc.
-                                                // We want alternate backgrounds for month groups to separate them visually
-                                                const isEvenMonthGroup = idx % 2 === 0;
-                                                const bgColor = isEvenMonthGroup ? '#f8fafc' : '#fff';
+                                                // Use consistent background color for all month columns
+                                                const bgColor = '#fff';
 
                                                 // Define styles for each column type with alternating backgrounds
                                                 const cellBaseStyle = { background: bgColor };

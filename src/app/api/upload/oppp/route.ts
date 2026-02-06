@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
             insertObj.areacode = areacode; // New Requirement
             insertObj.id = `${hospcode}_${b_year}`; // Composite ID
             insertObj.d_update = new Date();
+            insertObj.datafile = normalizedRow['แฟ้มข้อมูล'] || null; // เก็บค่าจากคอลัมน์แฟ้มข้อมูล
 
             // Loop months to map columns
             for (const m of months) {

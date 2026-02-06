@@ -51,10 +51,10 @@ export default function HDCDashboard() {
     // Init Logic
     useEffect(() => {
         const init = async () => {
-            // Calculate default month (previous month)
+            // Calculate default month (previous month) - use 2-digit format
             const today = new Date();
             const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-            const defaultMonth = (prevMonthDate.getMonth() + 1).toString();
+            const defaultMonth = (prevMonthDate.getMonth() + 1).toString().padStart(2, '0');
             // Calculate default fiscal year
             const defaultYear = (prevMonthDate.getMonth() >= 9)
                 ? (prevMonthDate.getFullYear() + 544).toString()

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import CustomSelect from './CustomSelect';
 import Footer from './Footer';
 import { authenticatedFetch } from '@/utils/apiClient';
+import * as XLSX from 'xlsx';
 
 
 // Types
@@ -150,6 +151,56 @@ export default function OPPPReport() {
     const handleDistrictChange = (val: string | null) => setSelectedDistrict(val);
     const handleHostypeChange = (val: string | null) => setSelectedHostype(val);
 
+    const handleExportExcel = () => {
+        if (units.length === 0) {
+            alert('ไม่มีข้อมูลสำหรับส่งออก');
+            return;
+        }
+
+        const prevYearSuffix = (parseInt(selectedYear) - 1).toString().slice(-2);
+        const currYearSuffix = selectedYear.slice(-2);
+        const headerRow = [
+            'รหัส', 'หน่วยบริการ',
+            `ต.ค. ${prevYearSuffix}`, `พ.ย. ${prevYearSuffix}`, `ธ.ค. ${prevYearSuffix}`,
+            `ม.ค. ${currYearSuffix}`, `ก.พ. ${currYearSuffix}`, `มี.ค. ${currYearSuffix}`,
+            `เม.ย. ${currYearSuffix}`, `พ.ค. ${currYearSuffix}`, `มิ.ย. ${currYearSuffix}`,
+            `ก.ค. ${currYearSuffix}`, `ส.ค. ${currYearSuffix}`, `ก.ย. ${currYearSuffix}`
+        ];
+
+        // Prepare Data Rows
+        const dataRows = units.map(unit => {
+            const row: (string | number | null)[] = [unit.code, unit.name];
+            // Flatten months array to status only
+            unit.months.forEach(m => {
+                row.push(m.status || '-');
+            });
+            return row;
+        });
+
+        // Combine all to AOA
+        const aoa = [headerRow, ...dataRows];
+
+        // Create Worksheet
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+        // Set column widths
+        ws['!cols'] = [
+            { wch: 10 }, // รหัส
+            { wch: 35 }, // หน่วยบริการ
+            ...new Array(12).fill({ wch: 15 }) // Month columns
+        ];
+
+        // Create Workbook and Save
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "OPPP Report");
+
+        // Generate Filename
+        const districtName = districts.find(d => d.code === selectedDistrict)?.name || selectedDistrict;
+        const filename = `OPPP_Report_${districtName}_${selectedYear}.xlsx`;
+
+        XLSX.writeFile(wb, filename);
+    };
+
 
     const fetchUnits = async (districtCode: string, year: string, hostype: string | null) => {
         setLoading(true);
@@ -240,7 +291,7 @@ export default function OPPPReport() {
                         height={40}
                         style={{ objectFit: 'contain', marginRight: '10px' }}
                     />
-                    Dashboard การจัดส่งข้อมูล 43 แฟ้ม รายเดือน OPPP
+                    Dashboard การจัดส่งข้อมูล 43 แฟ้ม OPPP รายเดือน
                 </h2>
 
                 <div className="report-filters" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', width: 'auto', gap: '20px' }}>
@@ -405,27 +456,67 @@ export default function OPPPReport() {
                                 <span>อัปเดต: <span id="lastUpdateTime">{lastUpdate}</span></span>
                             </div>
                         </div>
+                        {/* Export Button */}
+                        <button
+                            onClick={handleExportExcel}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '8px 16px',
+                                background: '#f0fdf4',
+                                border: '1px solid #bbf7d0',
+                                borderRadius: '10px',
+                                color: '#166534',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.background = '#dcfce7';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.background = '#f0fdf4';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                            }}
+                        >
+                            <i className="ph-duotone ph-file-xls" style={{ fontSize: '18px' }}></i>
+                            Export Excel
+                        </button>
                     </div>
                 </div>
                 <div style={{ overflow: 'auto', maxHeight: 'calc(100vh - 180px)', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
                     <table className="hdc-table">
                         <thead>
-                            <tr>
-                                <th style={{ position: 'sticky', left: 0, top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', minWidth: '60px' }}>รหัส</th>
-                                <th style={{ position: 'sticky', left: '60px', top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', minWidth: '200px' }}>หน่วยบริการ</th>
-                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ต.ค.</th>
-                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>พ.ย.</th>
-                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ธ.ค.</th>
-                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ม.ค.</th>
-                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ก.พ.</th>
-                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>มี.ค.</th>
-                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>เม.ย.</th>
-                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>พ.ค.</th>
-                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>มิ.ย.</th>
-                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ก.ค.</th>
-                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ส.ค.</th>
-                                <th className="text-center" style={{ position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' }}>ก.ย.</th>
-                            </tr>
+                            {(() => {
+                                const prevYearSuffix = (parseInt(selectedYear) - 1).toString().slice(-2);
+                                const currYearSuffix = selectedYear.slice(-2);
+                                const headerStyle: React.CSSProperties = { position: 'sticky', top: 0, zIndex: 30, background: '#fff', textAlign: 'center', verticalAlign: 'middle', padding: '12px 8px', fontWeight: 700, color: '#334155' };
+
+                                return (
+                                    <tr>
+                                        <th style={{ position: 'sticky', left: 0, top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', minWidth: '60px' }}>รหัส</th>
+                                        <th style={{ position: 'sticky', left: '60px', top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', minWidth: '200px' }}>หน่วยบริการ</th>
+                                        <th className="text-center" style={headerStyle}>ต.ค. {prevYearSuffix}</th>
+                                        <th className="text-center" style={headerStyle}>พ.ย. {prevYearSuffix}</th>
+                                        <th className="text-center" style={headerStyle}>ธ.ค. {prevYearSuffix}</th>
+                                        <th className="text-center" style={headerStyle}>ม.ค. {currYearSuffix}</th>
+                                        <th className="text-center" style={headerStyle}>ก.พ. {currYearSuffix}</th>
+                                        <th className="text-center" style={headerStyle}>มี.ค. {currYearSuffix}</th>
+                                        <th className="text-center" style={headerStyle}>เม.ย. {currYearSuffix}</th>
+                                        <th className="text-center" style={headerStyle}>พ.ค. {currYearSuffix}</th>
+                                        <th className="text-center" style={headerStyle}>มิ.ย. {currYearSuffix}</th>
+                                        <th className="text-center" style={headerStyle}>ก.ค. {currYearSuffix}</th>
+                                        <th className="text-center" style={headerStyle}>ส.ค. {currYearSuffix}</th>
+                                        <th className="text-center" style={headerStyle}>ก.ย. {currYearSuffix}</th>
+                                    </tr>
+                                );
+                            })()}
                         </thead>
                         <tbody>
                             {loading ? (

@@ -36,9 +36,9 @@ export default function OPPPDashboard() {
     const router = useRouter();
 
     // State
-    const [year, setYear] = useState('2569');
-    const [month, setMonth] = useState('11');
-    const [years, setYears] = useState<string[]>(['2569']);
+    const [year, setYear] = useState('');
+    const [month, setMonth] = useState('');
+    const [years, setYears] = useState<string[]>([]);
     const [months, setMonths] = useState<Month[]>([]);
 
     // Data State
@@ -55,33 +55,31 @@ export default function OPPPDashboard() {
     // Init Logic
     useEffect(() => {
         const init = async () => {
-            // Calculate default month (previous month)
+            // Calculate default month (previous month) - use 2-digit format
             const today = new Date();
             const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-            const defaultMonth = (prevMonthDate.getMonth() + 1).toString();
-            setMonth(defaultMonth);
+            const defaultMonth = (prevMonthDate.getMonth() + 1).toString().padStart(2, '0');
 
             // Calculate fiscal year based on previous month
             // ถ้าเดือนก่อนหน้าคือ ต.ค. (10), พ.ย. (11), ธ.ค. (12) -> ปีงบ = ปีปฏิทิน + 1
             // ถ้าเดือนก่อนหน้าคือ ม.ค. - ก.ย. -> ปีงบ = ปีปฏิทิน
             const prevMonthIndex = prevMonthDate.getMonth(); // 0-11
             const fiscalYear = (prevMonthIndex >= 9) ? prevMonthDate.getFullYear() + 544 : prevMonthDate.getFullYear() + 543;
-            setYear(fiscalYear.toString());
-            setYears([fiscalYear.toString()]); // Init with calculated year while fetching
+            const defaultYear = fiscalYear.toString();
 
+            setMonth(defaultMonth);
+            setYear(defaultYear);
 
             await fetchYears();
             await fetchMonths();
-            // Don't call fetchData here if it's dependent on state that might not be set yet? 
-            // Better to rely on the dedicated effect below, but we need to ensure years/months are loaded.
-            // Actually, we can just let the next effect handle it.
+            await fetchData(defaultYear, defaultMonth);
         };
         init();
     }, []);
 
-    // Fetch data when year/month changes
+    // Fetch data when year/month changes (skip initial load - handled by init)
     useEffect(() => {
-        if (month) {
+        if (months.length > 0 && month && year) {
             fetchData(year, month);
         }
     }, [year, month]);
@@ -241,9 +239,9 @@ export default function OPPPDashboard() {
                             <i className="ph-duotone ph-table"></i>
                             Dashboard รายเดือน
                         </Link>
-                        <Link href="/opppservice" className="dashboard-btn-report-blue" style={{ background: '#F0F9FF', color: '#0284C7', border: '1px solid #BAE6FD' }}>
+                        <Link href="/opppservice" className="dashboard-btn-report-blue">
                             <i className="ph-duotone ph-briefcase"></i>
-                            แปลข้อมูล Service
+                            แฟ้ม Service
                         </Link>
                         <CustomSelect
                             value={year}
