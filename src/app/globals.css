@@ -385,6 +385,10 @@ body {
 .nav-link-modern.active:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(64, 196, 255, 0.4);
+    color: white !important;
+    /* Ensure text stays white on hover */
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #2CD3E1 100%);
+    /* Ensure bg keeps gradient */
 }
 
 /* Green variant for HDC menu */
@@ -396,6 +400,8 @@ body {
 .nav-link-modern.active.hdc-menu:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    color: white !important;
+    background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
 }
 
 /* Dropdown Menu Styles */
@@ -418,11 +424,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     padding: 8px;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: translateY(10px);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: none;
     z-index: 9999;
     border: 1px solid #E2E8F0;
     margin-top: 8px;
@@ -430,10 +432,8 @@ body {
 
 .nav-item-dropdown:hover .dropdown-menu,
 .dropdown-menu.show {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateY(0);
+    display: flex;
+    flex-direction: column;
 }
 
 .dropdown-item {
@@ -532,9 +532,102 @@ body {
     }
 }
 
+/* Table Sticky Columns (Global) */
+.sticky-col-code {
+    position: sticky;
+    left: 0;
+    z-index: 50;
+    background: #fff;
+    min-width: 100px;
+    max-width: 100px;
+    width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-right: 1px solid #e2e8f0;
+    padding: 8px 4px !important;
+    /* Reduced padding for more space */
+    text-align: center !important;
+}
+
+.sticky-col-name {
+    position: sticky;
+    left: 100px;
+    z-index: 50;
+    background: #fff;
+    min-width: 200px;
+    border-right: 2px solid #cbd5e1;
+}
+
+tbody .sticky-col-code,
+tbody .sticky-col-name {
+    z-index: 20;
+}
+
 @media (max-width: 768px) {
     .districts-grid {
         grid-template-columns: 1fr;
+    }
+
+    /* Mobile Sticky Column Override */
+    .sticky-col-name {
+        position: sticky !important;
+        left: 100px;
+        min-width: 120px !important;
+        max-width: 120px !important;
+        border-right: 2px solid #cbd5e1 !important;
+        box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.1);
+        padding: 0 !important;
+        /* Remove padding to let div control it */
+    }
+
+    .name-cell-wrapper {
+        display: block;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding: 8px;
+        /* Add padding back here */
+    }
+
+    /* Mobile NavBar Dropdown Fix */
+    .nav-item-dropdown {
+        position: static;
+    }
+
+    .dropdown-menu {
+        position: fixed;
+        top: 180px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+        max-width: none;
+        margin-top: 0;
+    }
+
+    .dropdown-menu.show {
+        display: flex !important;
+        flex-direction: column;
+    }
+
+    .nav-link-modern span {
+        display: inline;
+        font-size: 13px;
+    }
+
+    .mobile-prefix {
+        /* display: none !important; */
+        display: inline !important;
+        /* Force show on mobile per user request 'name missing' */
+    }
+
+    .header-nav {
+        gap: 4px;
+    }
+
+    .nav-link-modern {
+        padding: 6px 8px;
     }
 }
 

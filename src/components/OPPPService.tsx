@@ -313,6 +313,39 @@ export default function OPPPService() {
 
                 <div className="report-filters" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', width: 'auto', gap: '20px' }}>
                     <div className="filter-group">
+                        {/* Link to Monthly Report */}
+                        <Link
+                            href={`/oppp/report?year=${selectedYear}${selectedDistrict ? `&district=${selectedDistrict}` : ''}${selectedHostype ? `&hostype=${selectedHostype}` : ''}`}
+                            className="nav-link-item-btn"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '10px 16px',
+                                background: 'linear-gradient(135deg, #40C4FF 0%, #2CD3E1 100%)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '12px',
+                                textDecoration: 'none',
+                                fontSize: '14px',
+                                fontWeight: 700,
+                                transition: 'all 0.2s',
+                                boxShadow: '0 4px 12px rgba(64, 196, 255, 0.3)',
+                                marginRight: '10px'
+                            }}
+                            onMouseOver={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(64, 196, 255, 0.4)';
+                            }}
+                            onMouseOut={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(64, 196, 255, 0.3)';
+                            }}
+                        >
+                            <i className="ph-duotone ph-table" style={{ fontSize: '18px', color: 'white' }}></i>
+                            Dashboard รายเดือน
+                        </Link>
+
                         <CustomSelect
                             value={selectedYear}
                             options={years.map(y => ({ value: y, label: `ปีงบประมาณ ${y}` }))}
@@ -514,8 +547,10 @@ export default function OPPPService() {
 
                                 return (
                                     <tr>
-                                        <th rowSpan={2} style={{ position: 'sticky', left: 0, top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', borderRight: '1px solid #e2e8f0', minWidth: '60px' }}>รหัส</th>
-                                        <th rowSpan={2} style={{ position: 'sticky', left: '60px', top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', borderRight: '2px solid #cbd5e1', minWidth: '200px' }}>หน่วยบริการ</th>
+                                        <th rowSpan={2} className="sticky-col-code" style={{ top: 0, verticalAlign: 'middle' }}>รหัส</th>
+                                        <th rowSpan={2} className="sticky-col-name" style={{ top: 0, verticalAlign: 'middle' }}>
+                                            <div className="name-cell-wrapper">หน่วยบริการ</div>
+                                        </th>
                                         <th colSpan={3} className="text-center" style={headerStyle}>ต.ค. {prevYearSuffix}</th>
                                         <th colSpan={3} className="text-center" style={headerStyle}>พ.ย. {prevYearSuffix}</th>
                                         <th colSpan={3} className="text-center" style={headerStyle}>ธ.ค. {prevYearSuffix}</th>
@@ -616,8 +651,10 @@ export default function OPPPService() {
 
                                     return (
                                         <tr key={unit.code} style={rowStyle}>
-                                            <td style={{ position: 'sticky', left: 0, zIndex: 20, background: '#fff', borderRight: '1px solid #e2e8f0' }}><span style={codeStyle}>{unit.code}</span></td>
-                                            <td style={{ position: 'sticky', left: '60px', zIndex: 20, background: '#fff', ...cellStyle }}>{unit.name}</td>
+                                            <td className="sticky-col-code"><span style={codeStyle}>{unit.code}</span></td>
+                                            <td className="sticky-col-name" style={cellStyle}>
+                                                <div className="name-cell-wrapper">{unit.name}</div>
+                                            </td>
                                             {unit.months.map((monthData, idx) => {
                                                 const today = new Date();
                                                 const currentFiscalYear = (today.getMonth() >= 9) ? today.getFullYear() + 544 : today.getFullYear() + 543;

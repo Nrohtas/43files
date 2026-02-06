@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import CustomSelect from './CustomSelect';
 import Footer from './Footer';
+import Link from 'next/link';
 import { authenticatedFetch } from '@/utils/apiClient';
 import * as XLSX from 'xlsx';
 
@@ -296,6 +297,39 @@ export default function OPPPReport() {
 
                 <div className="report-filters" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', width: 'auto', gap: '20px' }}>
                     <div className="filter-group">
+                        {/* Link to Service Dashboard */}
+                        <Link
+                            href={`/opppservice?year=${selectedYear}${selectedDistrict ? `&district=${selectedDistrict}` : ''}${selectedHostype ? `&hostype=${selectedHostype}` : ''}`}
+                            className="nav-link-item-btn"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '10px 16px',
+                                background: 'linear-gradient(135deg, #40C4FF 0%, #2CD3E1 100%)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '12px',
+                                textDecoration: 'none',
+                                fontSize: '14px',
+                                fontWeight: 700,
+                                transition: 'all 0.2s',
+                                boxShadow: '0 4px 12px rgba(64, 196, 255, 0.3)',
+                                marginRight: '10px'
+                            }}
+                            onMouseOver={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(64, 196, 255, 0.4)';
+                            }}
+                            onMouseOut={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(64, 196, 255, 0.3)';
+                            }}
+                        >
+                            <i className="ph-duotone ph-briefcase" style={{ fontSize: '18px', color: 'white' }}></i>
+                            แฟ้ม Service
+                        </Link>
+
                         {/* Year Dropdown */}
                         <CustomSelect
                             value={selectedYear}
