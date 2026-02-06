@@ -223,16 +223,14 @@ export default function OPPPDashboard() {
             <div className="province-summary-card">
                 <div className="province-summary-header">
                     <h2>
-                        <h2>
-                            <Image
-                                src="/nhso_logo.png"
-                                alt="OPPP Logo"
-                                width={32}
-                                height={32}
-                                style={{ objectFit: 'contain', verticalAlign: 'middle', marginRight: '10px' }}
-                            />
-                            Dashboard การจัดส่งข้อมูล 43 แฟ้ม OPPP
-                        </h2>
+                        <Image
+                            src="/nhso_logo.png"
+                            alt="OPPP Logo"
+                            width={32}
+                            height={32}
+                            style={{ objectFit: 'contain', verticalAlign: 'middle', marginRight: '10px' }}
+                        />
+                        Dashboard การจัดส่งข้อมูล 43 แฟ้ม OPPP
                     </h2>
                     <div className="dashboard-filters">
                         <Link href="/oppp/report" className="dashboard-btn-report-blue">
