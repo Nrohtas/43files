@@ -306,6 +306,11 @@ export default function HDCReport() {
 
                 <div className="report-filters" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', width: 'auto', gap: '20px' }}>
                     <div className="filter-group">
+                        <a href="/hdcservice" className="dashboard-btn-report" style={{ height: '42px' }}>
+                            <i className="ph-duotone ph-briefcase"></i>
+                            แฟ้ม Service
+                        </a>
+
                         {/* Year Selector */}
                         <CustomSelect
                             value={selectedYear}

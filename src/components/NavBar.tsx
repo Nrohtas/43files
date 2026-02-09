@@ -7,56 +7,92 @@ import Image from 'next/image';
 
 export default function NavBar() {
     const pathname = usePathname();
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+    const navRef = useRef<HTMLDivElement>(null);
 
-    // Close dropdown when clicking outside - delayed to prevent race condition
+    // Close dropdown when clicking outside
     useEffect(() => {
-        if (!isDropdownOpen) return;
-
         const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsDropdownOpen(false);
+            if (navRef.current && !navRef.current.contains(event.target as Node)) {
+                setActiveDropdown(null);
             }
         };
 
-        // Delay adding listener to prevent immediate close
-        const timeoutId = setTimeout(() => {
+        if (activeDropdown) {
             document.addEventListener('click', handleClickOutside);
             document.addEventListener('touchend', handleClickOutside);
-        }, 100);
+        }
 
         return () => {
-            clearTimeout(timeoutId);
             document.removeEventListener('click', handleClickOutside);
             document.removeEventListener('touchend', handleClickOutside);
         };
-    }, [isDropdownOpen]);
+    }, [activeDropdown]);
 
     // Close dropdown when navigating
     useEffect(() => {
-        setIsDropdownOpen(false);
+        setActiveDropdown(null);
     }, [pathname]);
 
-    const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const toggleDropdown = (e: React.MouseEvent<HTMLButtonElement>, dropdownName: string) => {
         e.preventDefault();
         e.stopPropagation();
-        setIsDropdownOpen(prev => !prev);
+        setActiveDropdown(prev => prev === dropdownName ? null : dropdownName);
     };
 
     return (
         <div className="sub-header">
-            <nav className="header-nav">
-                <Link href="/hdc" className={`nav-link-modern ${pathname.includes('/hdc') ? 'active hdc-menu' : ''}`}>
-                    <Image src="/moph_logo.png" alt="MOPH Logo" width={24} height={24} style={{ objectFit: 'contain' }} />
-                    <span><span className="mobile-prefix">43 แฟ้ม </span>HDC</span>
-                </Link>
-                <div className="nav-item-dropdown" ref={dropdownRef}>
+            <nav className="header-nav" ref={navRef}>
+                {/* HDC Dropdown */}
+                <div className="nav-item-dropdown">
+                    <button
+                        type="button"
+                        className={`nav-link-modern ${pathname.includes('/hdc') ? 'active hdc-menu' : ''}`}
+                        onClick={(e) => toggleDropdown(e, 'hdc')}
+                        aria-expanded={activeDropdown === 'hdc'}
+                        aria-haspopup="true"
+                        style={{
+                            cursor: 'pointer',
+                            WebkitTapHighlightColor: 'transparent',
+                            touchAction: 'manipulation'
+                        }}
+                    >
+                        <Image src="/moph_logo.png" alt="MOPH Logo" width={24} height={24} style={{ objectFit: 'contain' }} />
+                        <span><span className="mobile-prefix">43 แฟ้ม </span>HDC</span>
+                        <i className="ph-bold ph-caret-down" style={{
+                            fontSize: '14px',
+                            marginLeft: '4px',
+                            opacity: 0.7,
+                            transition: 'transform 0.2s',
+                            transform: activeDropdown === 'hdc' ? 'rotate(180deg)' : 'rotate(0deg)'
+                        }}></i>
+                    </button>
+                    <div
+                        className={`dropdown-menu ${activeDropdown === 'hdc' ? 'show' : ''}`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <Link href="/hdc" className={`dropdown-item hdc-variant ${pathname === '/hdc' ? 'active' : ''}`} onClick={() => setActiveDropdown(null)}>
+                            <i className="ph-duotone ph-chart-line-up"></i>
+                            Dashboard HDC
+                        </Link>
+                        <Link href="/hdc/report" className={`dropdown-item hdc-variant ${pathname === '/hdc/report' ? 'active' : ''}`} onClick={() => setActiveDropdown(null)}>
+                            <i className="ph-duotone ph-table"></i>
+                            Dashboard รายเดือน
+                        </Link>
+                        <Link href="/hdcservice" className={`dropdown-item hdc-variant ${pathname.includes('/hdcservice') ? 'active' : ''}`} onClick={() => setActiveDropdown(null)}>
+                            <i className="ph-duotone ph-briefcase"></i>
+                            Dashboard แฟ้ม Service
+                        </Link>
+                    </div>
+                </div>
+
+                {/* OPPP Dropdown */}
+                <div className="nav-item-dropdown">
                     <button
                         type="button"
                         className={`nav-link-modern ${pathname.includes('/oppp') ? 'active' : ''}`}
-                        onClick={handleButtonClick}
-                        aria-expanded={isDropdownOpen}
+                        onClick={(e) => toggleDropdown(e, 'oppp')}
+                        aria-expanded={activeDropdown === 'oppp'}
                         aria-haspopup="true"
                         style={{
                             cursor: 'pointer',
@@ -71,22 +107,22 @@ export default function NavBar() {
                             marginLeft: '4px',
                             opacity: 0.7,
                             transition: 'transform 0.2s',
-                            transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+                            transform: activeDropdown === 'oppp' ? 'rotate(180deg)' : 'rotate(0deg)'
                         }}></i>
                     </button>
                     <div
-                        className={`dropdown-menu ${isDropdownOpen ? 'show' : ''}`}
+                        className={`dropdown-menu ${activeDropdown === 'oppp' ? 'show' : ''}`}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <Link href="/oppp" className={`dropdown-item ${pathname === '/oppp' ? 'active' : ''}`} onClick={() => setIsDropdownOpen(false)}>
+                        <Link href="/oppp" className={`dropdown-item ${pathname === '/oppp' ? 'active' : ''}`} onClick={() => setActiveDropdown(null)}>
                             <i className="ph-duotone ph-user"></i>
                             Dashboard OPPP
                         </Link>
-                        <Link href="/oppp/report" className={`dropdown-item ${pathname === '/oppp/report' ? 'active' : ''}`} onClick={() => setIsDropdownOpen(false)}>
+                        <Link href="/oppp/report" className={`dropdown-item ${pathname === '/oppp/report' ? 'active' : ''}`} onClick={() => setActiveDropdown(null)}>
                             <i className="ph-duotone ph-table"></i>
                             Dashboard รายเดือน
                         </Link>
-                        <Link href="/opppservice" className={`dropdown-item ${pathname.includes('/opppservice') ? 'active' : ''}`} onClick={() => setIsDropdownOpen(false)}>
+                        <Link href="/opppservice" className={`dropdown-item ${pathname.includes('/opppservice') ? 'active' : ''}`} onClick={() => setActiveDropdown(null)}>
                             <i className="ph-duotone ph-briefcase"></i>
                             Dashboard แฟ้ม Service
                         </Link>
@@ -100,3 +136,4 @@ export default function NavBar() {
         </div>
     );
 }
+

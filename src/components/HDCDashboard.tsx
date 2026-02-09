@@ -234,6 +234,10 @@ export default function HDCDashboard() {
                             <i className="ph-duotone ph-table"></i>
                             Dashboard รายเดือน
                         </Link>
+                        <Link href="/hdcservice" className="dashboard-btn-report">
+                            <i className="ph-duotone ph-briefcase"></i>
+                            แฟ้ม Service
+                        </Link>
                         <CustomSelect
                             value={year}
                             options={years.map(y => ({ value: y, label: `ปีงบประมาณ ${y}` }))}
@@ -450,17 +454,31 @@ export default function HDCDashboard() {
                                     <div className="district-name">{district.name}</div>
                                     <div className="district-code">รหัสอำเภอ: {district.code}</div>
                                 </div>
-                                <div
-                                    className="district-icon"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        window.location.href = `/hdc/report/?district=${district.code}&year=${year}&month=${month}`;
-                                    }}
-                                    title="ดูรายละเอียด Dashboard รายเดือน"
-                                    style={{ width: 'auto', height: 'auto', padding: '6px 12px', borderRadius: '20px', display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s', background: '#ECFDF5', color: '#10B981' }}
-                                >
-                                    <span style={{ fontSize: '12px', fontWeight: 600 }}>รายเดือน</span>
-                                    <i className="ph-duotone ph-table" style={{ fontSize: '14px' }}></i>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <div
+                                        className="district-icon"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.location.href = `/hdc/report/?district=${district.code}&year=${year}&month=${month}`;
+                                        }}
+                                        title="ดูรายละเอียด Dashboard รายเดือน"
+                                        style={{ width: 'auto', height: 'auto', padding: '6px 12px', borderRadius: '20px', display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s', background: '#ECFDF5', color: '#10B981' }}
+                                    >
+                                        <span style={{ fontSize: '12px', fontWeight: 600 }}>รายเดือน</span>
+                                        <i className="ph-duotone ph-table" style={{ fontSize: '14px' }}></i>
+                                    </div>
+                                    <div
+                                        className="district-icon"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.location.href = `/hdcservice/?district=${district.code}&year=${year}`;
+                                        }}
+                                        title="ดูรายละเอียด แฟ้ม Service"
+                                        style={{ width: 'auto', height: 'auto', padding: '6px 12px', borderRadius: '20px', display: 'flex', gap: '6px', alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s', background: '#ECFDF5', color: '#10B981' }}
+                                    >
+                                        <span style={{ fontSize: '12px', fontWeight: 600 }}>Service</span>
+                                        <i className="ph-duotone ph-briefcase" style={{ fontSize: '14px' }}></i>
+                                    </div>
                                 </div>
                             </div>
 

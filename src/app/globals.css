@@ -472,6 +472,22 @@ body {
     color: var(--primary-blue);
 }
 
+/* HDC Variant for Dropdown Items */
+.dropdown-item.hdc-variant:hover {
+    background: #ECFDF5; /* Green-50 */
+    color: #10B981; /* Green-500 */
+}
+
+.dropdown-item.hdc-variant.active {
+    background: #D1FAE5; /* Green-100 */
+    color: #10B981; /* Green-500 */
+}
+
+.dropdown-item.hdc-variant:hover i,
+.dropdown-item.hdc-variant.active i {
+    color: #10B981;
+}
+
 .search-bar {
     display: flex;
     align-items: center;
