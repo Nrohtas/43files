@@ -28,6 +28,7 @@ export async function GET(
             h.hospcode,
             h.hospname,
             h.hostype_new,
+            hdc.target, hdc.result,
             hdc.result10, hdc.status10,
             hdc.result11, hdc.status11,
             hdc.result12, hdc.status12,
@@ -62,6 +63,8 @@ export async function GET(
             code: row.hospcode,
             name: row.hospname,
             hostype: row.hostype_new,
+            target: row.target,
+            result: row.result,
             months: [
                 { total: row.result10, status: row.status10 },
                 { total: row.result11, status: row.status11 },

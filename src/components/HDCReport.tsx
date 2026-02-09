@@ -594,7 +594,7 @@ export default function HDCReport() {
                                         <tr key={unit.code}>
                                             <td style={{ position: 'sticky', left: 0, zIndex: 40, background: stickyBg }}><span style={codeStyle}>{unit.code}</span></td>
                                             <td style={{ ...cellStyle, position: 'sticky', left: '60px', zIndex: 40, background: stickyBg }}>{unit.name}</td>
-                                            {unit.months.map((status, idx) => {
+                                            {unit.months.map((status: string | null, idx: number) => {
                                                 // ถ้าเดือนยังไม่ถึง (idx >= cutoffIndex) ให้แสดง "-"
                                                 const isMonthNotYet = idx >= cutoffIndex;
 

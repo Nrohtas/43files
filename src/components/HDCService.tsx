@@ -20,6 +20,8 @@ interface Unit {
     code: string;
     name: string;
     hostype?: string;
+    target?: number;
+    result?: number;
     months: {
         total: number | null;
         status: string;
@@ -527,6 +529,9 @@ export default function HDCService() {
                                     <tr>
                                         <th style={{ position: 'sticky', left: 0, top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', minWidth: '60px' }}>รหัส</th>
                                         <th style={{ position: 'sticky', left: '60px', top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', minWidth: '200px' }}>หน่วยบริการ</th>
+                                        <th className="text-center" style={headerStyle}>คน</th>
+                                        <th className="text-center" style={headerStyle}>ครั้ง</th>
+                                        <th className="text-center" style={headerStyle}>อัตราส่วน</th>
                                         <th className="text-center" style={headerStyle}>ต.ค. {prevYearSuffix}</th>
                                         <th className="text-center" style={headerStyle}>พ.ย. {prevYearSuffix}</th>
                                         <th className="text-center" style={headerStyle}>ธ.ค. {prevYearSuffix}</th>
@@ -546,13 +551,13 @@ export default function HDCService() {
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan={14} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
+                                    <td colSpan={17} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
                                         กำลังโหลดข้อมูล...
                                     </td>
                                 </tr>
                             ) : units.length === 0 ? (
                                 <tr>
-                                    <td colSpan={14} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
+                                    <td colSpan={17} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
                                         {selectedDistrict ? 'ไม่พบข้อมูลหน่วยบริการในอำเภอนี้' : 'กรุณาเลือกอำเภอเพื่อดูข้อมูล'}
                                     </td>
                                 </tr>
@@ -576,10 +581,18 @@ export default function HDCService() {
                                         stickyBg = '#fff';
                                     }
 
+                                    const targetValue = unit.target || 0;
+                                    const resultValue = unit.result || 0;
+                                    const ratioValue = targetValue > 0 ? (resultValue / targetValue) : 0;
+                                    const ratioDisplay = targetValue > 0 ? ratioValue.toFixed(2) : 'N/A';
+
                                     return (
                                         <tr key={unit.code}>
                                             <td style={{ position: 'sticky', left: 0, zIndex: 40, background: stickyBg }}><span style={codeStyle}>{unit.code}</span></td>
                                             <td style={{ ...cellStyle, position: 'sticky', left: '60px', zIndex: 40, background: stickyBg }}>{unit.name}</td>
+                                            <td className="text-center" style={{ fontWeight: 500 }}>{targetValue.toLocaleString()}</td>
+                                            <td className="text-center" style={{ fontWeight: 500 }}>{resultValue.toLocaleString()}</td>
+                                            <td className="text-center" style={{ fontWeight: 600, color: '#2563EB' }}>{ratioDisplay}</td>
                                             {unit.months.map((monthData, idx) => {
                                                 const today = new Date();
                                                 const currentFiscalYear = (today.getMonth() >= 9) ? today.getFullYear() + 544 : today.getFullYear() + 543;
