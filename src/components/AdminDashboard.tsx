@@ -15,6 +15,12 @@ interface UploadHistoryItem {
     username?: string;
 }
 
+interface UpdateItem {
+    update_id: number;
+    update_date: string;
+    update_description: string;
+}
+
 interface HdcApiStatus {
     history: {
         api_id: number;
@@ -52,13 +58,23 @@ export default function AdminDashboard() {
     const [uploadingHdc, setUploadingHdc] = useState(false);
     const [uploadingOppp, setUploadingOppp] = useState(false);
 
-    // Refs for file inputs
+    // Refs for file inputs and date picker
     const hdcInputRef = useRef<HTMLInputElement>(null);
     const opppInputRef = useRef<HTMLInputElement>(null);
+    const dateInputRef = useRef<HTMLInputElement>(null);
 
     // File Selection State
     const [hdcFiles, setHdcFiles] = useState<FileList | null>(null);
     const [opppFiles, setOpppFiles] = useState<FileList | null>(null);
+
+    // Site Updates State
+    const [siteUpdates, setSiteUpdates] = useState<UpdateItem[]>([]);
+    const [newUpdateDescription, setNewUpdateDescription] = useState('');
+    const [newUpdateVersion, setNewUpdateVersion] = useState('');
+
+    // Custom Date Picker State
+    const [newUpdateDate, setNewUpdateDate] = useState(''); // Gregorian YYYY-MM-DD for API
+    const [displayDate, setDisplayDate] = useState(''); // Buddhist Era dd/mm/yyyy for UI
 
     // Init Logic
     useEffect(() => {
@@ -71,9 +87,105 @@ export default function AdminDashboard() {
         }
         setUser({ username: username || 'Admin', role: role });
 
+        // Initialize date selectors with today
+        const today = new Date();
+        const y = today.getFullYear();
+        const m = (today.getMonth() + 1).toString().padStart(2, '0');
+        const d = today.getDate().toString().padStart(2, '0');
+
+        setNewUpdateDate(`${y}-${m}-${d}`);
+        setDisplayDate(`${d}/${m}/${y + 543}`);
+
         loadUploadHistory();
         loadHdcApiStatus();
+        loadSiteUpdates();
     }, []);
+
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value; // YYYY-MM-DD
+        if (!val) return;
+        setNewUpdateDate(val);
+
+        const [y, m, d] = val.split('-');
+        setDisplayDate(`${d}/${m}/${parseInt(y) + 543}`);
+    };
+
+    const loadSiteUpdates = async () => {
+        try {
+            const res = await fetch('/api/updates');
+            if (res.ok) {
+                const data = await res.json();
+                setSiteUpdates(data);
+            }
+        } catch (error) {
+            console.error('Error loading updates:', error);
+        }
+    };
+
+    const handleCreateUpdate = async () => {
+        if (!newUpdateDate || !newUpdateDescription) return;
+        if (!confirm('ยืนยันการอัปเดตระบบ?')) return;
+
+        try {
+            const res = await fetch('/api/updates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    update_date: newUpdateDate,
+                    update_description: newUpdateDescription,
+                    update_version: newUpdateVersion
+                })
+            });
+
+            console.log('Response status:', res.status, res.statusText);
+            const responseText = await res.text();
+            console.log('Response body:', responseText);
+
+            if (res.ok) {
+                alert('บันทึกการอัปเดตระบบเรียบร้อยแล้ว');
+                // Reset
+                const today = new Date();
+                const y = today.getFullYear();
+                const m = (today.getMonth() + 1).toString().padStart(2, '0');
+                const d = today.getDate().toString().padStart(2, '0');
+                setNewUpdateDate(`${y}-${m}-${d}`);
+                setDisplayDate(`${d}/${m}/${y + 543}`);
+
+                setNewUpdateDescription('');
+                setNewUpdateVersion('');
+                loadSiteUpdates();
+            } else {
+                let errorMessage = res.statusText;
+                try {
+                    const errorData = JSON.parse(responseText);
+                    errorMessage = errorData.error || errorData.details || res.statusText;
+                } catch (e) {
+                    errorMessage = responseText || res.statusText;
+                }
+                console.error('Failed to create update:', errorMessage);
+                alert(`เกิดข้อผิดพลาดในการบันทึกประวัติการอัปเดตระบบ: ${errorMessage}`);
+            }
+        } catch (error) {
+            console.error('Error creating update:', error);
+            alert('เกิดข้อผิดพลาดในการบันทึกประวัติการอัปเดตระบบ: ' + (error instanceof Error ? error.message : String(error)));
+        }
+    };
+
+    const handleDeleteUpdate = async (id: number) => {
+        if (!confirm('ยืนยันการลบรายการอัปเดตนี้?')) return;
+        try {
+            const res = await fetch(`/api/updates?id=${id}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                loadSiteUpdates();
+            } else {
+                alert('ลบไม่สำเร็จ');
+            }
+        } catch (error) {
+            console.error('Error deleting update:', error);
+        }
+    };
 
     const loadHdcApiStatus = async () => {
         setLoadingApiStatus(true);
@@ -725,6 +837,131 @@ export default function AdminDashboard() {
                             )}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            {/* System Updates Management */}
+            <div style={{ maxWidth: '1000px', margin: '0 auto 40px auto', padding: '0 40px' }}>
+                <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#1E293B', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <i className="ph-fill ph-newspaper-clipping" style={{ color: '#64748B' }}></i>
+                    System Update
+                </h2>
+
+                <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', padding: '24px', border: '1px solid #E2E8F0', marginBottom: '20px' }}>
+                    <div style={{ display: 'grid', gap: '16px', marginBottom: '20px' }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#475569', marginBottom: '6px' }}>Date (วัน/เดือน/ปี)</label>
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    type="text"
+                                    readOnly
+                                    value={displayDate}
+                                    onClick={() => dateInputRef.current?.showPicker()}
+                                    placeholder="เลือกวันที่..."
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 12px',
+                                        paddingRight: '40px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #CBD5E1',
+                                        cursor: 'pointer',
+                                        background: 'white',
+                                        fontSize: '14px',
+                                        fontWeight: 500
+                                    }}
+                                />
+                                <i className="ph-bold ph-calendar-blank" style={{
+                                    position: 'absolute',
+                                    right: '12px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    color: '#64748B',
+                                    pointerEvents: 'none',
+                                    fontSize: '18px'
+                                }}></i>
+                                <input
+                                    type="date"
+                                    ref={dateInputRef}
+                                    value={newUpdateDate}
+                                    onChange={handleDateChange}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        opacity: 0,
+                                        pointerEvents: 'none'
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#475569', marginBottom: '6px' }}>Description</label>
+                            <textarea
+                                value={newUpdateDescription}
+                                onChange={(e) => setNewUpdateDescription(e.target.value)}
+                                rows={3}
+                                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', resize: 'vertical' }}
+                                placeholder="Update description..."
+                            />
+                        </div>
+                        <button
+                            onClick={handleCreateUpdate}
+                            disabled={!newUpdateDate || !newUpdateDescription}
+                            style={{
+                                background: '#8E24AA',
+                                color: 'white',
+                                border: 'none',
+                                padding: '12px 24px',
+                                borderRadius: '8px',
+                                fontWeight: 600,
+                                cursor: (!newUpdateDate || !newUpdateDescription) ? 'not-allowed' : 'pointer',
+                                opacity: (!newUpdateDate || !newUpdateDescription) ? 0.5 : 1,
+                                justifySelf: 'start',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            <i className="ph-bold ph-plus-circle"></i> บันทึกรายการอัปเดต
+                        </button>
+                    </div>
+
+                    <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '20px' }}>
+                        <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#1E293B', marginBottom: '12px' }}>Update List</h3>
+                        {siteUpdates.length === 0 ? (
+                            <p style={{ color: '#94A3B8', textAlign: 'center', padding: '20px' }}>ไม่มีข้อมูล</p>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {siteUpdates.map((item) => (
+                                    <div key={item.update_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '12px', background: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                                        <div>
+                                            <div style={{ fontSize: '14px', fontWeight: 700, color: '#6A1B9A' }}>
+                                                {new Date(item.update_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                            </div>
+                                            <div style={{ fontSize: '14px', color: '#334155', whiteSpace: 'pre-line' }}>{item.update_description}</div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleDeleteUpdate(item.update_id)}
+                                            style={{
+                                                background: 'transparent',
+                                                border: 'none',
+                                                color: '#EF4444',
+                                                cursor: 'pointer',
+                                                padding: '4px',
+                                                display: 'flex',
+                                                alignItems: 'center'
+                                            }}
+                                            title="ลบ"
+                                        >
+                                            <i className="ph-bold ph-trash" style={{ fontSize: '18px' }}></i>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 

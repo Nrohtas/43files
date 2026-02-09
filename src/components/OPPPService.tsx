@@ -315,7 +315,7 @@ export default function OPPPService() {
                     <div className="filter-group">
                         {/* Link to Monthly Report */}
                         <Link
-                            href={`/oppp/report?year=${selectedYear}${selectedDistrict ? `&district=${selectedDistrict}` : ''}${selectedHostype ? `&hostype=${selectedHostype}` : ''}`}
+                            href="/oppp/report"
                             className="nav-link-item-btn"
                             style={{
                                 display: 'inline-flex',
