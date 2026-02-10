@@ -534,8 +534,8 @@ export default function OPPPReport() {
 
                                 return (
                                     <tr>
-                                        <th style={{ position: 'sticky', left: 0, top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', minWidth: '60px' }}>รหัส</th>
-                                        <th style={{ position: 'sticky', left: '60px', top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle', minWidth: '200px' }}>หน่วยบริการ</th>
+                                        <th className="sticky-col-code" style={{ top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle' }}>รหัส</th>
+                                        <th className="sticky-col-name" style={{ top: 0, zIndex: 50, background: '#fff', verticalAlign: 'middle' }}>หน่วยบริการ</th>
                                         <th className="text-center" style={headerStyle}>ต.ค. {prevYearSuffix}</th>
                                         <th className="text-center" style={headerStyle}>พ.ย. {prevYearSuffix}</th>
                                         <th className="text-center" style={headerStyle}>ธ.ค. {prevYearSuffix}</th>
@@ -588,8 +588,10 @@ export default function OPPPReport() {
 
                                     return (
                                         <tr key={unit.code}>
-                                            <td style={{ position: 'sticky', left: 0, zIndex: 40, background: stickyBg }}><span style={codeStyle}>{unit.code}</span></td>
-                                            <td style={{ ...cellStyle, position: 'sticky', left: '60px', zIndex: 40, background: stickyBg }}>{unit.name}</td>
+                                            <td className="sticky-col-code" style={{ zIndex: 40, background: stickyBg }}><span style={codeStyle}>{unit.code}</span></td>
+                                            <td className="sticky-col-name" style={{ ...cellStyle, zIndex: 40, background: stickyBg }}>
+                                                <div className="name-cell-wrapper">{unit.name}</div>
+                                            </td>
                                             {unit.months.map((monthData, idx) => {
                                                 // Calculate cutoff logic
                                                 const today = new Date();
