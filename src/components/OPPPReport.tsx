@@ -247,7 +247,7 @@ export default function OPPPReport() {
         } else if (selectedYearInt > realFiscalYear) {
             cutoffIndex = 0;
         } else {
-            cutoffIndex = realFiscalMonthIndex;
+            cutoffIndex = realFiscalMonthIndex + 1; // Include current month
         }
 
         const completeUnits = units.filter(u => {
@@ -607,7 +607,7 @@ export default function OPPPReport() {
                                                     // If idx is Current Month or later, it's future/pending
                                                     // User said "Current Month - 1" is the last to show.
                                                     // So if idx >= currentFiscalMonthIndex, it is hidden.
-                                                    if (idx >= currentFiscalMonthIndex) {
+                                                    if (idx > currentFiscalMonthIndex) { // Hide months AFTER current month
                                                         isFuture = true;
                                                     }
                                                 }

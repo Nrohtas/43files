@@ -252,7 +252,7 @@ export default function HDCReport() {
         } else if (selectedYearInt > realFiscalYear) {
             cutoffIndex = 0;
         } else {
-            cutoffIndex = realFiscalMonthIndex;
+            cutoffIndex = realFiscalMonthIndex + 1; // Include current month
         }
 
         const completeUnits = units.filter(u => {
@@ -567,7 +567,7 @@ export default function HDCReport() {
                                 } else {
                                     // ปีปัจจุบัน - cutoff ที่เดือนปัจจุบัน (ให้แสดงผลถึงแค่เดือนก่อนหน้า)
                                     // เช่น ตอนนี้ ม.ค. (index 3) -> cutoff = 3 -> index 0-2 (ต.ค.-ธ.ค.) แสดงผล, index 3 (ม.ค.) แสดง -
-                                    cutoffIndex = realFiscalMonthIndex;
+                                    cutoffIndex = realFiscalMonthIndex + 1; // Include current month
                                 }
 
                                 return units.map(unit => {

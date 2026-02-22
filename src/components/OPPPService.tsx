@@ -273,7 +273,7 @@ export default function OPPPService() {
         }
 
         const completeUnits = units.filter(u => {
-            for (let i = 0; i < cutoffIndex; i++) {
+            for (let i = 0; i <= realFiscalMonthIndex; i++) { // Include current month (index starts from 0)
                 if (u.months[i]?.status?.toUpperCase() !== 'Y') return false;
             }
             return true;
@@ -666,7 +666,7 @@ export default function OPPPService() {
                                                 if (selectedYearInt > currentFiscalYear) {
                                                     isFuture = true;
                                                 } else if (selectedYearInt === currentFiscalYear) {
-                                                    if (idx >= currentFiscalMonthIndex) {
+                                                    if (idx > currentFiscalMonthIndex) { // Hide months AFTER current month
                                                         isFuture = true;
                                                     }
                                                 }
