@@ -60,6 +60,7 @@ export default function OPPPService() {
 
     // UI State
     const [missingExpanded, setMissingExpanded] = useState(false);
+    const [sortDesc, setSortDesc] = useState(false);
 
     // Initial Load
     useEffect(() => {
@@ -174,7 +175,15 @@ export default function OPPPService() {
         });
 
         // Prepare Data Rows
-        const dataRows = units.map(unit => {
+        const sortedUnits = sortDesc
+            ? [...units].sort((a, b) => {
+                const sumA = a.months.reduce((sum, m) => sum + (m.pass || 0), 0);
+                const sumB = b.months.reduce((sum, m) => sum + (m.pass || 0), 0);
+                return sumB - sumA;
+            })
+            : units;
+
+        const dataRows = sortedUnits.map(unit => {
             const row: (string | number)[] = [unit.code, unit.name];
             unit.months.forEach(m => {
                 row.push(m.pass ?? 0, m.reject ?? 0, m.total ?? 0);
@@ -219,7 +228,17 @@ export default function OPPPService() {
 
         // Generate Filename
         const districtName = districts.find(d => d.code === selectedDistrict)?.name || selectedDistrict;
-        const filename = `OPPP_Service_${districtName}_${selectedYear}.xlsx`;
+
+        // Prepare current date and time formatted as YYYYMMDD_HHmm
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const timestamp = `${year}${month}${day}_${hours}${minutes}`;
+
+        const filename = `OPPP_Service_${districtName}_${selectedYear}_${timestamp}.xlsx`;
 
         XLSX.writeFile(wb, filename);
     };
@@ -483,7 +502,42 @@ export default function OPPPService() {
             {/* Data Table */}
             <div className="table-card">
                 <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                    <h3 style={{ margin: 0 }}>{getDistrictName(selectedDistrict)} {selectedHostype ? `(สังกัด: ${selectedHostype})` : ''}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <h3 style={{ margin: 0 }}>{getDistrictName(selectedDistrict)} {selectedHostype ? `(สังกัด: ${selectedHostype})` : ''}</h3>
+                        {/* Sort Button (Moved here) */}
+                        <button
+                            onClick={() => setSortDesc(!sortDesc)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '6px 12px',
+                                background: sortDesc ? '#eff6ff' : '#f8fafc',
+                                border: `1px solid ${sortDesc ? '#bfdbfe' : '#e2e8f0'}`,
+                                borderRadius: '8px',
+                                color: sortDesc ? '#1d4ed8' : '#475569',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.background = sortDesc ? '#dbeafe' : '#f1f5f9';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.background = sortDesc ? '#eff6ff' : '#f8fafc';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                            }}
+                            title="เรียงลำดับตามจำนวนข้อมูลที่ผ่านมากที่สุด"
+                        >
+                            <i className={`ph-bold ${sortDesc ? 'ph-sort-descending' : 'ph-arrows-down-up'}`} style={{ fontSize: '16px' }}></i>
+                            {sortDesc ? 'ยกเลิกลำดับข้อมูลผ่าน' : 'ลำดับข้อมูลผ่าน (มากไปน้อย)'}
+                        </button>
+                    </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', color: '#64748b' }}>
                         <a href="https://op.nhso.go.th/op/main/MainWebAction.do"
@@ -503,6 +557,7 @@ export default function OPPPService() {
                                 <span>อัปเดต: <span id="lastUpdateTime">{lastUpdate}</span></span>
                             </div>
                         </div>
+
                         {/* Export Button Mockup */}
                         <button
                             onClick={handleExportExcel}
@@ -630,7 +685,14 @@ export default function OPPPService() {
                                     </td>
                                 </tr>
                             ) : (
-                                units.map(unit => {
+                                (sortDesc
+                                    ? [...units].sort((a, b) => {
+                                        const sumA = a.months.reduce((sum, m) => sum + (m.pass || 0), 0);
+                                        const sumB = b.months.reduce((sum, m) => sum + (m.pass || 0), 0);
+                                        return sumB - sumA;
+                                    })
+                                    : units
+                                ).map(unit => {
                                     const hostypeStr = unit.hostype ? String(unit.hostype).trim() : '';
                                     const targetGreen = ['05', '07', '08', '11', '18', '5', '7', '8'];
                                     const targetPurple = ['21'];
