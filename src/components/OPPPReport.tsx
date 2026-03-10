@@ -257,7 +257,8 @@ export default function OPPPReport() {
         } else if (selectedYearInt > realFiscalYear) {
             cutoffIndex = 0;
         } else {
-            cutoffIndex = realFiscalMonthIndex + 1; // Include current month
+            // ปีปัจจุบัน - เช็คข้อมูลถึงเดือนก่อนหน้า (เดือนปัจจุบัน - 1)
+            cutoffIndex = realFiscalMonthIndex;
         }
 
         const completeUnits = units.filter(u => {
@@ -617,7 +618,7 @@ export default function OPPPReport() {
                                                     // If idx is Current Month or later, it's future/pending
                                                     // User said "Current Month - 1" is the last to show.
                                                     // So if idx >= currentFiscalMonthIndex, it is hidden.
-                                                    if (idx > currentFiscalMonthIndex) { // Hide months AFTER current month
+                                                    if (idx >= currentFiscalMonthIndex) { // Hide months AFTER current month and current month
                                                         isFuture = true;
                                                     }
                                                 }

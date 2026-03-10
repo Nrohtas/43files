@@ -292,7 +292,7 @@ export default function OPPPService() {
         }
 
         const completeUnits = units.filter(u => {
-            for (let i = 0; i <= realFiscalMonthIndex; i++) { // Include current month (index starts from 0)
+            for (let i = 0; i < realFiscalMonthIndex; i++) { // Check up to previous month
                 if (u.months[i]?.status?.toUpperCase() !== 'Y') return false;
             }
             return true;

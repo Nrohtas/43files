@@ -262,7 +262,9 @@ export default function HDCReport() {
         } else if (selectedYearInt > realFiscalYear) {
             cutoffIndex = 0;
         } else {
-            cutoffIndex = realFiscalMonthIndex + 1; // Include current month
+            // ปีปัจจุบัน - เช็คข้อมูลถึงเดือนก่อนหน้า (เดือนปัจจุบัน - 1)
+            // เช่น ตอนนี้ มีนาคม (index 5) -> เช็คถึง กุมภาพันธ์ (index 4)
+            cutoffIndex = realFiscalMonthIndex;
         }
 
         const completeUnits = units.filter(u => {
@@ -575,9 +577,9 @@ export default function HDCReport() {
                                     // ปีอนาคต - ไม่มีเดือนไหนถึง
                                     cutoffIndex = 0;
                                 } else {
-                                    // ปีปัจจุบัน - cutoff ที่เดือนปัจจุบัน (ให้แสดงผลถึงแค่เดือนก่อนหน้า)
-                                    // เช่น ตอนนี้ ม.ค. (index 3) -> cutoff = 3 -> index 0-2 (ต.ค.-ธ.ค.) แสดงผล, index 3 (ม.ค.) แสดง -
-                                    cutoffIndex = realFiscalMonthIndex + 1; // Include current month
+                                    // ปีปัจจุบัน - cutoff ที่เดือนก่อนหน้า (เดือนปัจจุบัน - 1)
+                                    // เช่น ตอนนี้ มีนาคม (index 5) -> cutoff = 5 -> index 0-4 (ต.ค.-ก.พ.) แสดงโชว์ข้อมูล, index 5 (มี.ค.) เป็นต้นไปแสดง -
+                                    cutoffIndex = realFiscalMonthIndex;
                                 }
 
                                 return units.map(unit => {
