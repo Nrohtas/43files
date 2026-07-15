@@ -26,7 +26,8 @@ export async function GET(request: Request) {
             ho.amp_code,
             a.amp_name,
             ho.hospcode,
-            ho.hospname
+            ho.hospname,
+            ho.hostype_new
         FROM hospital ho
         LEFT JOIN ampur a ON ho.amp_code = a.amp_code
         LEFT JOIN hdc h ON ho.hospcode = h.hospcode 
@@ -51,7 +52,8 @@ export async function GET(request: Request) {
 
             grouped[row.amp_code].units.push({
                 code: row.hospcode,
-                name: row.hospname
+                name: row.hospname,
+                hostype: row.hostype_new
             });
         });
 

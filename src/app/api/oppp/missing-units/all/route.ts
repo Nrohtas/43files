@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
                 h.amp_code,
                 a.amp_name,
                 h.hospcode,
-                h.hospname
+                h.hospname,
+                h.hostype_new
             FROM hospital h
             LEFT JOIN ampur a ON h.amp_code = a.amp_code
             LEFT JOIN oppp ON h.hospcode = oppp.hospcode 
@@ -47,7 +48,8 @@ export async function GET(request: NextRequest) {
 
             grouped[row.amp_code].units.push({
                 code: row.hospcode,
-                name: row.hospname
+                name: row.hospname,
+                hostype: row.hostype_new
             });
         });
 

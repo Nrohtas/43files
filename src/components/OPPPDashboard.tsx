@@ -20,6 +20,7 @@ interface DistrictSummary {
 interface MissingUnit {
     code: string;
     name: string;
+    hostype?: string;
 }
 
 interface DistrictMissingGroup {
@@ -51,7 +52,7 @@ export default function OPPPDashboard() {
     // UI State
     const [loading, setLoading] = useState(true);
     const [missingSectionExpanded, setMissingSectionExpanded] = useState(false);
-    const [missingSectionTitle, setMissingSectionTitle] = useState('รายชื่อหน่วยบริการที่รอประมวลผล OPPP');
+    const [missingSectionTitle, setMissingSectionTitle] = useState('รายชื่อหน่วยบริการที่รอประมวลผล/ไม่ได้ส่ง OPPP');
 
     // Init Logic
     useEffect(() => {
@@ -119,7 +120,7 @@ export default function OPPPDashboard() {
         setLoading(true);
         // Collapse missing section on refresh
         setMissingSectionExpanded(false);
-        setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล OPPP');
+        setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล/ไม่ได้ส่ง OPPP');
 
         try {
             // Fetch Summary (OPPP endpoint)
@@ -203,7 +204,7 @@ export default function OPPPDashboard() {
     const showMissingForDistrict = (districtCode: string, districtName: string) => {
         const districtData = allMissingUnits.filter(d => d.districtCode === districtCode);
         setFilteredMissingUnits(districtData);
-        setMissingSectionTitle(`รายชื่อหน่วยบริการที่รอประมวลผล OPPP (${districtName})`);
+        setMissingSectionTitle(`รายชื่อหน่วยบริการที่รอประมวลผล/ไม่ได้ส่ง OPPP (${districtName})`);
         setMissingSectionExpanded(true);
 
         // Scroll to section
@@ -216,7 +217,7 @@ export default function OPPPDashboard() {
     const resetMissingFilter = (e: React.MouseEvent) => {
         e.stopPropagation();
         setFilteredMissingUnits(allMissingUnits);
-        setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล OPPP');
+        setMissingSectionTitle('รายชื่อหน่วยบริการที่รอประมวลผล/ไม่ได้ส่ง OPPP');
     };
 
     return (
@@ -282,7 +283,7 @@ export default function OPPPDashboard() {
                     >
                         <div className="province-stat-label">
                             <i className="ph-fill ph-warning-circle" style={{ color: '#EF4444', fontSize: '16px', marginRight: '6px' }}></i>
-                            รอประมวลผล
+                            รอประมวลผล/ไม่ได้ส่ง
                             <i className="ph-bold ph-magnifying-glass"
                                 style={{ color: '#EF4444', fontSize: '14px', marginLeft: '4px' }}></i>
                         </div>
@@ -422,12 +423,29 @@ export default function OPPPDashboard() {
                                             <h4>{group.districtName} <span className="district-group-count">{group.units.length}</span></h4>
                                         </div>
                                         <div className="district-units-list">
-                                            {group.units.map(unit => (
-                                                <div key={unit.code} className="missing-unit-item-small">
-                                                    <span className="unit-code">{unit.code}</span>
-                                                    <span className="unit-name">{unit.name}</span>
-                                                </div>
-                                            ))}
+                                            {group.units.map(unit => {
+                                                const hostypeStr = unit.hostype ? String(unit.hostype).trim() : '';
+                                                const targetGreen = ['05', '07', '08', '11', '18', '5', '7', '8'];
+                                                const targetPurple = ['21'];
+
+                                                let nameStyle: React.CSSProperties = {};
+                                                let codeStyle: React.CSSProperties = {};
+
+                                                if (targetGreen.includes(hostypeStr)) {
+                                                    nameStyle = { color: '#059669', fontWeight: 600 };
+                                                    codeStyle = { color: '#059669' };
+                                                } else if (targetPurple.includes(hostypeStr)) {
+                                                    nameStyle = { color: '#7C3AED', fontWeight: 600 };
+                                                    codeStyle = { color: '#7C3AED' };
+                                                }
+
+                                                return (
+                                                    <div key={unit.code} className="missing-unit-item-small">
+                                                        <span className="unit-code" style={codeStyle}>{unit.code}</span>
+                                                        <span className="unit-name" style={nameStyle}>{unit.name}</span>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 )
@@ -510,7 +528,7 @@ export default function OPPPDashboard() {
                                         <i className="ph-bold ph-magnifying-glass" style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '14px', color: '#EF4444' }}></i>
                                     )}
                                     <div className="stat-value missing" style={{ color: '#EF4444' }}>{district.missing}</div>
-                                    <div className="stat-label">รอประมวลผล</div>
+                                    <div className="stat-label">รอประมวลผล/ไม่ได้ส่ง</div>
                                 </div>
                             </div>
                         </div>

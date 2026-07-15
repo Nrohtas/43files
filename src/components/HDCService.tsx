@@ -454,17 +454,34 @@ export default function HDCService() {
                                 <p>ไม่มีหน่วยบริการที่รอประมวลผลในเดือนนี้ 🎉</p>
                             </div>
                         ) : (
-                            stats.missingList.map(unit => (
-                                <div key={unit.code} className="missing-unit-item">
-                                    <div className="missing-unit-icon" style={{ backgroundColor: '#EF4444' }}>
-                                        <i className="ph-fill ph-warning-circle" style={{ color: 'white' }}></i>
+                            stats.missingList.map(unit => {
+                                const hostypeStr = unit.hostype ? String(unit.hostype).trim() : '';
+                                const targetGreen = ['05', '07', '08', '11', '18', '5', '7', '8'];
+                                const targetPurple = ['21'];
+
+                                let nameStyle: React.CSSProperties = { fontWeight: 500 };
+                                let codeStyle: React.CSSProperties = { fontWeight: 600, color: '#64748B' };
+
+                                if (targetGreen.includes(hostypeStr)) {
+                                    nameStyle = { fontWeight: 600, color: '#059669' };
+                                    codeStyle = { fontWeight: 600, color: '#059669' };
+                                } else if (targetPurple.includes(hostypeStr)) {
+                                    nameStyle = { fontWeight: 600, color: '#7C3AED' };
+                                    codeStyle = { fontWeight: 600, color: '#7C3AED' };
+                                }
+
+                                return (
+                                    <div key={unit.code} className="missing-unit-item">
+                                        <div className="missing-unit-icon" style={{ backgroundColor: '#EF4444' }}>
+                                            <i className="ph-fill ph-warning-circle" style={{ color: 'white' }}></i>
+                                        </div>
+                                        <div className="missing-unit-info">
+                                            <div className="missing-unit-code" style={codeStyle}>{unit.code}</div>
+                                            <div className="missing-unit-name" title={unit.name} style={nameStyle}>{unit.name}</div>
+                                        </div>
                                     </div>
-                                    <div className="missing-unit-info">
-                                        <div className="missing-unit-code">{unit.code}</div>
-                                        <div className="missing-unit-name" title={unit.name}>{unit.name}</div>
-                                    </div>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 </div>
