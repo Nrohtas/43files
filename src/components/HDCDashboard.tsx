@@ -34,9 +34,9 @@ interface Month {
 
 export default function HDCDashboard() {
     // State
-    const [year, setYear] = useState('2568');
-    const [month, setMonth] = useState('11'); // Default to Nov
-    const [years, setYears] = useState<string[]>(['2568']);
+    const [year, setYear] = useState('');
+    const [month, setMonth] = useState('');
+    const [years, setYears] = useState<string[]>([]);
     const [months, setMonths] = useState<Month[]>([]);
 
     // Data State
@@ -75,7 +75,7 @@ export default function HDCDashboard() {
     // Fetch data when year/month changes
     useEffect(() => {
         // Skip initial load as it's handled by init
-        if (months.length > 0) {
+        if (months.length > 0 && year && month) {
             fetchData(year, month);
         }
     }, [year, month]);

@@ -49,7 +49,7 @@ export default function HDCReport() {
     const [hostypes, setHostypes] = useState<Hostype[]>([]);
 
     // Selection State
-    const [selectedYear, setSelectedYear] = useState<string>('2569');
+    const [selectedYear, setSelectedYear] = useState<string>('');
     const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
     const [selectedHostype, setSelectedHostype] = useState<string | null>(null);
 

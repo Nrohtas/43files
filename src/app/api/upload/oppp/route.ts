@@ -80,13 +80,33 @@ export async function POST(request: NextRequest) {
         };
 
         // 4. Calculate Fiscal Year (b_year)
-        const today = new Date();
-        const month = today.getMonth() + 1; // 1-12
-        const yearAD = today.getFullYear();
-        // If Oct-Dec (10,11,12), Fiscal Year is Next Year. Else Current Year.
-        // Thai Year = AD + 543
-        const fiscalYearAD = month >= 10 ? yearAD + 1 : yearAD;
-        const b_year = String(fiscalYearAD + 543);
+        let b_year: string | null = null;
+        const formYear = data.get('year') || data.get('b_year');
+        if (formYear) {
+            b_year = String(formYear);
+        }
+
+        // Try to extract from filename (e.g., _202610_ or _202701_)
+        if (!b_year) {
+            const matchYear = file.name.match(/(\d{4})(\d{2})/);
+            if (matchYear) {
+                const fYear = parseInt(matchYear[1], 10);
+                const fMonth = parseInt(matchYear[2], 10);
+                if (fMonth >= 1 && fMonth <= 12 && fYear >= 2020 && fYear <= 2040) {
+                    const fiscalAD = fMonth >= 10 ? fYear + 1 : fYear;
+                    b_year = String(fiscalAD + 543);
+                }
+            }
+        }
+
+        // Fallback to current date fiscal year
+        if (!b_year) {
+            const today = new Date();
+            const month = today.getMonth() + 1; // 1-12
+            const yearAD = today.getFullYear();
+            const fiscalYearAD = month >= 10 ? yearAD + 1 : yearAD;
+            b_year = String(fiscalYearAD + 543);
+        }
 
         // 5. Process Rows
         let successCount = 0;

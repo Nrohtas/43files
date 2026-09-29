@@ -3,6 +3,7 @@ import { pool } from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 
 import { verifyToken } from '@/lib/jwt';
+import { getCurrentFiscalYear } from '@/utils/fiscalYear';
 
 export async function GET(
     request: Request,
@@ -20,7 +21,7 @@ export async function GET(
     const { district } = await params;
     const { searchParams } = new URL(request.url);
     const hostype = searchParams.get('hostype');
-    const year = searchParams.get('year') || '2568';
+    const year = searchParams.get('year') || getCurrentFiscalYear();
 
     // Fetch result (service count) and status (Pass/Fail) for each month
     let sql = `

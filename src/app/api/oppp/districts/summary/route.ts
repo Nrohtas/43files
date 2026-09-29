@@ -3,6 +3,7 @@ import { pool } from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 
 import { verifyToken } from '@/lib/jwt';
+import { getCurrentFiscalYear } from '@/utils/fiscalYear';
 
 export async function GET(request: Request) {
     const authHeader = request.headers.get('Authorization');
@@ -14,7 +15,7 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const year = searchParams.get('year') || '2568';
+    const year = searchParams.get('year') || getCurrentFiscalYear();
     const month = searchParams.get('month') || '11';
 
     const sql = `

@@ -49,7 +49,7 @@ export default function OPPPReport() {
     const [hostypes, setHostypes] = useState<Hostype[]>([]);
 
     // Selection State
-    const [selectedYear, setSelectedYear] = useState<string>('2569'); // Default 2569 for OPPP
+    const [selectedYear, setSelectedYear] = useState<string>('');
     const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
     const [selectedHostype, setSelectedHostype] = useState<string | null>(null);
 
@@ -67,6 +67,11 @@ export default function OPPPReport() {
     // Initial Load
     useEffect(() => {
         const init = async () => {
+            // Calculate default year similar to legacy logic
+            const today = new Date();
+            const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            const defaultFiscalYear = (prevMonthDate.getMonth() >= 9) ? prevMonthDate.getFullYear() + 544 : prevMonthDate.getFullYear() + 543;
+
             // 1. Load Years
             try {
                 const res = await fetch('/api/years/report'); // Use report-specific filtered years
@@ -98,7 +103,7 @@ export default function OPPPReport() {
             fetchLastUpdate();
 
             // Set initial selection from URL or Defaults
-            if (paramYear) setSelectedYear(paramYear);
+            setSelectedYear(paramYear || defaultFiscalYear.toString());
             if (paramDistrict) setSelectedDistrict(paramDistrict);
             if (paramHostype) setSelectedHostype(paramHostype);
         };

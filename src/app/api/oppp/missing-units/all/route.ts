@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
 import { verifyToken } from '@/lib/jwt';
+import { getCurrentFiscalYear } from '@/utils/fiscalYear';
 
 export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('Authorization');
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const year = searchParams.get('year') || '2568';
+    const year = searchParams.get('year') || getCurrentFiscalYear();
     const month = searchParams.get('month') || '11';
 
     try {
