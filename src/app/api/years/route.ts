@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
+import { getCurrentFiscalYear } from '@/utils/fiscalYear';
 
 export async function GET() {
     try {
@@ -12,7 +13,15 @@ export async function GET() {
             SELECT DISTINCT b_year as year_value FROM oppp WHERE b_year IS NOT NULL AND b_year != '2568'
             ORDER BY year_value DESC
         `);
-        const years = rows.map((row: any) => String(row.year_value));
+        const yearsSet = new Set<string>(rows.map((row: any) => String(row.year_value)));
+        
+        // รับประกันว่ามีปีงบประมาณปัจจุบันเสมอ แม้ฐานข้อมูลยังไม่มีข้อมูล
+        const currentFiscal = getCurrentFiscalYear();
+        if (currentFiscal) {
+            yearsSet.add(currentFiscal);
+        }
+
+        const years = Array.from(yearsSet).sort((a, b) => b.localeCompare(a));
         return NextResponse.json(years);
     } catch (error) {
         console.error('Error fetching years:', error);
