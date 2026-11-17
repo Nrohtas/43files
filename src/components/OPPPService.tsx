@@ -20,6 +20,8 @@ interface Unit {
     code: string;
     name: string;
     hostype?: string;
+    amp_code?: string;
+    amp_name?: string;
     months: {
         pass: number | null;
         reject: number | null;
@@ -161,6 +163,7 @@ export default function OPPPService() {
             return;
         }
 
+        const isAllDistricts = selectedDistrict === 'all';
         const prevYearSuffix = (parseInt(selectedYear) - 1).toString().slice(-2);
         const currYearSuffix = selectedYear.slice(-2);
         const monthNames = [
@@ -171,8 +174,8 @@ export default function OPPPService() {
         ];
 
         // Prepare Header Rows
-        const headerRow1 = ['รหัส', 'หน่วยบริการ'];
-        const headerRow2 = ['', ''];
+        const headerRow1 = isAllDistricts ? ['รหัส', 'หน่วยบริการ', 'อำเภอ'] : ['รหัส', 'หน่วยบริการ'];
+        const headerRow2 = isAllDistricts ? ['', '', ''] : ['', ''];
 
         monthNames.forEach(m => {
             headerRow1.push(m, '', ''); // Placeholder for merged cells
@@ -189,7 +192,9 @@ export default function OPPPService() {
             : units;
 
         const dataRows = sortedUnits.map(unit => {
-            const row: (string | number)[] = [unit.code, unit.name];
+            const row: (string | number)[] = isAllDistricts
+                ? [unit.code, unit.name, unit.amp_name || '-']
+                : [unit.code, unit.name];
             unit.months.forEach(m => {
                 row.push(m.pass ?? 0, m.reject ?? 0, m.total ?? 0);
             });
@@ -204,14 +209,19 @@ export default function OPPPService() {
 
         // Define Merges
         // s = start, e = end, c = column index, r = row index (0-indexed)
-        const merges = [
+        const merges = isAllDistricts ? [
+            { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // Merge 'รหัส' vertical
+            { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // Merge 'หน่วยบริการ' vertical
+            { s: { r: 0, c: 2 }, e: { r: 1, c: 2 } }, // Merge 'อำเภอ' vertical
+        ] : [
             { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // Merge 'รหัส' vertical
             { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // Merge 'หน่วยบริการ' vertical
         ];
 
         // Merge month headers horizontal (3 columns each)
+        const monthStartCol = isAllDistricts ? 3 : 2;
         for (let i = 0; i < 12; i++) {
-            const startCol = 2 + (i * 3);
+            const startCol = monthStartCol + (i * 3);
             merges.push({
                 s: { r: 0, c: startCol },
                 e: { r: 0, c: startCol + 2 }
@@ -221,7 +231,12 @@ export default function OPPPService() {
         ws['!merges'] = merges;
 
         // Set column widths (approximate widths in characters)
-        ws['!cols'] = [
+        ws['!cols'] = isAllDistricts ? [
+            { wch: 10 }, // รหัส
+            { wch: 35 }, // หน่วยบริการ
+            { wch: 20 }, // อำเภอ
+            ...new Array(36).fill({ wch: 8 }) // Pass/Fail/Total columns
+        ] : [
             { wch: 10 }, // รหัส
             { wch: 35 }, // หน่วยบริการ
             ...new Array(36).fill({ wch: 8 }) // Pass/Fail/Total columns
@@ -232,7 +247,9 @@ export default function OPPPService() {
         XLSX.utils.book_append_sheet(wb, ws, "OPPP Service Report");
 
         // Generate Filename
-        const districtName = districts.find(d => d.code === selectedDistrict)?.name || selectedDistrict;
+        const districtName = selectedDistrict === 'all'
+            ? 'ทุกอำเภอ'
+            : (districts.find(d => d.code === selectedDistrict)?.name || selectedDistrict);
 
         // Prepare current date and time formatted as YYYYMMDD_HHmm
         const now = new Date();
@@ -316,6 +333,7 @@ export default function OPPPService() {
     // Helpers
     const getDistrictName = (code: string | null) => {
         if (!code) return 'เลือกอำเภอ';
+        if (code === 'all') return 'ทุกอำเภอ';
         const d = districts.find(d => d.code === code);
         return d ? `อำเภอ${d.name}` : 'เลือกอำเภอ';
     };
@@ -381,6 +399,7 @@ export default function OPPPService() {
                             value={selectedDistrict || ''}
                             options={[
                                 { value: '', label: 'เลือกอำเภอ' },
+                                { value: 'all', label: 'ทุกอำเภอ' },
                                 ...districts.map(d => ({ value: d.code, label: `อำเภอ${d.name}` }))
                             ]}
                             onChange={(val) => handleDistrictChange(val || null)}
@@ -511,7 +530,14 @@ export default function OPPPService() {
                                         </div>
                                         <div className="missing-unit-info">
                                             <div className="missing-unit-code" style={codeStyle}>{unit.code}</div>
-                                            <div className="missing-unit-name" title={unit.name} style={nameStyle}>{unit.name}</div>
+                                            <div className="missing-unit-name" title={unit.name} style={nameStyle}>
+                                                {unit.name}
+                                                {selectedDistrict === 'all' && unit.amp_name && (
+                                                    <span style={{ fontSize: '11px', fontWeight: 500, color: '#94A3B8', marginLeft: '6px' }}>
+                                                        ({unit.amp_name.startsWith('อำเภอ') ? unit.amp_name : `อ.${unit.amp_name}`})
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 );
@@ -737,7 +763,14 @@ export default function OPPPService() {
                                         <tr key={unit.code} style={rowStyle}>
                                             <td className="sticky-col-code"><span style={codeStyle}>{unit.code}</span></td>
                                             <td className="sticky-col-name" style={cellStyle}>
-                                                <div className="name-cell-wrapper">{unit.name}</div>
+                                                <div className="name-cell-wrapper">
+                                                    {unit.name}
+                                                    {selectedDistrict === 'all' && unit.amp_name && (
+                                                        <span style={{ fontSize: '11px', fontWeight: 500, color: '#64748B', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px', marginLeft: '6px' }}>
+                                                            {unit.amp_name.startsWith('อำเภอ') ? unit.amp_name : `อ.${unit.amp_name}`}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                             {unit.months.map((monthData, idx) => {
                                                 const today = new Date();

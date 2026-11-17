@@ -23,12 +23,16 @@ export async function GET(
     const hostype = searchParams.get('hostype');
     const year = searchParams.get('year') || getCurrentFiscalYear();
 
+    const isAll = district.toLowerCase() === 'all';
+
     // ใช้ b_year เป็นปีงบประมาณ และ status10-09 เป็นสถานะแต่ละเดือน
     let sql = `
         SELECT 
             ho.hospcode,
             ho.hospname,
             ho.hostype_new,
+            ho.amp_code,
+            ho.amp_name,
             hdc.b_year as fiscal_year,
             hdc.status10 as month_10,
             hdc.status11 as month_11,
@@ -46,17 +50,26 @@ export async function GET(
         LEFT JOIN hdc ON ho.hospcode = hdc.hospcode 
             AND hdc.b_year = ?
         LEFT JOIN hostype ht ON ho.hostype_new = ht.hostype_new
-        WHERE ho.amp_code = ?
     `;
 
-    const sqlParams: any[] = [year, district];
+    const sqlParams: any[] = [year];
+    const conditions: string[] = [];
+
+    if (!isAll) {
+        conditions.push('ho.amp_code = ?');
+        sqlParams.push(district);
+    }
 
     if (hostype) {
-        sql += ' AND ht.hostype_name = ?';
+        conditions.push('ht.hostype_name = ?');
         sqlParams.push(hostype);
     }
 
-    sql += ' ORDER BY ho.hospcode ASC';
+    if (conditions.length > 0) {
+        sql += ` WHERE ${conditions.join(' AND ')}`;
+    }
+
+    sql += ' ORDER BY ho.amp_code ASC, ho.hospcode ASC';
 
     try {
         const [rows] = await pool.query<RowDataPacket[]>(sql, sqlParams);
@@ -65,6 +78,8 @@ export async function GET(
             code: row.hospcode,
             name: row.hospname,
             hostype: row.hostype_new,
+            amp_code: row.amp_code,
+            amp_name: row.amp_name,
             months: [
                 row.month_10, row.month_11, row.month_12,
                 row.month_13, row.month_14, row.month_15,

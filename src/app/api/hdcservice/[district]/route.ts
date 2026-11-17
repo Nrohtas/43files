@@ -23,12 +23,16 @@ export async function GET(
     const hostype = searchParams.get('hostype');
     const year = searchParams.get('year') || getCurrentFiscalYear();
 
+    const isAll = district.toLowerCase() === 'all';
+
     // Fetch result (service count) and status (Pass/Fail) for each month
     let sql = `
         SELECT 
             h.hospcode,
             h.hospname,
             h.hostype_new,
+            h.amp_code,
+            h.amp_name,
             hdc.target, hdc.result,
             hdc.result10, hdc.status10,
             hdc.result11, hdc.status11,
@@ -45,17 +49,26 @@ export async function GET(
         FROM hospital h
         LEFT JOIN hdc ON h.hospcode = hdc.hospcode AND hdc.b_year = ?
         LEFT JOIN hostype ht ON h.hostype_new = ht.hostype_new
-        WHERE h.amp_code = ?
     `;
 
-    const sqlParams: any[] = [year, district];
+    const sqlParams: any[] = [year];
+    const conditions: string[] = [];
+
+    if (!isAll) {
+        conditions.push('h.amp_code = ?');
+        sqlParams.push(district);
+    }
 
     if (hostype) {
-        sql += ' AND ht.hostype_name = ?';
+        conditions.push('ht.hostype_name = ?');
         sqlParams.push(hostype);
     }
 
-    sql += ' ORDER BY h.hospcode ASC';
+    if (conditions.length > 0) {
+        sql += ` WHERE ${conditions.join(' AND ')}`;
+    }
+
+    sql += ' ORDER BY h.amp_code ASC, h.hospcode ASC';
 
     try {
         const [rows] = await pool.query<RowDataPacket[]>(sql, sqlParams);
@@ -64,6 +77,8 @@ export async function GET(
             code: row.hospcode,
             name: row.hospname,
             hostype: row.hostype_new,
+            amp_code: row.amp_code,
+            amp_name: row.amp_name,
             target: row.target,
             result: row.result,
             months: [

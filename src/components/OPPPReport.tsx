@@ -20,6 +20,8 @@ interface Unit {
     code: string;
     name: string;
     hostype?: string;
+    amp_code?: string;
+    amp_name?: string;
     months: {
         pass: number | null;
         reject: number | null;
@@ -163,9 +165,16 @@ export default function OPPPReport() {
             return;
         }
 
+        const isAllDistricts = selectedDistrict === 'all';
         const prevYearSuffix = (parseInt(selectedYear) - 1).toString().slice(-2);
         const currYearSuffix = selectedYear.slice(-2);
-        const headerRow = [
+        const headerRow = isAllDistricts ? [
+            'รหัส', 'หน่วยบริการ', 'อำเภอ',
+            `ต.ค. ${prevYearSuffix}`, `พ.ย. ${prevYearSuffix}`, `ธ.ค. ${prevYearSuffix}`,
+            `ม.ค. ${currYearSuffix}`, `ก.พ. ${currYearSuffix}`, `มี.ค. ${currYearSuffix}`,
+            `เม.ย. ${currYearSuffix}`, `พ.ค. ${currYearSuffix}`, `มิ.ย. ${currYearSuffix}`,
+            `ก.ค. ${currYearSuffix}`, `ส.ค. ${currYearSuffix}`, `ก.ย. ${currYearSuffix}`
+        ] : [
             'รหัส', 'หน่วยบริการ',
             `ต.ค. ${prevYearSuffix}`, `พ.ย. ${prevYearSuffix}`, `ธ.ค. ${prevYearSuffix}`,
             `ม.ค. ${currYearSuffix}`, `ก.พ. ${currYearSuffix}`, `มี.ค. ${currYearSuffix}`,
@@ -175,7 +184,9 @@ export default function OPPPReport() {
 
         // Prepare Data Rows
         const dataRows = units.map(unit => {
-            const row: (string | number | null)[] = [unit.code, unit.name];
+            const row: (string | number | null)[] = isAllDistricts
+                ? [unit.code, unit.name, unit.amp_name || '-']
+                : [unit.code, unit.name];
             // Flatten months array to status only
             unit.months.forEach(m => {
                 row.push(m.status || '-');
@@ -190,7 +201,12 @@ export default function OPPPReport() {
         const ws = XLSX.utils.aoa_to_sheet(aoa);
 
         // Set column widths
-        ws['!cols'] = [
+        ws['!cols'] = isAllDistricts ? [
+            { wch: 10 }, // รหัส
+            { wch: 35 }, // หน่วยบริการ
+            { wch: 20 }, // อำเภอ
+            ...new Array(12).fill({ wch: 15 }) // Month columns
+        ] : [
             { wch: 10 }, // รหัส
             { wch: 35 }, // หน่วยบริการ
             ...new Array(12).fill({ wch: 15 }) // Month columns
@@ -201,7 +217,9 @@ export default function OPPPReport() {
         XLSX.utils.book_append_sheet(wb, ws, "OPPP Report");
 
         // Generate Filename
-        const districtName = districts.find(d => d.code === selectedDistrict)?.name || selectedDistrict;
+        const districtName = selectedDistrict === 'all'
+            ? 'ทุกอำเภอ'
+            : (districts.find(d => d.code === selectedDistrict)?.name || selectedDistrict);
 
         // Prepare current date and time formatted as YYYYMMDD_HHmm
         const now = new Date();
@@ -286,6 +304,7 @@ export default function OPPPReport() {
     // Helpers
     const getDistrictName = (code: string | null) => {
         if (!code) return 'เลือกอำเภอ';
+        if (code === 'all') return 'ทุกอำเภอ';
         const d = districts.find(d => d.code === code);
         return d ? `อำเภอ${d.name}` : 'เลือกอำเภอ';
     };
@@ -359,6 +378,7 @@ export default function OPPPReport() {
                             value={selectedDistrict || ''}
                             options={[
                                 { value: '', label: 'เลือกอำเภอ' },
+                                { value: 'all', label: 'ทุกอำเภอ' },
                                 ...districts.map(d => ({ value: d.code, label: `อำเภอ${d.name}` }))
                             ]}
                             onChange={(val) => handleDistrictChange(val || null)}
@@ -490,7 +510,14 @@ export default function OPPPReport() {
                                         </div>
                                         <div className="missing-unit-info">
                                             <div className="missing-unit-code" style={codeStyle}>{unit.code}</div>
-                                            <div className="missing-unit-name" title={unit.name} style={nameStyle}>{unit.name}</div>
+                                            <div className="missing-unit-name" title={unit.name} style={nameStyle}>
+                                                {unit.name}
+                                                {selectedDistrict === 'all' && unit.amp_name && (
+                                                    <span style={{ fontSize: '11px', fontWeight: 500, color: '#94A3B8', marginLeft: '6px' }}>
+                                                        ({unit.amp_name.startsWith('อำเภอ') ? unit.amp_name : `อ.${unit.amp_name}`})
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 );
@@ -623,7 +650,14 @@ export default function OPPPReport() {
                                         <tr key={unit.code}>
                                             <td className="sticky-col-code" style={{ zIndex: 40, background: stickyBg }}><span style={codeStyle}>{unit.code}</span></td>
                                             <td className="sticky-col-name" style={{ ...cellStyle, zIndex: 40, background: stickyBg }}>
-                                                <div className="name-cell-wrapper">{unit.name}</div>
+                                                <div className="name-cell-wrapper">
+                                                    {unit.name}
+                                                    {selectedDistrict === 'all' && unit.amp_name && (
+                                                        <span style={{ fontSize: '11px', fontWeight: 500, color: '#64748B', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px', marginLeft: '6px' }}>
+                                                            {unit.amp_name.startsWith('อำเภอ') ? unit.amp_name : `อ.${unit.amp_name}`}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                             {unit.months.map((monthData, idx) => {
                                                 // Calculate cutoff logic

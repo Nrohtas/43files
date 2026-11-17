@@ -8,6 +8,7 @@ export async function GET() {
         const [rows] = await pool.execute(`
             SELECT 
                 api_id,
+                b_year,
                 h_count,
                 h_y,
                 h_n,
@@ -30,6 +31,7 @@ export async function GET() {
         // Get latest record for current status
         const [latestRows] = await pool.execute(`
             SELECT 
+                b_year,
                 h_count,
                 h_y,
                 h_n,
@@ -48,6 +50,7 @@ export async function GET() {
         };
 
         const latest = (latestRows as any[])[0] || {
+            b_year: null,
             h_count: 0,
             h_y: 0,
             h_n: 0,
@@ -66,6 +69,7 @@ export async function GET() {
                     lastUpdate: summary.last_update
                 },
                 latest: {
+                    year: latest.b_year || null,
                     unitCount: latest.h_count || 0,
                     processed: latest.h_y || 0,
                     pending: latest.h_n || 0,
